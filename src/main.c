@@ -1,7 +1,5 @@
 #include "minishell.h"
 
-
-
 char *readline_helper(void)
 {
 	char	*buf;
@@ -35,7 +33,7 @@ int main(int argc, char **argv)
 	(void)argc;
 	(void)argv;
 	char *line;
-	int		fd;
+	int	fd;
 
 	while ((fd = open("console", O_RDWR)) >= 0)
 	{
@@ -48,8 +46,9 @@ int main(int argc, char **argv)
 		line = readline_helper();
 		if (!line)
 			break;
-		if (forkk() == 0)
+		if (forkk() == 0) {
 			runcmd(tokenize(line));
+		}
 		wait(0);
 		printf("%s", line);
 		free(line);

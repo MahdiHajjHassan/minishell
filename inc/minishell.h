@@ -25,7 +25,7 @@ typedef struct s_execcmd
 typedef struct s_redircmd
 {
 	int type;
-	struct cmd *cmd;
+	struct s_cmd *cmd;
 	char *file;
 	char *efile;
 	int mode;
@@ -35,21 +35,21 @@ typedef struct s_redircmd
 typedef struct s_pipecmd
 {
 	int type;
-	struct cmd *left;
-	struct cmd *right;
+	struct s_cmd *left;
+	struct s_cmd *right;
 }	t_pipecmd;
 
 typedef struct s_listcmd
 {
 	int type;
-	struct cmd *left;
-	struct cmd *right;
+	struct s_cmd *left;
+	struct s_cmd *right;
 }	t_listcmd;
 
 typedef struct s_backcmd
 {
 	int type;
-	struct cmd *cmd;
+	struct s_cmd *cmd;
 }	t_backcmd;
 
 
@@ -61,6 +61,7 @@ char *readline_helper(void);
 void *get_cwd(char *buf, size_t size);
 void wtf(void);
 int forkk(void);
+void runcmd(struct s_cmd *cmd);
 
 
 #endif
