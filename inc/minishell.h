@@ -62,6 +62,8 @@ void *get_cwd(char *buf, size_t size);
 void wtf(void);
 int forkk(void);
 void runcmd(struct s_cmd *cmd);
+struct s_cmd *tokenize(const char *line);
+void nulterm(char **arr);
 
 
 #endif

@@ -25,3 +25,13 @@ void wtf(void)
 	printf("wtf\n");
 	exit(1);
 }
+
+void nulterm(char **arr)
+{
+    int i = 0;
+    while (arr[i])
+        i++;
+    arr[i] = NULL;
+}
+
+
