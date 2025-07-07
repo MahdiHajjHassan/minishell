@@ -26,12 +26,43 @@ void wtf(void)
 	exit(1);
 }
 
-void nulterm(char **arr)
+struct s_cmd* nulterm(struct s_cmd *cmd)
 {
     int i = 0;
-    while (arr[i])
-        i++;
-    arr[i] = NULL;
+    struct s_backcmd *bcmd;
+    struct s_execcmd *ecmd;
+    struct s_listcmd *lcmd;
+    struct s_pipecmd *pcmd;
+    struct s_redircmd *rcmd;
+
+    if (cmd == 0)
+        return 0;
+    switch (cmd->type)
+    {
+        case EXEC:
+            ecmd = (struct s_execcmd *)cmd;
+            for (i = 0; ecmd->av[i]; i++)
+                *ecmd->ev[i] = 0;
+            break;
+        case REDIR:
+            rcmd = (struct s_redircmd *)cmd;
+            nulterm(rcmd->cmd);
+            *rcmd->efile = 0;
+            break;
+        case PIPE:
+            pcmd = (struct s_pipecmd *)cmd;
+            nulterm(pcmd->left);
+            nulterm(pcmd->right);
+            break;
+        case LIST:
+            lcmd = (struct s_listcmd *)cmd;
+            nulterm(lcmd->left);
+            nulterm(lcmd->right);
+            break;
+        case BACK:
+            bcmd = (struct s_backcmd *)cmd;
+            nulterm(bcmd->cmd);
+            break;
+    }
+    return cmd;
 }
-
-

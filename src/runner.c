@@ -2,6 +2,48 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
+
+char *find_command(const char *cmd)
+{
+    char *path = getenv("PATH");
+    char *curr;
+    char *next;
+    char full_path[1024];
+    size_t len;
+
+    if (!path)
+        return NULL;
+
+    // Handle absolute or relative paths
+    if (cmd[0] == '/' || cmd[0] == '.') {
+        if (access(cmd, X_OK) == 0)
+            return strdup(cmd);
+        return NULL;
+    }
+
+    curr = path;
+    while (curr && *curr)
+    {
+        next = strchr(curr, ':');
+        len = next ? (size_t)(next - curr) : strlen(curr);
+        
+        if (len + strlen(cmd) + 2 > sizeof(full_path))
+            return NULL;
+            
+        strncpy(full_path, curr, len);
+        full_path[len] = '/';
+        strcpy(full_path + len + 1, cmd);
+        
+        if (access(full_path, X_OK) == 0)
+            return strdup(full_path);
+            
+        if (!next)
+            break;
+        curr = next + 1;
+    }
+    return NULL;
+}
 
 void runcmd(struct s_cmd *cmd)
 {
@@ -11,6 +53,8 @@ void runcmd(struct s_cmd *cmd)
     struct s_listcmd *list;
     struct s_pipecmd *pipecmd;
     struct s_redircmd *rdir;
+    char *cmd_path;
+    extern char **environ;  // Get the current environment
     
     if (cmd == 0)
         exit(0);
@@ -19,21 +63,36 @@ void runcmd(struct s_cmd *cmd)
         ex = (struct s_execcmd *)cmd;
         if (ex->av[0] == 0)
             exit(0);
-        execvp(ex->av[0], ex->av);
-        fprintf(stderr, "exec %s: not found\n", ex->av[0]);
+        fprintf(stderr, "DEBUG: about to exec '%s'\n", ex->av[0]);
+        
+        // Check for builtin commands first
+        if (is_builtin(ex->av[0])) {
+            exit(handle_builtin(ex->av));
+        }
+        
+        cmd_path = find_command(ex->av[0]);
+        if (cmd_path) {
+            execve(cmd_path, ex->av, environ);
+            free(cmd_path);
+        }
+        fprintf(stderr, "exec %s failed\n", ex->av[0]);
         exit(0);
     }
     if (cmd->type == REDIR)
     {
         rdir = (struct s_redircmd *)cmd;
         close(rdir->fd);
-        if (open(rdir->file, rdir->mode) < 0)
+        int fd = open(rdir->file, rdir->mode, 0644);
+        if (fd < 0)
         {
-            fprintf(stderr, "redirect: %s: open: %s\n", rdir->file, rdir->file);
+            fprintf(stderr, "redirect: %s: open failed\n", rdir->file);
             exit(1);
         }
+        if (fd != rdir->fd) {
+            dup2(fd, rdir->fd);
+            close(fd);
+        }
         runcmd(rdir->cmd);
-        close(rdir->fd);
         return;
     }
     if (cmd->type == LIST)
@@ -75,8 +134,13 @@ void runcmd(struct s_cmd *cmd)
     if (cmd->type == BACK)
     {
         back = (struct s_backcmd *)cmd;
-        if (forkk() == 0)
-            runcmd(back->cmd);
+        if (forkk() == 0) {
+            if (forkk() == 0) {
+                runcmd(back->cmd);
+            }
+            exit(0);
+        }
+        wait(0);  // Wait for the immediate child only
         return;
     }
 }

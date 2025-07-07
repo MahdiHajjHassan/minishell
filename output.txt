@@ -1,0 +1,6 @@
+inc
+Makefile
+minishell
+obj
+output.txt
+src

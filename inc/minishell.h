@@ -8,6 +8,7 @@
 #define PIPE 3
 #define LIST 4
 #define BACK 5
+
 #define MAXARGS 10
 
 typedef struct s_cmd
@@ -63,7 +64,23 @@ void wtf(void);
 int forkk(void);
 void runcmd(struct s_cmd *cmd);
 struct s_cmd *tokenize(const char *line);
-void nulterm(char **arr);
+struct s_cmd* nulterm(struct s_cmd *cmd);
 
+// Parser and command constructors
+struct s_cmd *parseexec(char **input_ptr, char *input_end);
+int peek(char **input_ptr, char *input_end, char *toks);
+int gettoken(char **input_ptr, char *input_end, char **token_start, char **token_end);
+struct s_cmd *pipecmd(struct s_cmd *left, struct s_cmd *right);
+struct s_cmd *backcmd(struct s_cmd *subcmd);
+struct s_cmd *listcmd(struct s_cmd *left, struct s_cmd *right);
+struct s_cmd *redircmd(struct s_cmd *subcmd, char *file, char *efile, int mode, int fd);
+struct s_cmd *execcmd(void);
+struct s_cmd *parse_redirs(struct s_cmd *cmd, char **input_ptr, char *input_end);
+struct s_cmd *parse_block(char **input_ptr, char *input_end);
+struct s_cmd *parse_line(char **input_ptr, char *input_end);
+
+// Add after other function prototypes
+int is_builtin(char *cmd);
+int handle_builtin(char **argv);
 
 #endif

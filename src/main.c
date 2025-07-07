@@ -33,24 +33,28 @@ int main(int argc, char **argv)
 	(void)argc;
 	(void)argv;
 	char *line;
-	int	fd;
+	struct s_cmd *cmd;
+	struct s_execcmd *ecmd;
 
-	while ((fd = open("console", O_RDWR)) >= 0)
-	{
-		if (fd > 2)
-			close(fd);
-		break;
-	}
 	while (1)
 	{
 		line = readline_helper();
 		if (!line)
 			break;
+		cmd = tokenize(line);
+		if (cmd->type == EXEC) {
+			ecmd = (struct s_execcmd *)cmd;
+			if (ecmd->av[0] && is_builtin(ecmd->av[0])) {
+				handle_builtin(ecmd->av);
+				free(line);
+				continue;
+			}
+		}
 		if (forkk() == 0) {
-			runcmd(tokenize(line));
+			runcmd(cmd);
+			exit(0);
 		}
 		wait(0);
-		printf("%s", line);
 		free(line);
 	}
     return (EXIT_SUCCESS);
