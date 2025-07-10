@@ -75,7 +75,7 @@ void runcmd(struct s_cmd *cmd)
             execve(cmd_path, ex->av, environ);
             free(cmd_path);
         }
-        fprintf(stderr, "exec %s failed\n", ex->av[0]);
+        fprintf(stderr, "exec %s espisiallyfailed\n", ex->av[0]);
         exit(0);
     }
     if (cmd->type == REDIR)
@@ -140,7 +140,7 @@ void runcmd(struct s_cmd *cmd)
             }
             exit(0);
         }
-        wait(0);  // Wait for the immediate child only
+        wait(0); // wait first baby only cuz life is not fair
         return;
     }
 }
