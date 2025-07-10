@@ -2,6 +2,39 @@
 #include <stdio.h>
 #include <string.h>
 
+// Helper function to process escaped characters
+static char* process_escaped(const char* input, size_t len)
+{
+    char* output = malloc(len + 1);
+    size_t i = 0;
+    size_t j = 0;
+    
+    if (!output)
+        return NULL;
+        
+    while (i < len) {
+        if (input[i] == '\\' && i + 1 < len) {
+            // Handle escaped characters
+            switch (input[i + 1]) {
+                case 'n': output[j++] = '\n'; break;
+                case 't': output[j++] = '\t'; break;
+                case 'r': output[j++] = '\r'; break;
+                case 'v': output[j++] = '\v'; break;
+                case 'b': output[j++] = '\b'; break;
+                case 'f': output[j++] = '\f'; break;
+                case 'a': output[j++] = '\a'; break;
+                case '\\': output[j++] = '\\'; break;
+                default: output[j++] = input[i + 1]; break;
+            }
+            i += 2;
+        } else {
+            output[j++] = input[i++];
+        }
+    }
+    output[j] = '\0';
+    return output;
+}
+
 struct s_cmd *parse_pipe(char **input_ptr, char *input_end)
 {
     struct s_cmd *cmd;
@@ -62,6 +95,9 @@ struct s_cmd *parse_redirs(struct s_cmd *cmd, char **input_ptr, char *input_end)
     char *q;
     char *eq;
     char *file;
+    char *processed;
+    char *expanded;
+    size_t len;
 
     while(peek(input_ptr, input_end, "<>"))
     {
@@ -70,18 +106,26 @@ struct s_cmd *parse_redirs(struct s_cmd *cmd, char **input_ptr, char *input_end)
             fprintf(stderr, "missing file name\n");
             wtf();
         }
-        // Make a clean copy of the filename without quotes
+        // Make a clean copy of the filename without quotes and process escapes
         if (*q == '"' && *(eq-1) == '"') {
             q++;
             eq--;
         }
-        file = malloc(eq - q + 1);
-        if (!file) {
+        len = eq - q;
+        processed = process_escaped(q, len);
+        if (!processed) {
             fprintf(stderr, "malloc failed\n");
             wtf();
         }
-        strncpy(file, q, eq - q);
-        file[eq - q] = '\0';
+        
+        // Expand environment variables
+        expanded = expand_variables(processed, strlen(processed));
+        free(processed);
+        if (!expanded) {
+            fprintf(stderr, "malloc failed\n");
+            wtf();
+        }
+        file = expanded;
         
         switch(tok)
         {
@@ -108,6 +152,8 @@ struct s_cmd *parseexec(char **input_ptr, char *input_end)
     int argc = 0;
     int tok;
     size_t len;
+    char *processed;
+    char *expanded;
 
     if (peek(input_ptr, input_end, "("))
         return parse_block(input_ptr, input_end);
@@ -124,14 +170,21 @@ struct s_cmd *parseexec(char **input_ptr, char *input_end)
         }
         // Make a clean copy of the argument
         len = eq - q;
-        cmd->av[argc] = malloc(len + 1);
-        if (!cmd->av[argc]) {
+        processed = process_escaped(q, len);
+        if (!processed) {
             fprintf(stderr, "malloc failed\n");
             wtf();
         }
-        strncpy(cmd->av[argc], q, len);
-        cmd->av[argc][len] = '\0';
-        cmd->ev[argc] = cmd->av[argc] + len;  // Point to the null terminator
+        
+        // Expand environment variables
+        expanded = expand_variables(processed, strlen(processed));
+        free(processed);
+        if (!expanded) {
+            fprintf(stderr, "malloc failed\n");
+            wtf();
+        }
+        cmd->av[argc] = expanded;
+        cmd->ev[argc] = cmd->av[argc] + strlen(expanded);  // Point to the null terminator
         fprintf(stderr, "DEBUG: parsed arg[%d] = '%s'\n", argc, cmd->av[argc]);
         argc++;
         if(argc >= MAXARGS) {

@@ -28,13 +28,15 @@ char *readline_helper(void)
 	return (buf);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char **argv, char **envp)
 {
 	(void)argc;
 	(void)argv;
+	(void)envp;
 	char *line;
 	struct s_cmd *cmd;
 	struct s_execcmd *ecmd;
+	int status;
 
 	while (1)
 	{
@@ -45,7 +47,8 @@ int main(int argc, char **argv)
 		if (cmd->type == EXEC) {
 			ecmd = (struct s_execcmd *)cmd;
 			if (ecmd->av[0] && is_builtin(ecmd->av[0])) {
-				handle_builtin(ecmd->av);
+				status = handle_builtin(ecmd->av);
+				set_exit_status(status);
 				free(line);
 				continue;
 			}
@@ -54,8 +57,9 @@ int main(int argc, char **argv)
 			runcmd(cmd);
 			exit(0);
 		}
-		wait(0);
+		wait(&status);
+		set_exit_status(status);
 		free(line);
 	}
-    return (EXIT_SUCCESS);
+	return (g_last_exit_status);
 }

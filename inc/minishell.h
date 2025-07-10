@@ -11,6 +11,9 @@
 
 #define MAXARGS 10
 
+// Add global variable for last exit status
+extern int g_last_exit_status;
+
 typedef struct s_cmd
 {
 	int type;
@@ -82,5 +85,7 @@ struct s_cmd *parse_line(char **input_ptr, char *input_end);
 // Add after other function prototypes
 int is_builtin(char *cmd);
 int handle_builtin(char **argv);
+char *expand_variables(const char *str, size_t len);
+void set_exit_status(int status);
 
 #endif
