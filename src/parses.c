@@ -2,7 +2,17 @@
 #include <stdio.h>
 #include <string.h>
 
-// Helper function to process escaped characters
+/*
+ * process_escaped - Handle escaped characters in input
+ * 
+ * Processes escape sequences like \n, \t, etc. and converts them
+ * to their actual characters. Also handles backslash escaping.
+ * 
+ * @input: Input string containing escape sequences
+ * @len: Length of input string
+ * 
+ * Returns: Newly allocated string with processed escapes
+ */
 static char* process_escaped(const char* input, size_t len)
 {
     char* output = malloc(len + 1);
@@ -35,6 +45,17 @@ static char* process_escaped(const char* input, size_t len)
     return output;
 }
 
+/*
+ * parse_pipe - Parse a pipeline of commands
+ * 
+ * Handles command pipelines like: cmd1 | cmd2 | cmd3
+ * Creates a tree of pipe commands connecting the outputs and inputs.
+ * 
+ * @input_ptr: Current position in input string
+ * @input_end: End of input string
+ * 
+ * Returns: Command tree for the pipeline
+ */
 struct s_cmd *parse_pipe(char **input_ptr, char *input_end)
 {
     struct s_cmd *cmd;
@@ -48,6 +69,17 @@ struct s_cmd *parse_pipe(char **input_ptr, char *input_end)
     return cmd;
 }
 
+/*
+ * parse_line - Parse a complete command line
+ * 
+ * Handles command sequences separated by ; and background &
+ * Example: cmd1 ; cmd2 & cmd3
+ * 
+ * @input_ptr: Current position in input string
+ * @input_end: End of input string
+ * 
+ * Returns: Command tree for the entire line
+ */
 struct s_cmd *parse_line(char **input_ptr, char *input_end)
 {
     struct s_cmd *cmd;
@@ -57,7 +89,6 @@ struct s_cmd *parse_line(char **input_ptr, char *input_end)
     {
         gettoken(input_ptr, input_end, NULL, NULL);
         cmd = backcmd(cmd);
-        // After a background command, parse the rest as a new command
         if (!peek(input_ptr, input_end, "\0")) {
             return parse_line(input_ptr, input_end);
         }
@@ -70,6 +101,17 @@ struct s_cmd *parse_line(char **input_ptr, char *input_end)
     return cmd;
 }
 
+/*
+ * parse_block - Parse a parenthesized command block
+ * 
+ * Handles commands in parentheses: (cmd)
+ * Allows for command grouping and redirection of groups
+ * 
+ * @input_ptr: Current position in input string
+ * @input_end: End of input string
+ * 
+ * Returns: Command tree for the block
+ */
 struct s_cmd *parse_block(char **input_ptr, char *input_end)
 {
     struct s_cmd *cmd;
@@ -89,6 +131,20 @@ struct s_cmd *parse_block(char **input_ptr, char *input_end)
     return cmd;
 }
 
+/*
+ * parse_redirs - Parse input/output redirections
+ * 
+ * Handles redirections like:
+ * - < input.txt (input redirection)
+ * - > output.txt (output redirection)
+ * - >> append.txt (append redirection)
+ * 
+ * @cmd: Command to be redirected
+ * @input_ptr: Current position in input string
+ * @input_end: End of input string
+ * 
+ * Returns: Command tree with redirections
+ */
 struct s_cmd *parse_redirs(struct s_cmd *cmd, char **input_ptr, char *input_end)
 {
     int tok;
@@ -106,7 +162,7 @@ struct s_cmd *parse_redirs(struct s_cmd *cmd, char **input_ptr, char *input_end)
             fprintf(stderr, "missing file name\n");
             wtf();
         }
-        // Make a clean copy of the filename without quotes and process escapes
+        // Handle quoted filenames
         if (*q == '"' && *(eq-1) == '"') {
             q++;
             eq--;
@@ -118,7 +174,7 @@ struct s_cmd *parse_redirs(struct s_cmd *cmd, char **input_ptr, char *input_end)
             wtf();
         }
         
-        // Expand environment variables
+        // Expand environment variables in filename
         expanded = expand_variables(processed, strlen(processed));
         free(processed);
         if (!expanded) {
@@ -129,20 +185,33 @@ struct s_cmd *parse_redirs(struct s_cmd *cmd, char **input_ptr, char *input_end)
         
         switch(tok)
         {
-            case '<':
+            case '<':  // Input redirection
                 cmd = redircmd(cmd, file, file + strlen(file), O_RDONLY, 0);
                 break;
-            case '>':
-                cmd = redircmd(cmd, file, file + strlen(file), O_WRONLY | O_CREAT | O_TRUNC | 0644, 1);
+            case '>':  // Output redirection (truncate)
+                cmd = redircmd(cmd, file, file + strlen(file), 
+                             O_WRONLY | O_CREAT | O_TRUNC | 0644, 1);
                 break;
-            case '+':
-                cmd = redircmd(cmd, file, file + strlen(file), O_WRONLY | O_CREAT | O_APPEND | 0644, 1);
+            case '+':  // Output redirection (append)
+                cmd = redircmd(cmd, file, file + strlen(file),
+                             O_WRONLY | O_CREAT | O_APPEND | 0644, 1);
                 break;
         }
     }
     return cmd;
 }
 
+/*
+ * parseexec - Parse a simple command with arguments
+ * 
+ * Handles simple commands like: ls -l /home
+ * Also processes argument escapes and environment variables
+ * 
+ * @input_ptr: Current position in input string
+ * @input_end: End of input string
+ * 
+ * Returns: Command tree for execution
+ */
 struct s_cmd *parseexec(char **input_ptr, char *input_end)
 {
     struct s_execcmd *cmd;
@@ -168,7 +237,7 @@ struct s_cmd *parseexec(char **input_ptr, char *input_end)
             fprintf(stderr, "missing file name\n");
             wtf();
         }
-        // Make a clean copy of the argument
+        // Process argument string
         len = eq - q;
         processed = process_escaped(q, len);
         if (!processed) {
@@ -184,7 +253,7 @@ struct s_cmd *parseexec(char **input_ptr, char *input_end)
             wtf();
         }
         cmd->av[argc] = expanded;
-        cmd->ev[argc] = cmd->av[argc] + strlen(expanded);  // Point to the null terminator
+        cmd->eav[argc] = cmd->av[argc] + strlen(expanded);  // Point to the null terminator
         fprintf(stderr, "DEBUG: parsed arg[%d] = '%s'\n", argc, cmd->av[argc]);
         argc++;
         if(argc >= MAXARGS) {
@@ -194,6 +263,6 @@ struct s_cmd *parseexec(char **input_ptr, char *input_end)
         ret = parse_redirs(ret, input_ptr, input_end);
     }
     cmd->av[argc] = 0;
-    cmd->ev[argc] = 0;
+    cmd->eav[argc] = 0;
     return ret;
 }

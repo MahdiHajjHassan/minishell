@@ -3,15 +3,33 @@
 #include <string.h>
 #include <ctype.h>
 
-// Global variable for exit status
+/* Global variable to store last command's exit status */
 int g_last_exit_status = 0;
 
+/*
+ * set_exit_status - Update the last command's exit status
+ * 
+ * Extracts the actual exit status from the wait status value
+ * and stores it in the global variable.
+ * 
+ * @status: Status value from wait() system call
+ */
 void set_exit_status(int status)
 {
     g_last_exit_status = WEXITSTATUS(status);
 }
 
-// Helper function to get the length of an environment variable name
+/*
+ * get_var_name_len - Get length of environment variable name
+ * 
+ * Determines the length of a variable name in a string.
+ * Handles special case of $? for exit status.
+ * Valid variable names contain alphanumeric chars and underscore.
+ * 
+ * @str: String starting with variable name
+ * 
+ * Returns: Length of variable name
+ */
 static size_t get_var_name_len(const char *str)
 {
     size_t len = 0;
@@ -24,7 +42,20 @@ static size_t get_var_name_len(const char *str)
     return len;
 }
 
-// Helper function to get environment variable value
+/*
+ * get_env_value - Get value of environment variable
+ * 
+ * Retrieves value of environment variable or exit status.
+ * Handles special $? variable for last command's exit status.
+ * 
+ * @name: Name of variable
+ * @name_len: Length of variable name
+ * 
+ * Returns:
+ *   - Newly allocated string with variable value
+ *   - Empty string if variable not found
+ *   - NULL on memory allocation failure
+ */
 static char *get_env_value(const char *name, size_t name_len)
 {
     char *temp;
@@ -51,6 +82,23 @@ static char *get_env_value(const char *name, size_t name_len)
     return value ? strdup(value) : strdup("");
 }
 
+/*
+ * expand_variables - Expand environment variables in string
+ * 
+ * Replaces all environment variables ($NAME) with their values.
+ * Also handles the special $? variable for exit status.
+ * 
+ * Example:
+ *   Input:  "Hello $USER, status=$?"
+ *   Output: "Hello john, status=0"
+ * 
+ * @str: Input string containing variables to expand
+ * @len: Length of input string
+ * 
+ * Returns:
+ *   - New string with variables expanded
+ *   - NULL on memory allocation failure
+ */
 char *expand_variables(const char *str, size_t len)
 {
     char *result;

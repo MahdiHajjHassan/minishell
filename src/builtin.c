@@ -3,7 +3,14 @@
 #include <string.h>
 #include <unistd.h>
 
-// Check if command is a built-in
+/*
+ * is_builtin - Check if a command is a shell built-in
+ * 
+ * @cmd: Command name to check
+ * 
+ * Returns:
+ *   1 if command is built-in, 0 otherwise
+ */
 int is_builtin(char *cmd)
 {
     return (!strcmp(cmd, "echo") || !strcmp(cmd, "cd") ||
@@ -12,7 +19,15 @@ int is_builtin(char *cmd)
             !strcmp(cmd, "exit"));
 }
 
-// Built-in: echo with -n option
+/*
+ * builtin_echo - Implement echo command
+ * Supports -n option to suppress trailing newline
+ * 
+ * @argv: Argument array (argv[0] is "echo")
+ * 
+ * Example: echo -n hello world
+ * Returns: 0 on success
+ */
 static int builtin_echo(char **argv)
 {
     int i = 1;
@@ -34,7 +49,18 @@ static int builtin_echo(char **argv)
     return 0;
 }
 
-// Built-in: cd with relative or absolute path
+/*
+ * builtin_cd - Change current directory
+ * Supports absolute and relative paths
+ * 
+ * @argv: Argument array (argv[0] is "cd")
+ * 
+ * Examples:
+ *   cd          - Change to HOME directory
+ *   cd path     - Change to specified path
+ * 
+ * Returns: 0 on success, 1 on error
+ */
 static int builtin_cd(char **argv)
 {
     if (!argv[1]) {
@@ -59,7 +85,13 @@ static int builtin_cd(char **argv)
     return 0;
 }
 
-// Built-in: pwd with no options
+/*
+ * builtin_pwd - Print current working directory
+ * 
+ * @argv: Argument array (argv[0] is "pwd")
+ * 
+ * Returns: 0 on success, 1 on error
+ */
 static int builtin_pwd(char **argv)
 {
     char cwd[1024];
@@ -73,7 +105,15 @@ static int builtin_pwd(char **argv)
     return 0;
 }
 
-// Built-in: export with no options
+/*
+ * builtin_export - Set environment variables
+ * Format: export NAME=value
+ * 
+ * @argv: Argument array (argv[0] is "export")
+ * 
+ * Example: export PATH=/usr/bin:/bin
+ * Returns: 0 on success, 1 on error
+ */
 static int builtin_export(char **argv)
 {
     int i = 1;
@@ -95,7 +135,14 @@ static int builtin_export(char **argv)
     return 0;
 }
 
-// Built-in: unset with no options
+/*
+ * builtin_unset - Remove environment variables
+ * 
+ * @argv: Argument array (argv[0] is "unset")
+ * 
+ * Example: unset PATH
+ * Returns: 0 on success, 1 on error
+ */
 static int builtin_unset(char **argv)
 {
     int i = 1;
@@ -110,7 +157,13 @@ static int builtin_unset(char **argv)
     return 0;
 }
 
-// Built-in: env with no options or arguments
+/*
+ * builtin_env - Print all environment variables
+ * 
+ * @argv: Argument array (argv[0] is "env")
+ * 
+ * Returns: 0 on success
+ */
 static int builtin_env(char **argv)
 {
     extern char **environ;
@@ -124,7 +177,15 @@ static int builtin_env(char **argv)
     return 0;
 }
 
-// Built-in: exit with no options
+/*
+ * builtin_exit - Exit the shell with optional status
+ * 
+ * @argv: Argument array (argv[0] is "exit")
+ * 
+ * Examples:
+ *   exit    - Exit with status 0
+ *   exit 1  - Exit with status 1
+ */
 static int builtin_exit(char **argv)
 {
     int status = 0;
@@ -136,7 +197,15 @@ static int builtin_exit(char **argv)
     exit(status);
 }
 
-// Handle built-in commands
+/*
+ * handle_builtin - Execute built-in commands
+ * 
+ * @argv: Argument array (argv[0] is the command name)
+ * 
+ * Returns:
+ *   - Return value from the built-in command
+ *   - 1 if command is not a built-in
+ */
 int handle_builtin(char **argv)
 {
     if (!argv[0])
