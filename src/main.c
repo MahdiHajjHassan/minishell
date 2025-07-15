@@ -1,6 +1,8 @@
 #include "minishell.h"
 #include <signal.h>
 #include <errno.h>
+#include <stdio.h>
+#include <unistd.h>
 
 /* Initialize global signal structure */
 t_sig g_sig = {0, 0, 0, 0};

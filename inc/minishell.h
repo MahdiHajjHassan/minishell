@@ -2,6 +2,9 @@
 #define MINISHELL_H
 
 #include "libft/libft.h"
+#include <signal.h>
+#include <stdio.h>
+#include <unistd.h>
 
 /* Signal handling structure */
 typedef struct s_sig
