@@ -3,6 +3,17 @@
 
 #include "libft/libft.h"
 
+/* Signal handling structure */
+typedef struct s_sig
+{
+    volatile sig_atomic_t sigint;    // SIGINT received
+    volatile sig_atomic_t sigquit;   // SIGQUIT received
+    volatile pid_t pid;              // Current foreground process PID
+    volatile int exit_status;        // Exit status from signal
+} t_sig;
+
+extern t_sig g_sig;  // Global signal state
+
 /* Command Types - Used to identify different command structures */
 #define EXEC 1   // Simple command execution (e.g., ls -l)
 #define REDIR 2  // Redirection (e.g., ls > file.txt)

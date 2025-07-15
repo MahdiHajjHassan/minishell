@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h> // Required for errno
+#include <signal.h>
 
 /*
  * find_command - Locate executable in PATH
@@ -61,6 +62,22 @@ char *find_command(const char *cmd)
 }
 
 /*
+ * reset_signals - Reset signals to default behavior for child processes
+ */
+static void reset_signals(void)
+{
+    struct sigaction sa;
+    
+    // Reset both SIGINT and SIGQUIT to default behavior
+    sa.sa_handler = SIG_DFL;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGQUIT, &sa, NULL);
+}
+
+/*
  * runcmd - Execute a command structure
  * 
  * This is the core execution function that handles all command types:
@@ -101,9 +118,12 @@ void runcmd(struct s_cmd *cmd)
             // Find and execute external command
             cmd_path = find_command(ex->av[0]);
             if (cmd_path) {
+                // Reset signals to default before execve
+                reset_signals();
+                
                 fprintf(stderr, "DEBUG: found command at '%s'\n", cmd_path);
                 execve(cmd_path, ex->av, environ);
-                perror("execve failed");  // Only reached if execve fails
+                perror("execve failed");
                 free(cmd_path);
             } else {
                 fprintf(stderr, "command not found: %s\n", ex->av[0]);
