@@ -5,6 +5,8 @@
 #include <string.h>
 #include <errno.h> // Required for errno
 #include <signal.h>
+#include <fcntl.h>
+#include <sys/wait.h>
 
 /*
  * find_command - Locate executable in PATH
@@ -108,11 +110,21 @@ void runcmd(struct s_cmd *cmd)
             ex = (struct s_execcmd *)cmd;
             if (ex->av[0] == 0)
                 exit(0);
-            fprintf(stderr, "DEBUG: executing command '%s'\n", ex->av[0]);
+            
+            // Expand variables in arguments before execution
+            for (int i = 0; ex->av[i]; i++) {
+                char *original = ex->av[i];
+                ex->av[i] = expand_variables(original, strlen(original));
+                free(original);
+            }
             
             // Check for builtin commands first
             if (is_builtin(ex->av[0])) {
-                exit(handle_builtin(ex->av));
+                int status = handle_builtin(ex->av);
+                set_exit_status(status);
+                if (cmd->type != LIST) // Only exit if not part of a list
+                    exit(status);
+                return;
             }
             
             // Find and execute external command
@@ -120,15 +132,14 @@ void runcmd(struct s_cmd *cmd)
             if (cmd_path) {
                 // Reset signals to default before execve
                 reset_signals();
-                
-                fprintf(stderr, "DEBUG: found command at '%s'\n", cmd_path);
                 execve(cmd_path, ex->av, environ);
                 perror("execve failed");
                 free(cmd_path);
+                exit(1);  // execve failed
             } else {
                 fprintf(stderr, "command not found: %s\n", ex->av[0]);
+                exit(127);  // Command not found exit code
             }
-            exit(127);  // Command not found exit code
 
         case REDIR:
             rdir = (struct s_redircmd *)cmd;
@@ -154,11 +165,58 @@ void runcmd(struct s_cmd *cmd)
 
         case LIST:
             list = (struct s_listcmd *)cmd;
-            if (forkk() == 0)
-                runcmd(list->left);
-            wait(0);
-            runcmd(list->right);
-            break;
+            // Handle left command
+            if (list->left->type == EXEC) {
+                ex = (struct s_execcmd *)list->left;
+                if (ex->av[0] && is_builtin(ex->av[0])) {
+                    // Expand variables for builtin
+                    for (int i = 0; ex->av[i]; i++) {
+                        char *original = ex->av[i];
+                        ex->av[i] = expand_variables(original, strlen(original));
+                        free(original);
+                    }
+                    int status = handle_builtin(ex->av);
+                    set_exit_status(status);
+                } else {
+                    int status;
+                    if (forkk() == 0)
+                        runcmd(list->left);
+                    wait(&status);
+                    if (WIFSIGNALED(status))
+                        set_exit_status(128 + WTERMSIG(status));
+                    else
+                        set_exit_status(WEXITSTATUS(status));
+                }
+            } else {
+                int status;
+                if (forkk() == 0)
+                    runcmd(list->left);
+                wait(&status);
+                if (WIFSIGNALED(status))
+                    set_exit_status(128 + WTERMSIG(status));
+                else
+                    set_exit_status(WEXITSTATUS(status));
+            }
+            
+            // Handle right command
+            if (list->right) {
+                if (list->right->type == EXEC) {
+                    ex = (struct s_execcmd *)list->right;
+                    if (ex->av[0] && is_builtin(ex->av[0])) {
+                        // Expand variables for builtin
+                        for (int i = 0; ex->av[i]; i++) {
+                            char *original = ex->av[i];
+                            ex->av[i] = expand_variables(original, strlen(original));
+                            free(original);
+                        }
+                        int status = handle_builtin(ex->av);
+                        set_exit_status(status);
+                        return;
+                    }
+                }
+                runcmd(list->right);
+            }
+            return;
 
         case PIPE:
             pipecmd = (struct s_pipecmd *)cmd;
@@ -208,5 +266,6 @@ void runcmd(struct s_cmd *cmd)
             fprintf(stderr, "unknown command type: %d\n", cmd->type);
             exit(1);
     }
-    exit(0);
+    if (cmd->type != LIST)  // Only exit if not part of a list
+        exit(0);
 }

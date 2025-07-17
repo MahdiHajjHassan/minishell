@@ -16,7 +16,7 @@ int g_last_exit_status = 0;
  */
 void set_exit_status(int status)
 {
-    g_last_exit_status = WEXITSTATUS(status);
+    g_last_exit_status = status;
 }
 
 /*

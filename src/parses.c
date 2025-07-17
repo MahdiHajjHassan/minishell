@@ -1,6 +1,7 @@
 #include "minishell.h"
 #include <stdio.h>
 #include <string.h>
+#include <fcntl.h>
 
 /*
  * process_escaped - Handle escaped characters in input
@@ -222,7 +223,6 @@ struct s_cmd *parseexec(char **input_ptr, char *input_end)
     int tok;
     size_t len;
     char *processed;
-    char *expanded;
 
     if (peek(input_ptr, input_end, "("))
         return parse_block(input_ptr, input_end);
@@ -237,6 +237,16 @@ struct s_cmd *parseexec(char **input_ptr, char *input_end)
             fprintf(stderr, "missing file name\n");
             wtf();
         }
+        
+        // Handle quoted strings
+        if (*q == '"' && *(eq-1) == '"') {
+            q++;
+            eq--;
+        } else if (*q == '\'' && *(eq-1) == '\'') {
+            q++;
+            eq--;
+        }
+        
         // Process argument string
         len = eq - q;
         processed = process_escaped(q, len);
@@ -245,16 +255,8 @@ struct s_cmd *parseexec(char **input_ptr, char *input_end)
             wtf();
         }
         
-        // Expand environment variables
-        expanded = expand_variables(processed, strlen(processed));
-        free(processed);
-        if (!expanded) {
-            fprintf(stderr, "malloc failed\n");
-            wtf();
-        }
-        cmd->av[argc] = expanded;
-        cmd->eav[argc] = cmd->av[argc] + strlen(expanded);  // Point to the null terminator
-        fprintf(stderr, "DEBUG: parsed arg[%d] = '%s'\n", argc, cmd->av[argc]);
+        cmd->av[argc] = processed;
+        cmd->eav[argc] = cmd->av[argc] + strlen(processed);  // Point to the null terminator
         argc++;
         if(argc >= MAXARGS) {
             fprintf(stderr, "too many args\n");

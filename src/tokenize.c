@@ -50,6 +50,7 @@ int gettoken(char **input_ptr, char *input_end, char **token_start, char **token
 {
     char *s;
     int ret;
+    char quote = 0;  // Track quote type (' or ")
 
     s = *input_ptr;
     // Skip leading whitespace
@@ -87,10 +88,18 @@ int gettoken(char **input_ptr, char *input_end, char **token_start, char **token
             /* FALLTHROUGH */
         default:
             ret = 'a';
-            // Continue until we hit a special character or whitespace
-            while (s < input_end && 
-                   ((!strchr(symbols, *s) || is_escaped(s, *input_ptr)) && 
-                    (!strchr(space, *s) || is_escaped(s, *input_ptr)))) {
+            // Continue until we hit a special character or whitespace, handling quotes
+            while (s < input_end) {
+                if (!quote && !is_escaped(s, *input_ptr)) {
+                    // Not in quotes and not escaped
+                    if (strchr(symbols, *s) || strchr(space, *s))
+                        break;
+                    if (*s == '"' || *s == '\'')
+                        quote = *s;
+                } else if (quote && !is_escaped(s, *input_ptr) && *s == quote) {
+                    // End of quoted section
+                    quote = 0;
+                }
                 s++;
             }
             break;
@@ -139,18 +148,20 @@ int peek(char **input_ptr, char *input_end, char *toks)
  */
 struct s_cmd *tokenize(const char *line)
 {
-    fprintf(stderr, "DEBUG: tokenizing line: '%s'\n", line);
-    char *input = strdup(line);
-    char *input_ptr = input;
-    char *input_end = input + strlen(input);
-    
-    // Trim trailing whitespace including newlines
-    while (input_end > input && strchr(space, *(input_end - 1)))
-        *(--input_end) = '\0';
-    
-    struct s_cmd *cmd = parse_line(&input_ptr, input_end);
+    char *input;
+    char *input_ptr;
+    char *input_end;
+    struct s_cmd *cmd;
+
+    input = strdup(line);
+    input_ptr = input;
+    input_end = input + strlen(input);
+    cmd = parse_line(&input_ptr, input_end);
+    peek(&input_ptr, input_end, "\0");
+    if (input_ptr != input_end) {
+        wtf();
+    }
     free(input);
-    fprintf(stderr, "DEBUG: tokenize complete\n");
     return cmd;
 }
 

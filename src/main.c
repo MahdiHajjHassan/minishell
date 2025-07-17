@@ -3,6 +3,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/wait.h>
+#include <string.h>
 
 /* Initialize global signal structure */
 t_sig g_sig = {0, 0, 0, 0};
@@ -135,6 +137,12 @@ int main(int argc, char **argv, char **envp)
         if (cmd->type == EXEC) {
             ecmd = (struct s_execcmd *)cmd;
             if (ecmd->av[0] && is_builtin(ecmd->av[0])) {
+                // Expand variables before executing builtin
+                for (int i = 0; ecmd->av[i]; i++) {
+                    char *original = ecmd->av[i];
+                    ecmd->av[i] = expand_variables(original, strlen(original));
+                    free(original);
+                }
                 status = handle_builtin(ecmd->av);
                 set_exit_status(status);
                 free(line);

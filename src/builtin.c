@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h> // Added for strerror
+#include <ctype.h>
 
 /*
  * is_builtin - Check if a command is a shell built-in
@@ -66,19 +68,19 @@ static int builtin_cd(char **argv)
     if (!argv[1]) {
         char *home = getenv("HOME");
         if (!home) {
-            fprintf(stderr, "cd: HOME not set\n");
+            fprintf(stderr, "minishell: cd: HOME not set\n");
             return 1;
         }
         if (chdir(home) != 0) {
-            perror("cd");
+            fprintf(stderr, "minishell: cd: %s: %s\n", home, strerror(errno));
             return 1;
         }
     } else if (argv[2]) {
-        fprintf(stderr, "cd: too many arguments\n");
+        fprintf(stderr, "minishell: cd: too many arguments\n");
         return 1;
     } else {
         if (chdir(argv[1]) != 0) {
-            perror("cd");
+            fprintf(stderr, "minishell: cd: %s: %s\n", argv[1], strerror(errno));
             return 1;
         }
     }
@@ -118,16 +120,30 @@ static int builtin_export(char **argv)
 {
     int i = 1;
     char *equals;
+    char *name;
+    char *value;
 
     while (argv[i]) {
         equals = strchr(argv[i], '=');
         if (!equals) {
-            fprintf(stderr, "export: invalid format: %s\n", argv[i]);
+            fprintf(stderr, "minishell: export: invalid format: %s\n", argv[i]);
             return 1;
         }
+        name = argv[i];
         *equals = '\0';  // Split string at '='
-        if (setenv(argv[i], equals + 1, 1) != 0) {
-            perror("export");
+        value = equals + 1;
+        
+        // Remove surrounding quotes if present
+        if (*value == '"' && value[strlen(value)-1] == '"') {
+            value++;
+            value[strlen(value)-1] = '\0';
+        } else if (*value == '\'' && value[strlen(value)-1] == '\'') {
+            value++;
+            value[strlen(value)-1] = '\0';
+        }
+        
+        if (setenv(name, value, 1) != 0) {
+            fprintf(stderr, "minishell: export: %s\n", strerror(errno));
             return 1;
         }
         i++;
@@ -189,8 +205,20 @@ static int builtin_env(char **argv)
 static int builtin_exit(char **argv)
 {
     int status = 0;
+    int i;
 
     if (argv[1]) {
+        i = 0;
+        // Check if argument is numeric
+        if (argv[1][i] == '-' || argv[1][i] == '+')
+            i++;
+        while (argv[1][i]) {
+            if (!isdigit(argv[1][i])) {
+                fprintf(stderr, "minishell: exit: %s: numeric argument required\n", argv[1]);
+                exit(255);
+            }
+            i++;
+        }
         status = atoi(argv[1]);
     }
     printf("exit\n");
