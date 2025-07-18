@@ -114,34 +114,95 @@ char *expand_variables(const char *str, size_t len)
         
     while (i < len)
     {
-        if (str[i] == '$' && i + 1 < len && 
-            (isalnum(str[i + 1]) || str[i + 1] == '_' || str[i + 1] == '?'))
+        if (str[i] == '$' && i + 1 < len)
         {
-            i++; // Skip the $
-            var_name_len = get_var_name_len(str + i);
-            env_value = get_env_value(str + i, var_name_len);
-            
-            if (env_value)
-            {
-                size_t value_len = strlen(env_value);
-                // Ensure we have enough space
-                if (j + value_len >= alloc_size)
+            if (str[i + 1] == '{') {
+                // Handle ${variable} syntax
+                i += 2; // Skip ${
+                size_t start = i;
+                
+                // Find the closing }
+                while (i < len && str[i] != '}')
+                    i++;
+                
+                if (i >= len || str[i] != '}') {
+                    // No closing brace found, treat as literal
+                    result[j++] = '$';
+                    result[j++] = '{';
+                    i = start;
+                    continue;
+                }
+                
+                var_name_len = i - start;
+                if (var_name_len > 0) {
+                    env_value = get_env_value(str + start, var_name_len);
+                    
+                    if (env_value)
+                    {
+                        size_t value_len = strlen(env_value);
+                        // Ensure we have enough space
+                        if (j + value_len >= alloc_size)
+                        {
+                            alloc_size = (j + value_len) * 2;
+                            char *new_result = realloc(result, alloc_size);
+                            if (!new_result)
+                            {
+                                free(result);
+                                free(env_value);
+                                return NULL;
+                            }
+                            result = new_result;
+                        }
+                        strcpy(result + j, env_value);
+                        j += value_len;
+                        free(env_value);
+                    }
+                }
+                i++; // Skip the closing }
+            }
+            else if (isalnum(str[i + 1]) || str[i + 1] == '_' || str[i + 1] == '?') {
+                // Handle $variable syntax
+                i++; // Skip the $
+                var_name_len = get_var_name_len(str + i);
+                env_value = get_env_value(str + i, var_name_len);
+                
+                if (env_value)
                 {
-                    alloc_size = (j + value_len) * 2;
+                    size_t value_len = strlen(env_value);
+                    // Ensure we have enough space
+                    if (j + value_len >= alloc_size)
+                    {
+                        alloc_size = (j + value_len) * 2;
+                        char *new_result = realloc(result, alloc_size);
+                        if (!new_result)
+                        {
+                            free(result);
+                            free(env_value);
+                            return NULL;
+                        }
+                        result = new_result;
+                    }
+                    strcpy(result + j, env_value);
+                    j += value_len;
+                    free(env_value);
+                }
+                i += var_name_len;
+            }
+            else {
+                // $ not followed by valid variable character, treat as literal
+                if (j + 1 >= alloc_size)
+                {
+                    alloc_size *= 2;
                     char *new_result = realloc(result, alloc_size);
                     if (!new_result)
                     {
                         free(result);
-                        free(env_value);
                         return NULL;
                     }
                     result = new_result;
                 }
-                strcpy(result + j, env_value);
-                j += value_len;
-                free(env_value);
+                result[j++] = str[i++];
             }
-            i += var_name_len;
         }
         else
         {

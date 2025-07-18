@@ -31,6 +31,7 @@ static void sigint_handler(int signo)
 {
     (void)signo;
     if (g_sig.pid == 0) {
+        write(STDERR_FILENO, "\b\b  \b\b", 6);  // Erase ^C characters
         write(STDERR_FILENO, "\n", 1);
         display_prompt();  // Redisplay prompt after Ctrl-C
         g_sig.exit_status = 1;
@@ -75,30 +76,80 @@ static void setup_signals(void)
 }
 
 /*
- * readline_helper - Read a line of input from the user
+ * readline_helper - Read a line of input from the user with proper Ctrl+D handling
  */
 char *readline_helper(void)
 {
-    char    *buf;
-    size_t  size;
-    ssize_t read;
-
-    buf = NULL;
-    size = 0;
+    char    *buf = NULL;
+    size_t  capacity = 128;
+    size_t  len = 0;
+    int     c;
+    
+    buf = malloc(capacity);
+    if (!buf)
+        return (NULL);
+    
     display_prompt();
     
-    read = getline(&buf, &size, stdin);
-    if (read == -1) {
-        if (feof(stdin)) {
-            if (isatty(STDIN_FILENO))
-                printf("exit\n");
-            free(buf);
-            exit(0);
+    while (1)
+    {
+        c = getchar();
+        
+        if (c == EOF)
+        {
+            // Ctrl+D pressed
+            if (len == 0)
+            {
+                // Empty prompt - quit the shell
+                if (isatty(STDIN_FILENO))
+                    printf("exit\n");
+                free(buf);
+                exit(g_last_exit_status);
+            }
+            // Non-empty prompt - clear EOF state and return current buffer
+            clearerr(stdin);
+            buf[len] = '\0';
+            
         }
-        free(buf);
-        return NULL;
+        
+        if (c == '\n')
+        {
+            // End of line
+            buf[len] = '\0';
+            return (buf);
+        }
+        
+        // Handle backspace
+        if (c == 127 || c == 8) // DEL or BS
+        {
+            if (len > 0)
+            {
+                len--;
+                // Visual feedback for backspace
+                if (isatty(STDIN_FILENO))
+                {
+                    printf("\b \b");
+                    fflush(stdout);
+                }
+            }
+            continue;
+        }
+        
+        // Regular character
+        if (len + 1 >= capacity)
+        {
+            capacity *= 2;
+            char *new_buf = realloc(buf, capacity);
+            if (!new_buf)
+            {
+                free(buf);
+                return (NULL);
+            }
+            buf = new_buf;
+        }
+        
+        buf[len++] = c;
     }
-    return buf;
 }
 
 /*
@@ -137,12 +188,6 @@ int main(int argc, char **argv, char **envp)
         if (cmd->type == EXEC) {
             ecmd = (struct s_execcmd *)cmd;
             if (ecmd->av[0] && is_builtin(ecmd->av[0])) {
-                // Expand variables before executing builtin
-                for (int i = 0; ecmd->av[i]; i++) {
-                    char *original = ecmd->av[i];
-                    ecmd->av[i] = expand_variables(original, strlen(original));
-                    free(original);
-                }
                 status = handle_builtin(ecmd->av);
                 set_exit_status(status);
                 free(line);

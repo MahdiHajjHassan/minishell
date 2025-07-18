@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <ctype.h>
 
 /*
  * process_escaped - Handle escaped characters in input
@@ -45,6 +46,8 @@ static char* process_escaped(const char* input, size_t len)
     output[j] = '\0';
     return output;
 }
+
+
 
 /*
  * parse_pipe - Parse a pipeline of commands
@@ -191,15 +194,265 @@ struct s_cmd *parse_redirs(struct s_cmd *cmd, char **input_ptr, char *input_end)
                 break;
             case '>':  // Output redirection (truncate)
                 cmd = redircmd(cmd, file, file + strlen(file), 
-                             O_WRONLY | O_CREAT | O_TRUNC | 0644, 1);
+                             O_WRONLY | O_CREAT | O_TRUNC, 1);
                 break;
             case '+':  // Output redirection (append)
                 cmd = redircmd(cmd, file, file + strlen(file),
-                             O_WRONLY | O_CREAT | O_APPEND | 0644, 1);
+                             O_WRONLY | O_CREAT | O_APPEND, 1);
+                break;
+            case 'h':  // Here document
+                {
+                    // Check if delimiter is quoted
+                    char *delimiter = file;
+                    int expand_vars = 1;  // Default: expand variables
+                    
+                    // If delimiter is quoted, remove quotes and disable expansion
+                    if ((*delimiter == '"' && delimiter[strlen(delimiter)-1] == '"') ||
+                        (*delimiter == '\'' && delimiter[strlen(delimiter)-1] == '\'')) {
+                        expand_vars = 0;
+                        delimiter = strdup(delimiter + 1);
+                        delimiter[strlen(delimiter)-1] = '\0';
+                    } else {
+                        delimiter = strdup(delimiter);
+                    }
+                    
+                    // Create a temporary file to store here document content
+                    char temp_filename[] = "/tmp/minishell_heredoc_XXXXXX";
+                    int temp_fd = mkstemp(temp_filename);
+                    
+                    if (temp_fd < 0) {
+                        fprintf(stderr, "mkstemp failed\n");
+                        wtf();
+                    }
+                    
+                    // Read lines until we find the delimiter
+                    char *line = NULL;
+                    size_t len = 0;
+                    ssize_t read;
+                    
+                    printf("> ");
+                    fflush(stdout);
+                    
+                    while ((read = getline(&line, &len, stdin)) != -1) {
+                        // Remove newline for comparison
+                        if (line[read - 1] == '\n') {
+                            line[read - 1] = '\0';
+                            read--;
+                        }
+                        
+                        // Check if this is the delimiter
+                        if (strcmp(line, delimiter) == 0) {
+                            break;
+                        }
+                        
+                        // Process the line based on expansion setting
+                        char *processed_line;
+                        if (expand_vars) {
+                            processed_line = expand_variables(line, strlen(line));
+                        } else {
+                            processed_line = strdup(line);
+                        }
+                        
+                        // Write line to temp file (restore newline)
+                        write(temp_fd, processed_line, strlen(processed_line));
+                        write(temp_fd, "\n", 1);
+                        
+                        free(processed_line);
+                        printf("> ");
+                        fflush(stdout);
+                    }
+                    
+                    free(line);
+                    free(delimiter);
+                    close(temp_fd);
+                    
+                    // Use the temp file as input redirection
+                    cmd = redircmd(cmd, strdup(temp_filename), strdup(temp_filename) + strlen(temp_filename), O_RDONLY, 0);
+                }
                 break;
         }
     }
     return cmd;
+}
+
+/*
+ * process_quotes_robust - Robust quote processing with concatenation support
+ * 
+ * Handles complex quote scenarios including:
+ * - Quote concatenation: 'a'"b"'c' -> abc
+ * - Mixed quotes with variables: '"'"$USER"'"' -> "mahdi"
+ * - Proper variable expansion in different quote contexts
+ * - Edge cases like empty quotes, unmatched quotes
+ * 
+ * @input: Input string with quotes
+ * @len: Length of input string
+ * 
+ * Returns: Processed string with quotes handled and variables expanded
+ */
+static char *process_quotes_robust(char *input, int len)
+{
+    char *result = malloc(len * 8 + 1);  // Extra space for expansions
+    if (!result) return NULL;
+    
+    char *out = result;
+    char *in = input;
+    char *end = input + len;
+    char quote_char = 0;
+    int in_quotes = 0;
+    
+    while (in < end) {
+        if (!in_quotes) {
+            // Not currently in quotes
+            if (*in == '"') {
+                quote_char = '"';
+                in_quotes = 1;
+                in++;
+            } else if (*in == '\'') {
+                quote_char = '\'';
+                in_quotes = 1;
+                in++;
+            } else {
+                // Unquoted character - handle escapes and variable expansion
+                if (*in == '\\' && (in + 1) < end) {
+                    // Handle escape sequences in unquoted text
+                    char next_char = *(in + 1);
+                    switch (next_char) {
+                        case 'n': *out++ = '\n'; break;
+                        case 't': *out++ = '\t'; break;
+                        case 'r': *out++ = '\r'; break;
+                        case 'v': *out++ = '\v'; break;
+                        case 'b': *out++ = '\b'; break;
+                        case 'f': *out++ = '\f'; break;
+                        case 'a': *out++ = '\a'; break;
+                        case '\\': *out++ = '\\'; break;
+                        default: *out++ = next_char; break;
+                    }
+                    in += 2;
+                } else if (*in == '$') {
+                    // Variable expansion outside quotes
+                    char *var_start = in;
+                    char *var_end = in + 1;
+                    
+                    if (var_end < end && *var_end == '{') {
+                        // ${var} format
+                        var_end++;
+                        while (var_end < end && *var_end != '}') {
+                            var_end++;
+                        }
+                        if (var_end < end && *var_end == '}') {
+                            var_end++;
+                        }
+                    } else if (var_end < end && (isalnum(*var_end) || *var_end == '_')) {
+                        // $var format
+                        while (var_end < end && (isalnum(*var_end) || *var_end == '_')) {
+                            var_end++;
+                        }
+                    }
+                    
+                    if (var_end > var_start + 1) {
+                        // We have a variable to expand
+                        char var_buffer[256];
+                        int var_len = var_end - var_start;
+                        if (var_len < 255) {
+                            strncpy(var_buffer, var_start, var_len);
+                            var_buffer[var_len] = '\0';
+                            
+                            char *expanded = expand_variables(var_buffer, var_len);
+                            if (expanded) {
+                                strcpy(out, expanded);
+                                out += strlen(expanded);
+                                free(expanded);
+                            }
+                            in = var_end;
+                        } else {
+                            *out++ = *in++;
+                        }
+                    } else {
+                        *out++ = *in++;
+                    }
+                } else {
+                    *out++ = *in++;
+                }
+            }
+        } else {
+            // Currently in quotes
+            if (*in == quote_char) {
+                // End of current quote
+                in_quotes = 0;
+                quote_char = 0;
+                in++;
+            } else {
+                // Character inside quotes
+                if (quote_char == '"' && *in == '\\' && (in + 1) < end) {
+                    // Handle escape sequences inside double quotes
+                    char next_char = *(in + 1);
+                    if (next_char == '"' || next_char == '\\' || next_char == '$') {
+                        // Escaped special characters - treat as literal
+                        *out++ = next_char;
+                        in += 2;  // Skip both \ and the escaped character
+                    } else {
+                        // Not a special escape sequence, keep the backslash
+                        *out++ = *in++;
+                    }
+                } else if (quote_char == '"' && *in == '$') {
+                    // Variable expansion inside double quotes
+                    char *var_start = in;
+                    char *var_end = in + 1;
+                    
+                    if (var_end < end && *var_end == '{') {
+                        // ${var} format
+                        var_end++;
+                        while (var_end < end && *var_end != '}') {
+                            var_end++;
+                        }
+                        if (var_end < end && *var_end == '}') {
+                            var_end++;
+                        }
+                    } else if (var_end < end && (isalnum(*var_end) || *var_end == '_')) {
+                        // $var format
+                        while (var_end < end && (isalnum(*var_end) || *var_end == '_')) {
+                            var_end++;
+                        }
+                    }
+                    
+                    if (var_end > var_start + 1) {
+                        // We have a variable to expand
+                        char var_buffer[256];
+                        int var_len = var_end - var_start;
+                        if (var_len < 255) {
+                            strncpy(var_buffer, var_start, var_len);
+                            var_buffer[var_len] = '\0';
+                            
+                            char *expanded = expand_variables(var_buffer, var_len);
+                            if (expanded) {
+                                strcpy(out, expanded);
+                                out += strlen(expanded);
+                                free(expanded);
+                            }
+                            in = var_end;
+                        } else {
+                            *out++ = *in++;
+                        }
+                    } else {
+                        *out++ = *in++;
+                    }
+                } else {
+                    // Regular character inside quotes (no expansion in single quotes)
+                    *out++ = *in++;
+                }
+            }
+        }
+    }
+    
+    // Check for unclosed quotes
+    if (in_quotes) {
+        free(result);
+        fprintf(stderr, "minishell: syntax error: unclosed quote\n");
+        return NULL;
+    }
+    
+    *out = '\0';
+    return result;
 }
 
 /*
@@ -222,7 +475,8 @@ struct s_cmd *parseexec(char **input_ptr, char *input_end)
     int argc = 0;
     int tok;
     size_t len;
-    char *processed;
+    char *expanded;
+
 
     if (peek(input_ptr, input_end, "("))
         return parse_block(input_ptr, input_end);
@@ -238,25 +492,54 @@ struct s_cmd *parseexec(char **input_ptr, char *input_end)
             wtf();
         }
         
-        // Handle quoted strings
-        if (*q == '"' && *(eq-1) == '"') {
-            q++;
-            eq--;
-        } else if (*q == '\'' && *(eq-1) == '\'') {
-            q++;
-            eq--;
-        }
-        
-        // Process argument string
         len = eq - q;
-        processed = process_escaped(q, len);
-        if (!processed) {
-            fprintf(stderr, "malloc failed\n");
+        // Skip process_escaped and handle all escaping in quote processing
+        // processed = process_escaped(q, len);
+        // if (!processed) {
+        //     fprintf(stderr, "malloc failed\n");
+        //     wtf();
+        // }
+        
+        // Use robust quote processing that handles all edge cases
+        expanded = process_quotes_robust(q, len);
+        if (!expanded) {
+            // Error already printed by process_quotes_robust
             wtf();
         }
         
-        cmd->av[argc] = processed;
-        cmd->eav[argc] = cmd->av[argc] + strlen(processed);  // Point to the null terminator
+        // Check if this is a variable assignment (contains '=')
+        if (strchr(expanded, '=') != NULL && argc == 0) {
+            // This might be a variable assignment
+            char *equals = strchr(expanded, '=');
+            char *name = expanded;
+            
+            // Check if everything before '=' is a valid variable name
+            int is_valid_var = 1;
+            for (char *p = name; p < equals; p++) {
+                if (!isalnum(*p) && *p != '_') {
+                    is_valid_var = 0;
+                    break;
+                }
+            }
+            
+            if (is_valid_var && name < equals) {
+                // This is a variable assignment
+                *equals = '\0';  // Split at '='
+                char *value = equals + 1;
+                
+                if (setenv(name, value, 1) != 0) {
+                    fprintf(stderr, "setenv failed\n");
+                    wtf();
+                }
+                free(expanded);
+                
+                // Continue parsing to see if there's a command after the assignment
+                continue;
+            }
+        }
+        
+        // Regular argument
+        cmd->av[argc] = expanded;
         argc++;
         if(argc >= MAXARGS) {
             fprintf(stderr, "too many args\n");
@@ -265,6 +548,5 @@ struct s_cmd *parseexec(char **input_ptr, char *input_end)
         ret = parse_redirs(ret, input_ptr, input_end);
     }
     cmd->av[argc] = 0;
-    cmd->eav[argc] = 0;
     return ret;
 }
