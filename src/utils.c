@@ -106,13 +106,6 @@ struct s_cmd* nulterm(struct s_cmd *cmd)
             // Recursively handle background command
             nulterm(bcmd->cmd);
             break;
-        case HEREDOC:
-            {
-                struct s_heredoccmd *hcmd = (struct s_heredoccmd *)cmd;
-                // Recursively handle the command
-                nulterm(hcmd->cmd);
-            }
-            break;
     }
     return cmd;
 }

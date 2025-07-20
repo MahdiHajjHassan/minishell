@@ -18,12 +18,11 @@ typedef struct s_sig
 extern t_sig g_sig;  // Global signal state
 
 /* Command Types - Used to identify different command structures */
-#define EXEC  1
-#define REDIR 2
-#define PIPE  3
-#define LIST  4
-#define BACK  5
-#define HEREDOC 6   // New type for here documents
+#define EXEC 1   // Simple command execution (e.g., ls -l)
+#define REDIR 2  // Redirection (e.g., ls > file.txt)
+#define PIPE 3   // Pipeline between commands (e.g., ls | grep .txt)
+#define LIST 4   // List of commands (e.g., ls ; pwd)
+#define BACK 5   // Background execution (e.g., sleep 10 &)
 
 /* Maximum number of arguments allowed in a command */
 #define MAXARGS 100
@@ -97,18 +96,6 @@ typedef struct s_backcmd
     struct s_cmd *cmd;     // The command to run in background
 }   t_backcmd;
 
-/*
- * Structure for here document redirection
- * Example: cat << EOF
- */
-typedef struct s_heredoccmd
-{
-    int type;              // Must be HEREDOC
-    struct s_cmd *cmd;     // The command to receive the input
-    char *delimiter;       // The delimiter string (e.g., "EOF")
-    int fd;               // File descriptor to redirect (usually 0 for stdin)
-}   t_heredoccmd;
-
 /* Basic shell functions */
 char *readline_helper(void);              // Read a line from input with prompt
 void *get_cwd(char *buf, size_t size);   // Get current working directory
@@ -133,7 +120,6 @@ struct s_cmd *parse_redirs(struct s_cmd *cmd,                   // Parse redirec
                           char **input_ptr, char *input_end);
 struct s_cmd *parse_block(char **input_ptr, char *input_end);   // Parse parenthesized block
 struct s_cmd *parse_line(char **input_ptr, char *input_end);    // Parse entire command line
-struct s_cmd* heredoccmd(struct s_cmd *subcmd, char *delimiter, int fd);
 
 /* Built-in command handling */
 int is_builtin(char *cmd);                                      // Check if command is built-in

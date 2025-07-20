@@ -111,6 +111,13 @@ void runcmd(struct s_cmd *cmd)
             if (ex->av[0] == 0)
                 exit(0);
             
+            // Expand variables in arguments before execution
+            for (int i = 0; ex->av[i]; i++) {
+                char *original = ex->av[i];
+                ex->av[i] = expand_variables(original, strlen(original));
+                free(original);
+            }
+            
             // Check for builtin commands first
             if (is_builtin(ex->av[0])) {
                 int status = handle_builtin(ex->av);
@@ -137,21 +144,22 @@ void runcmd(struct s_cmd *cmd)
         case REDIR:
             rdir = (struct s_redircmd *)cmd;
             close(rdir->fd);
-            int fd = open(rdir->file, rdir->mode, 0644);
-            if (fd < 0) {
-                fprintf(stderr, "open failed: %s: %s\n", rdir->file, strerror(errno));
-                exit(1);
+            if ((rdir->mode & O_CREAT) && (rdir->mode & (O_WRONLY | O_RDWR))) {
+                int fd = open(rdir->file, rdir->mode, 0644);
+                if (fd < 0) {
+                    fprintf(stderr, "open failed: %s: %s\n", rdir->file, strerror(errno));
+                    exit(1);
+                }
+                if (fd != rdir->fd) {
+                    dup2(fd, rdir->fd);
+                    close(fd);
+                }
+            } else {
+                if (open(rdir->file, rdir->mode) < 0) {
+                    fprintf(stderr, "open failed: %s: %s\n", rdir->file, strerror(errno));
+                    exit(1);
+                }
             }
-            if (fd != rdir->fd) {
-                dup2(fd, rdir->fd);
-                close(fd);
-            }
-            
-            // Clean up temporary heredoc files
-            if (strstr(rdir->file, "/tmp/minishell_heredoc_") != NULL) {
-                unlink(rdir->file);
-            }
-            
             runcmd(rdir->cmd);
             break;
 
@@ -161,6 +169,12 @@ void runcmd(struct s_cmd *cmd)
             if (list->left->type == EXEC) {
                 ex = (struct s_execcmd *)list->left;
                 if (ex->av[0] && is_builtin(ex->av[0])) {
+                    // Expand variables for builtin
+                    for (int i = 0; ex->av[i]; i++) {
+                        char *original = ex->av[i];
+                        ex->av[i] = expand_variables(original, strlen(original));
+                        free(original);
+                    }
                     int status = handle_builtin(ex->av);
                     set_exit_status(status);
                 } else {
@@ -189,6 +203,12 @@ void runcmd(struct s_cmd *cmd)
                 if (list->right->type == EXEC) {
                     ex = (struct s_execcmd *)list->right;
                     if (ex->av[0] && is_builtin(ex->av[0])) {
+                        // Expand variables for builtin
+                        for (int i = 0; ex->av[i]; i++) {
+                            char *original = ex->av[i];
+                            ex->av[i] = expand_variables(original, strlen(original));
+                            free(original);
+                        }
                         int status = handle_builtin(ex->av);
                         set_exit_status(status);
                         return;
@@ -240,66 +260,6 @@ void runcmd(struct s_cmd *cmd)
                 exit(0);
             }
             wait(0);  // Wait for first child only
-            break;
-
-        case HEREDOC:
-            {
-                struct s_heredoccmd *hcmd = (struct s_heredoccmd *)cmd;
-                char temp_filename[] = "/tmp/minishell_heredoc_XXXXXX";
-                int temp_fd = mkstemp(temp_filename);
-                
-                if (temp_fd < 0) {
-                    perror("mkstemp failed");
-                    exit(1);
-                }
-                
-                // Read here document content and write to temp file
-                char *line = NULL;
-                size_t len = 0;
-                ssize_t read;
-                
-                printf("> ");
-                fflush(stdout);
-                
-                while ((read = getline(&line, &len, stdin)) != -1) {
-                    // Remove newline for comparison
-                    if (line[read - 1] == '\n') {
-                        line[read - 1] = '\0';
-                        read--;
-                    }
-                    
-                    // Check if this is the delimiter
-                    if (strcmp(line, hcmd->delimiter) == 0) {
-                        break;
-                    }
-                    
-                    // Write line to temp file (restore newline)
-                    line[read] = '\n';
-                    write(temp_fd, line, read + 1);
-                    
-                    printf("> ");
-                    fflush(stdout);
-                }
-                
-                free(line);
-                close(temp_fd);
-                
-                // Redirect stdin to the temp file
-                temp_fd = open(temp_filename, O_RDONLY);
-                if (temp_fd < 0) {
-                    perror("open temp file failed");
-                    exit(1);
-                }
-                
-                dup2(temp_fd, 0);
-                close(temp_fd);
-                
-                // Clean up temp file
-                unlink(temp_filename);
-                
-                // Run the command
-                runcmd(hcmd->cmd);
-            }
             break;
 
         default:

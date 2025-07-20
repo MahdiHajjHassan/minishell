@@ -72,11 +72,6 @@ int gettoken(char **input_ptr, char *input_end, char **token_start, char **token
             // Only treat as special if not escaped
             if (!is_escaped(s, *input_ptr)) {
                 s++;
-                // Handle << operator (here document)
-                if (ret == '<' && *s == '<' && !is_escaped(s, *input_ptr)) {
-                    ret = 'h'; // Use 'h' for here document
-                    s++;
-                }
                 break;
             }
             /* FALLTHROUGH */
