@@ -1,10 +1,4 @@
 #include "minishell.h"
-#include <signal.h>
-#include <errno.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <string.h>
 
 /* Initialize global signal structure */
 t_sig g_sig = {0, 0, 0, 0};
@@ -19,7 +13,6 @@ static void display_prompt(void)
     if (isatty(STDIN_FILENO)) {
         if (get_cwd(cwd, sizeof(cwd))) {
             printf("%s> ", cwd);
-            fflush(stdout);
         }
     }
 }
@@ -76,6 +69,75 @@ static void setup_signals(void)
 }
 
 /*
+ * handle_eof - Handle EOF (Ctrl+D) in input
+ * 
+ * @len: Current buffer length
+ * @buf: Input buffer
+ * 
+ * Returns: 1 if should quit, 0 if should continue
+ */
+static int handle_eof(size_t len, char *buf)
+{
+    if (len == 0)
+    {
+        // Empty prompt - quit the shell
+        if (isatty(STDIN_FILENO))
+            printf("exit\n");
+        free(buf);
+        exit(g_last_exit_status);
+    }
+    // Non-empty prompt - clear EOF state and return current buffer
+    clearerr(stdin);
+    return 0;
+}
+
+/*
+ * handle_backspace - Handle backspace key
+ * 
+ * @len: Current buffer length
+ * 
+ * Returns: Updated length
+ */
+static size_t handle_backspace(size_t len)
+{
+    if (len > 0)
+    {
+        len--;
+        // Visual feedback for backspace
+        if (isatty(STDIN_FILENO))
+        {
+                                printf("\b \b");
+        }
+    }
+    return len;
+}
+
+/*
+ * expand_buffer - Expand input buffer if needed
+ * 
+ * @buf: Current buffer
+ * @capacity: Current capacity
+ * @len: Current length
+ * 
+ * Returns: New buffer or NULL on failure
+ */
+static char *expand_buffer(char *buf, size_t *capacity, size_t len)
+{
+    if (len + 1 >= *capacity)
+    {
+        *capacity *= 2;
+        char *new_buf = realloc(buf, *capacity);
+        if (!new_buf)
+        {
+            free(buf);
+            return NULL;
+        }
+        buf = new_buf;
+    }
+    return buf;
+}
+
+/*
  * readline_helper - Read a line of input from the user with proper Ctrl+D handling
  */
 char *readline_helper(void)
@@ -97,19 +159,10 @@ char *readline_helper(void)
         
         if (c == EOF)
         {
-            // Ctrl+D pressed
-            if (len == 0)
-            {
-                // Empty prompt - quit the shell
-                if (isatty(STDIN_FILENO))
-                    printf("exit\n");
-                free(buf);
-                exit(g_last_exit_status);
-            }
-            // Non-empty prompt - clear EOF state and return current buffer
-            clearerr(stdin);
+            if (handle_eof(len, buf))
+                return NULL;
             buf[len] = '\0';
-            
+            return buf;
         }
         
         if (c == '\n')
@@ -122,31 +175,14 @@ char *readline_helper(void)
         // Handle backspace
         if (c == 127 || c == 8) // DEL or BS
         {
-            if (len > 0)
-            {
-                len--;
-                // Visual feedback for backspace
-                if (isatty(STDIN_FILENO))
-                {
-                    printf("\b \b");
-                    fflush(stdout);
-                }
-            }
+            len = handle_backspace(len);
             continue;
         }
         
         // Regular character
-        if (len + 1 >= capacity)
-        {
-            capacity *= 2;
-            char *new_buf = realloc(buf, capacity);
-            if (!new_buf)
-            {
-                free(buf);
-                return (NULL);
-            }
-            buf = new_buf;
-        }
+        buf = expand_buffer(buf, &capacity, len);
+        if (!buf)
+            return NULL;
         
         buf[len++] = c;
     }
