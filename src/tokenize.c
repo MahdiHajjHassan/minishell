@@ -1,4 +1,6 @@
 #include "minishell.h"
+#include <stdio.h>
+#include <string.h>
 
 /* Characters considered as whitespace */
 char   space[] = " \t\r\n\v";
@@ -57,24 +59,39 @@ int gettoken(char **input_ptr, char *input_end, char **token_start, char **token
     if (token_start)
         *token_start = s;
     ret = *s;
-    if (*s == 0)
+    switch (*s)
     {
-        // End of string
-    }
-    else if (*s == '|' || *s == '&' || *s == ';' || *s == '(' || *s == ')' || *s == '<')
-    {
-        // Only treat as special if not escaped
-        if (!is_escaped(s, *input_ptr)) {
-            s++;
-            // Handle << operator (here document)
-            if (ret == '<' && *s == '<' && !is_escaped(s, *input_ptr)) {
-                ret = 'h'; // Use 'h' for here document
+        case 0:
+            break;
+        case '|':
+        case '&':
+        case ';':
+        case '(':
+        case ')':
+        case '<':
+            // Only treat as special if not escaped
+            if (!is_escaped(s, *input_ptr)) {
                 s++;
+                // Handle << operator (here document)
+                if (ret == '<' && *s == '<' && !is_escaped(s, *input_ptr)) {
+                    ret = 'h'; // Use 'h' for here document
+                    s++;
+                }
+                break;
             }
-        }
-        else
-        {
-            // Escaped special character - treat as regular argument
+            /* FALLTHROUGH */
+        case '>':
+            if (!is_escaped(s, *input_ptr)) {
+                s++;
+                // Handle >> operator
+                if (*s == '>' && !is_escaped(s, *input_ptr)) {
+                    ret = '+';
+                    s++;
+                }
+                break;
+            }
+            /* FALLTHROUGH */
+        default:
             ret = 'a';
             // Continue until we hit a special character or whitespace, handling quotes
             while (s < input_end) {
@@ -90,55 +107,7 @@ int gettoken(char **input_ptr, char *input_end, char **token_start, char **token
                 }
                 s++;
             }
-        }
-    }
-    else if (*s == '>')
-    {
-        if (!is_escaped(s, *input_ptr)) {
-            s++;
-            // Handle >> operator
-            if (*s == '>' && !is_escaped(s, *input_ptr)) {
-                ret = '+';
-                s++;
-            }
-        }
-        else
-        {
-            // Escaped special character - treat as regular argument
-            ret = 'a';
-            // Continue until we hit a special character or whitespace, handling quotes
-            while (s < input_end) {
-                if (!quote && !is_escaped(s, *input_ptr)) {
-                    // Not in quotes and not escaped
-                    if (strchr(symbols, *s) || strchr(space, *s))
-                        break;
-                    if (*s == '"' || *s == '\'')
-                        quote = *s;
-                } else if (quote && !is_escaped(s, *input_ptr) && *s == quote) {
-                    // End of quoted section
-                    quote = 0;
-                }
-                s++;
-            }
-        }
-    }
-    else
-    {
-        ret = 'a';
-        // Continue until we hit a special character or whitespace, handling quotes
-        while (s < input_end) {
-            if (!quote && !is_escaped(s, *input_ptr)) {
-                // Not in quotes and not escaped
-                if (strchr(symbols, *s) || strchr(space, *s))
-                    break;
-                if (*s == '"' || *s == '\'')
-                    quote = *s;
-            } else if (quote && !is_escaped(s, *input_ptr) && *s == quote) {
-                // End of quoted section
-                quote = 0;
-            }
-            s++;
-        }
+            break;
     }
     if (token_end)
         *token_end = s;
@@ -189,9 +158,9 @@ struct s_cmd *tokenize(const char *line)
     char *input_end;
     struct s_cmd *cmd;
 
-    input = ft_strdup(line);
+    input = strdup(line);
     input_ptr = input;
-    input_end = input + ft_strlen(input);
+    input_end = input + strlen(input);
     cmd = parse_line(&input_ptr, input_end);
     peek(&input_ptr, input_end, "\0");
     if (input_ptr != input_end) {

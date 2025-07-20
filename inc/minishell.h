@@ -1,30 +1,10 @@
 #ifndef MINISHELL_H
 #define MINISHELL_H
 
+#include "libft/libft.h"
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <dirent.h>
-#include <string.h>
-#include <ctype.h>
-
-/* Libft helper functions (our implementations) */
-size_t ft_strlen(const char *s);
-char *ft_strchr(const char *s, int c);
-int ft_strncmp(const char *s1, const char *s2, size_t n);
-char *ft_strdup(const char *s);
-size_t ft_strlcpy(char *dst, const char *src, size_t size);
-size_t ft_strlcat(char *dst, const char *src, size_t size);
-int ft_atoi(const char *nptr);
-char *ft_itoa(int n);
-char *ft_strnstr(const char *haystack, const char *needle, size_t len);
 
 /* Signal handling structure */
 typedef struct s_sig
@@ -154,32 +134,11 @@ struct s_cmd *parse_redirs(struct s_cmd *cmd,                   // Parse redirec
 struct s_cmd *parse_block(char **input_ptr, char *input_end);   // Parse parenthesized block
 struct s_cmd *parse_line(char **input_ptr, char *input_end);    // Parse entire command line
 struct s_cmd* heredoccmd(struct s_cmd *subcmd, char *delimiter, int fd);
-char* process_escaped(const char* input, size_t len);          // Process escape sequences
 
 /* Built-in command handling */
 int is_builtin(char *cmd);                                      // Check if command is built-in
 int handle_builtin(char **argv);                                // Execute built-in command
 char *expand_variables(const char *str, size_t len);            // Expand environment variables
 void set_exit_status(int status);                              // Set last command exit status
-
-/* Individual builtin functions */
-int builtin_echo(char **argv);                                 // Echo command
-int builtin_cd(char **argv);                                   // Change directory
-int builtin_pwd(char **argv);                                  // Print working directory
-int builtin_export(char **argv);                               // Export environment variables
-int builtin_unset(char **argv);                                // Unset environment variables
-int builtin_env(char **argv);                                  // Print environment variables
-int builtin_exit(char **argv);                                 // Exit shell
-
-
-
-/* Internal command handler functions (not part of public interface) */
-char *find_command(const char *cmd);
-void handle_exec_cmd(struct s_cmd *cmd);
-void handle_redir_cmd(struct s_cmd *cmd);
-void handle_list_cmd(struct s_cmd *cmd);
-void handle_pipe_cmd(struct s_cmd *cmd);
-void handle_back_cmd(struct s_cmd *cmd);
-void handle_heredoc_cmd(struct s_cmd *cmd);
 
 #endif

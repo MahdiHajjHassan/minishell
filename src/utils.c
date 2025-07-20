@@ -76,48 +76,43 @@ struct s_cmd* nulterm(struct s_cmd *cmd)
 
     if (cmd == 0)
         return 0;
-    if (cmd->type == EXEC)
+    switch (cmd->type)
     {
-        ecmd = (struct s_execcmd *)cmd;
-        // Null terminate each argument string
-        i = 0;
-        while (ecmd->av[i])
-        {
-            *ecmd->eav[i] = 0;
-            i++;
-        }
-    }
-    else if (cmd->type == REDIR)
-    {
-        rcmd = (struct s_redircmd *)cmd;
-        nulterm(rcmd->cmd);
-        *rcmd->efile = 0;  // Null terminate filename
-    }
-    else if (cmd->type == PIPE)
-    {
-        pcmd = (struct s_pipecmd *)cmd;
-        // Recursively handle both sides of pipe
-        nulterm(pcmd->left);
-        nulterm(pcmd->right);
-    }
-    else if (cmd->type == LIST)
-    {
-        lcmd = (struct s_listcmd *)cmd;
-        // Recursively handle both commands in list
-        nulterm(lcmd->left);
-        nulterm(lcmd->right);
-    }
-    else if (cmd->type == BACK)
-    {
-        bcmd = (struct s_backcmd *)cmd;
-        // Recursively handle background command
-        nulterm(bcmd->cmd);
-    }
-    else if (cmd->type == HEREDOC)
-    {
-        struct s_heredoccmd *hcmd = (struct s_heredoccmd *)cmd;
-        // Recursively handle the command
-        nulterm(hcmd->cmd);
+        case EXEC:
+            ecmd = (struct s_execcmd *)cmd;
+            // Null terminate each argument string
+            for (i = 0; ecmd->av[i]; i++)
+                *ecmd->eav[i] = 0;
+            break;
+        case REDIR:
+            rcmd = (struct s_redircmd *)cmd;
+            nulterm(rcmd->cmd);
+            *rcmd->efile = 0;  // Null terminate filename
+            break;
+        case PIPE:
+            pcmd = (struct s_pipecmd *)cmd;
+            // Recursively handle both sides of pipe
+            nulterm(pcmd->left);
+            nulterm(pcmd->right);
+            break;
+        case LIST:
+            lcmd = (struct s_listcmd *)cmd;
+            // Recursively handle both commands in list
+            nulterm(lcmd->left);
+            nulterm(lcmd->right);
+            break;
+        case BACK:
+            bcmd = (struct s_backcmd *)cmd;
+            // Recursively handle background command
+            nulterm(bcmd->cmd);
+            break;
+        case HEREDOC:
+            {
+                struct s_heredoccmd *hcmd = (struct s_heredoccmd *)cmd;
+                // Recursively handle the command
+                nulterm(hcmd->cmd);
+            }
+            break;
     }
     return cmd;
 }

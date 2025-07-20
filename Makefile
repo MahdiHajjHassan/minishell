@@ -1,4 +1,4 @@
-CC = cc
+CC = gcc
 CFLAGS = -Wall -Wextra -Werror
 
 NAME = minishell
@@ -13,25 +13,30 @@ OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	$(CC) $(CFLAGS) -I$(INC_DIR) -o $@ $(OBJS)
+$(NAME): $(OBJS) $(LIBFT_DIR)/libft.a
+	$(CC) $(CFLAGS) -I$(INC_DIR) -I$(LIBFT_DIR) -L$(LIBFT_DIR) -lft -o $@ $(OBJS)
 
 # Special rule for runner.c to disable infinite recursion warning
 $(OBJ_DIR)/runner.o: $(SRC_DIR)/runner.c | $(OBJ_DIR)
-	$(CC) $(CFLAGS) -Wno-infinite-recursion -I$(INC_DIR) -c $< -o $@
+	$(CC) $(CFLAGS) -Wno-infinite-recursion -I$(INC_DIR) -I$(LIBFT_DIR) -c $< -o $@
 
 # General rule for other object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
+	$(CC) $(CFLAGS) -I$(INC_DIR) -I$(LIBFT_DIR) -c $< -o $@
 
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
+$(LIBFT_DIR)/libft.a:
+	$(MAKE) -C $(LIBFT_DIR)
+
 clean:
-	rm -rf $(OBJ_DIR)
+	rm -f $(OBJ_DIR)/*.o
+	$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean: clean
 	rm -f $(NAME)
+	$(MAKE) -C $(LIBFT_DIR) fclean
 
 re: fclean all
 
