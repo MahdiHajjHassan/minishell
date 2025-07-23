@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "*.dbclient-js": "javascript",
+    "libft.h": "c",
+    "minishell.h": "c"
+  }
+}
