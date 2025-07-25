@@ -57,15 +57,13 @@ static char	*create_heredoc_temp(char *delimiter, int expand_vars)
 	ssize_t	read_len;
 	int		line_pos;
 	int		c;
-		char *processed_line;
+	char	*processed_line;
 
-	// Create unique temp filename using simple approach
 	ft_strlcpy(temp_filename, "/tmp/minishell_heredoc_parse",
 		sizeof(temp_filename));
 	temp_fd = open(temp_filename, O_CREAT | O_EXCL | O_WRONLY, 0600);
 	if (temp_fd < 0)
 	{
-		// If file exists, try with different suffix
 		ft_strlcpy(temp_filename, "/tmp/minishell_heredoc_parse_tmp",
 			sizeof(temp_filename));
 		temp_fd = open(temp_filename, O_CREAT | O_WRONLY | O_TRUNC, 0600);
@@ -75,12 +73,10 @@ static char	*create_heredoc_temp(char *delimiter, int expand_vars)
 		fprintf(stderr, "temp file creation failed\n");
 		return (NULL);
 	}
-	// Read lines until we find the delimiter
 	printf("> ");
 	while (1)
 	{
 		line_pos = 0;
-		// Read line character by character using read()
 		while (line_pos < 1023)
 		{
 			read_len = read(0, &c, 1);
@@ -93,22 +89,13 @@ static char	*create_heredoc_temp(char *delimiter, int expand_vars)
 		if (read_len <= 0)
 			break ;
 		line[line_pos] = '\0';
-		// Check if this is the delimiter
 		if (ft_strlen(line) == ft_strlen(delimiter) && ft_strncmp(line,
 				delimiter, ft_strlen(delimiter)) == 0)
-		{
 			break ;
-		}
-		// Process the line based on expansion setting
 		if (expand_vars)
-		{
 			processed_line = expand_variables(line, ft_strlen(line));
-		}
 		else
-		{
 			processed_line = ft_strdup(line);
-		}
-		// Write line to temp file
 		write(temp_fd, processed_line, ft_strlen(processed_line));
 		write(temp_fd, "\n", 1);
 		free(processed_line);
@@ -130,10 +117,10 @@ static struct s_cmd	*handle_heredoc_redir(struct s_cmd *cmd, char *file)
 {
 	char	*delimiter;
 	char	*temp_filename;
+	int			expand_vars;
 
 	delimiter = file;
-	int expand_vars = 1; // Default: expand variables
-	// If delimiter is quoted, remove quotes and disable expansion
+	expand_variables = 1;
 	if ((*delimiter == '"' && delimiter[ft_strlen(delimiter) - 1] == '"')
 		|| (*delimiter == '\'' && delimiter[ft_strlen(delimiter) - 1] == '\''))
 	{
@@ -152,7 +139,6 @@ static struct s_cmd	*handle_heredoc_redir(struct s_cmd *cmd, char *file)
 		fprintf(stderr, "heredoc creation failed\n");
 		wtf();
 	}
-	// Use the temp file as input redirection
 	return (redircmd(cmd, temp_filename, temp_filename
 			+ ft_strlen(temp_filename), O_RDONLY, 0));
 }
@@ -174,13 +160,13 @@ static struct s_cmd	*handle_heredoc_redir(struct s_cmd *cmd, char *file)
 struct s_cmd	*parse_redirs(struct s_cmd *cmd, char **input_ptr,
 		char *input_end)
 {
-	int tok;
-	char *q;
-	char *eq;
-	char *file;
-	char *processed;
-	char *expanded;
-	size_t len;
+	int			tok;
+	char		*q;
+	char		*eq;
+	char		*file;
+	char		*processed;
+	char		*expanded;
+	size_t		len;
 
 	while (peek(input_ptr, input_end, "<>"))
 	{
@@ -190,7 +176,6 @@ struct s_cmd	*parse_redirs(struct s_cmd *cmd, char **input_ptr,
 			fprintf(stderr, "missing file name\n");
 			wtf();
 		}
-		// Handle quoted filenames
 		if (*q == '"' && *(eq - 1) == '"')
 		{
 			q++;
@@ -203,8 +188,6 @@ struct s_cmd	*parse_redirs(struct s_cmd *cmd, char **input_ptr,
 			fprintf(stderr, "malloc failed\n");
 			wtf();
 		}
-
-		// Expand environment variables in filename
 		expanded = expand_variables(processed, ft_strlen(processed));
 		free(processed);
 		if (!expanded)
@@ -213,20 +196,19 @@ struct s_cmd	*parse_redirs(struct s_cmd *cmd, char **input_ptr,
 			wtf();
 		}
 		file = expanded;
-
-		if (tok == '<') // Input redirection
+		if (tok == '<')
 		{
 			cmd = handle_input_redir(cmd, file);
 		}
-		else if (tok == '>') // Output redirection (truncate)
+		else if (tok == '>')
 		{
 			cmd = handle_output_redir(cmd, file);
 		}
-		else if (tok == '+') // Output redirection (append)
+		else if (tok == '+')
 		{
 			cmd = handle_append_redir(cmd, file);
 		}
-		else if (tok == 'h') // Here document
+		else if (tok == 'h')
 		{
 			cmd = handle_heredoc_redir(cmd, file);
 		}

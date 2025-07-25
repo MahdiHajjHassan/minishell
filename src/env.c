@@ -32,7 +32,7 @@ static size_t	get_var_name_len(const char *str)
 	size_t	len;
 
 	len = 0;
-	if (*str == '?') // Special case for $?
+	if (*str == '?')
 		return (1);
 	while (str[len] && (isalnum(str[len]) || str[len] == '_'))
 		len++;
@@ -61,13 +61,11 @@ static char	*get_env_value(const char *name, size_t name_len)
 
 	if (name_len == 1 && *name == '?')
 	{
-		// Handle $? special case
 		num = ft_itoa(g_last_exit_status);
 		if (!num)
 			return (ft_strdup("0"));
 		return (num);
 	}
-	// Create null-terminated copy of variable name
 	temp = malloc(name_len + 1);
 	if (!temp)
 		return (NULL);
@@ -75,7 +73,10 @@ static char	*get_env_value(const char *name, size_t name_len)
 	temp[name_len] = '\0';
 	value = getenv(temp);
 	free(temp);
-	return (value ? ft_strdup(value) : ft_strdup(""));
+	if (value)
+		return (ft_strdup(value));
+	else
+		return (ft_strdup(""));
 }
 
 /*
@@ -99,14 +100,12 @@ static size_t	handle_brace_expansion(const char *str, size_t i, size_t len,
 	size_t	value_len;
 	char	*new_result;
 
-	i += 2; // Skip ${
+	i += 2;
 	start = i;
-	// Find the closing }
 	while (i < len && str[i] != '}')
 		i++;
 	if (i >= len || str[i] != '}')
 	{
-		// No closing brace found, treat as literal
 		(*result)[(*j)++] = '$';
 		(*result)[(*j)++] = '{';
 		return (start);
@@ -118,7 +117,6 @@ static size_t	handle_brace_expansion(const char *str, size_t i, size_t len,
 		if (env_value)
 		{
 			value_len = ft_strlen(env_value);
-			// Ensure we have enough space
 			if (*j + value_len >= *alloc_size)
 			{
 				*alloc_size = (*j + value_len) * 2;
@@ -136,7 +134,7 @@ static size_t	handle_brace_expansion(const char *str, size_t i, size_t len,
 			free(env_value);
 		}
 	}
-	i++; // Skip the closing }
+	i++;
 	return (i);
 }
 
@@ -159,13 +157,12 @@ static size_t	handle_simple_expansion(const char *str, size_t i,
 	size_t	value_len;
 	char	*new_result;
 
-	i++; // Skip the $
+	i++;
 	var_name_len = get_var_name_len(str + i);
 	env_value = get_env_value(str + i, var_name_len);
 	if (env_value)
 	{
 		value_len = ft_strlen(env_value);
-		// Ensure we have enough space
 		if (*j + value_len >= *alloc_size)
 		{
 			*alloc_size = (*j + value_len) * 2;
@@ -208,12 +205,9 @@ static size_t	handle_variable_expansion(const char *str, size_t i, size_t len,
 		return (handle_brace_expansion(str, i, len, result, j, alloc_size));
 	}
 	else if (isalnum(str[i + 1]) || str[i + 1] == '_' || str[i + 1] == '?')
-	{
 		return (handle_simple_expansion(str, i, result, j, alloc_size));
-	}
 	else
 	{
-		// $ not followed by valid variable character, treat as literal
 		if (*j + 1 >= *alloc_size)
 		{
 			*alloc_size *= 2;
@@ -258,7 +252,7 @@ static size_t	handle_literal_character(const char *str, size_t i,
 		*result = new_result;
 	}
 	(*result)[(*j)++] = str[i++];
-	return i;
+	return (i);
 }
 
 /*
@@ -280,15 +274,18 @@ static size_t	handle_literal_character(const char *str, size_t i,
  */
 char	*expand_variables(const char *str, size_t len)
 {
-	char *result;
-	size_t i = 0;
-	size_t j = 0;
-	size_t alloc_size = len * 2; // Initial estimate for space needed
+	char	*result;
+	char	*final;
+	size_t	i;
+	size_t	j;
+	size_t	alloc_size;
 
+	i = 0;
+	j = 0;
+	alloc_size = len * 2;
 	result = malloc(alloc_size);
 	if (!result)
-		return NULL;
-
+		return (NULL);
 	while (i < len)
 	{
 		if (str[i] == '$' && i + 1 < len)
@@ -296,18 +293,19 @@ char	*expand_variables(const char *str, size_t len)
 			i = handle_variable_expansion(str, i, len, &result, &j,
 					&alloc_size);
 			if (i == 0)
-				return NULL;
+				return (NULL);
 		}
 		else
 		{
 			i = handle_literal_character(str, i, &result, &j, &alloc_size);
 			if (i == 0)
-				return NULL;
+				return (NULL);
 		}
 	}
 	result[j] = '\0';
-
-	// Shrink to actual size needed
-	char *final = realloc(result, j + 1);
-	return final ? final : result;
+	final = realloc(result, j + 1);
+	if (final)
+		return (final);
+	else
+		return (result);
 }

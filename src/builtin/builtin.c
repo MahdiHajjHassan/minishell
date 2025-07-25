@@ -10,7 +10,9 @@
  */
 static int	str_equals(const char *s1, const char *s2)
 {
-	size_t len1, len2;
+	size_t	len1;
+	size_t	len2;
+
 	if (!s1 || !s2)
 		return (s1 == s2);
 	len1 = ft_strlen(s1);
@@ -44,11 +46,11 @@ int	is_builtin(char *cmd)
  *   - Return value from the built-in command
  *   - 1 if command is not a built-in
  */
+
 int	handle_builtin(char **argv)
 {
 	if (!argv[0])
 		return (1);
-
 	if (str_equals(argv[0], "echo"))
 		return (builtin_echo(argv));
 	if (str_equals(argv[0], "cd"))
@@ -63,6 +65,5 @@ int	handle_builtin(char **argv)
 		return (builtin_env(argv));
 	if (str_equals(argv[0], "exit"))
 		return (builtin_exit(argv));
-
-	return (1); // Not a builtin command
+	return (1);
 }

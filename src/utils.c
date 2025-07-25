@@ -81,7 +81,6 @@ struct s_cmd	*nulterm(struct s_cmd *cmd)
 	if (cmd->type == EXEC)
 	{
 		ecmd = (struct s_execcmd *)cmd;
-		// Null terminate each argument string
 		i = 0;
 		while (ecmd->av[i])
 		{
@@ -93,32 +92,28 @@ struct s_cmd	*nulterm(struct s_cmd *cmd)
 	{
 		rcmd = (struct s_redircmd *)cmd;
 		nulterm(rcmd->cmd);
-		*rcmd->efile = 0; // Null terminate filename
+		*rcmd->efile = 0;
 	}
 	else if (cmd->type == PIPE)
 	{
 		pcmd = (struct s_pipecmd *)cmd;
-		// Recursively handle both sides of pipe
 		nulterm(pcmd->left);
 		nulterm(pcmd->right);
 	}
 	else if (cmd->type == LIST)
 	{
 		lcmd = (struct s_listcmd *)cmd;
-		// Recursively handle both commands in list
 		nulterm(lcmd->left);
 		nulterm(lcmd->right);
 	}
 	else if (cmd->type == BACK)
 	{
 		bcmd = (struct s_backcmd *)cmd;
-		// Recursively handle background command
 		nulterm(bcmd->cmd);
 	}
 	else if (cmd->type == HEREDOC)
 	{
 		hcmd = (struct s_heredoccmd *)cmd;
-		// Recursively handle the command
 		nulterm(hcmd->cmd);
 	}
 	return (cmd);

@@ -70,7 +70,7 @@ struct s_cmd	*parse_line(char **input_ptr, char *input_end)
  */
 struct s_cmd	*parse_block(char **input_ptr, char *input_end)
 {
-	struct s_cmd *cmd;
+	struct s_cmd	*cmd;
 
 	if (!peek(input_ptr, input_end, "("))
 	{

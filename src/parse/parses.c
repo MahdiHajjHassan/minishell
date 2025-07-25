@@ -16,12 +16,10 @@ static int	handle_variable_assignment(char *expanded, int argc)
 	int		is_valid_var;
 	char	*p;
 
-	// Check if this is a variable assignment (contains '=')
 	if (ft_strchr(expanded, '=') == NULL || argc != 0)
 		return (0);
 	equals = ft_strchr(expanded, '=');
 	name = expanded;
-	// Check if everything before '=' is a valid variable name
 	is_valid_var = 1;
 	p = name;
 	while (p < equals)
@@ -35,8 +33,7 @@ static int	handle_variable_assignment(char *expanded, int argc)
 	}
 	if (!is_valid_var || name >= equals)
 		return (0);
-	// This is a variable assignment
-	*equals = '\0'; // Split at '='
+	*equals = '\0'
 	value = equals + 1;
 	if (setenv(name, value, 1) != 0)
 	{
@@ -70,17 +67,18 @@ static char	*process_quotes_robust(char *input, int len)
 	char	next_char;
 	char	*var_start;
 	char	*var_end;
-						char var_buffer[256];
+	char	var_buffer[256];
 	int		var_len;
 	char	*expanded;
 	char	next_char;
 	char	*var_start;
 	char	*var_end;
-						char var_buffer[256];
+	char	var_buffer[256];
 	int		var_len;
 	char	*expanded;
+	char	*result;
 
-	char *result = malloc(len * 8 + 1); // Extra space for expansions
+	result = malloc(len * 8 + 1);
 	if (!result)
 		return (NULL);
 	out = result;
@@ -92,7 +90,6 @@ static char	*process_quotes_robust(char *input, int len)
 	{
 		if (!in_quotes)
 		{
-			// Not currently in quotes
 			if (*in == '"')
 			{
 				quote_char = '"';
@@ -107,10 +104,8 @@ static char	*process_quotes_robust(char *input, int len)
 			}
 			else
 			{
-				// Unquoted character - handle escapes and variable expansion
 				if (*in == '\\' && (in + 1) < end)
-				{
-					// Handle escape sequences in unquoted text
+				{		
 					next_char = *(in + 1);
 					if (next_char == 'n')
 						*out++ = '\n';
@@ -134,12 +129,10 @@ static char	*process_quotes_robust(char *input, int len)
 				}
 				else if (*in == '$')
 				{
-					// Variable expansion outside quotes
 					var_start = in;
 					var_end = in + 1;
 					if (var_end < end && *var_end == '{')
 					{
-						// ${var} format
 						var_end++;
 						while (var_end < end && *var_end != '}')
 						{
@@ -153,7 +146,6 @@ static char	*process_quotes_robust(char *input, int len)
 					else if (var_end < end && (isalnum(*var_end)
 							|| *var_end == '_'))
 					{
-						// $var format
 						while (var_end < end && (isalnum(*var_end)
 								|| *var_end == '_'))
 						{
@@ -162,7 +154,6 @@ static char	*process_quotes_robust(char *input, int len)
 					}
 					if (var_end > var_start + 1)
 					{
-						// We have a variable to expand
 						var_len = var_end - var_start;
 						if (var_len < 255)
 						{
@@ -182,54 +173,43 @@ static char	*process_quotes_robust(char *input, int len)
 						}
 					}
 					else
-					{
 						*out++ = *in++;
-					}
 				}
 				else
-				{
 					*out++ = *in++;
-				}
 			}
 		}
 		else
 		{
-			// Currently in quotes
 			if (*in == quote_char)
 			{
-				// End of current quote
 				in_quotes = 0;
 				quote_char = 0;
 				in++;
 			}
 			else
 			{
-				// Character inside quotes
 				if (quote_char == '"' && *in == '\\' && (in + 1) < end)
 				{
-					// Handle escape sequences inside double quotes
 					next_char = *(in + 1);
 					if (next_char == '"' || next_char == '\\'
 						|| next_char == '$')
-					{
-						// Escaped special characters - treat as literal
+					{	
 						*out++ = next_char;
-						in += 2; // Skip both \ and the escaped character
+						in += 2
 					}
 					else
 					{
-						// Not a special escape sequence, keep the backslash
+				
 						*out++ = *in++;
 					}
 				}
 				else if (quote_char == '"' && *in == '$')
 				{
-					// Variable expansion inside double quotes
 					var_start = in;
 					var_end = in + 1;
 					if (var_end < end && *var_end == '{')
 					{
-						// ${var} format
 						var_end++;
 						while (var_end < end && *var_end != '}')
 						{
@@ -243,7 +223,6 @@ static char	*process_quotes_robust(char *input, int len)
 					else if (var_end < end && (isalnum(*var_end)
 							|| *var_end == '_'))
 					{
-						// $var format
 						while (var_end < end && (isalnum(*var_end)
 								|| *var_end == '_'))
 						{
@@ -252,7 +231,6 @@ static char	*process_quotes_robust(char *input, int len)
 					}
 					if (var_end > var_start + 1)
 					{
-						// We have a variable to expand
 						var_len = var_end - var_start;
 						if (var_len < 255)
 						{
@@ -277,14 +255,10 @@ static char	*process_quotes_robust(char *input, int len)
 					}
 				}
 				else
-				{
-					// Regular character inside quotes (no expansion in single quotes)
 					*out++ = *in++;
-				}
 			}
 		}
 	}
-	// Check for unclosed quotes
 	if (in_quotes)
 	{
 		free(result);
@@ -335,16 +309,12 @@ struct s_cmd	*parseexec(char **input_ptr, char *input_end)
 		len = eq - q;
 		expanded = process_quotes_robust(q, len);
 		if (!expanded)
-		{
-			// Error already printed by process_quotes_robust
 			wtf();
-		}
 		if (handle_variable_assignment(expanded, argc))
 		{
 			free(expanded);
 			continue ;
 		}
-		// Regular argument
 		cmd->av[argc] = expanded;
 		argc++;
 		if (argc >= MAXARGS)

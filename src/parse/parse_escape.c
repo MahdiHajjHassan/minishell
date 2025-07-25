@@ -47,25 +47,24 @@ static int	handle_escape_char(char input, char *output, size_t *j)
  */
 char	*process_escaped(const char *input, size_t len)
 {
-	char *output = malloc(len + 1);
-	size_t i = 0;
-	size_t j = 0;
+	char	*output;
+	size_t	i;
+	size_t	j;
 
+	output = malloc(len + 1);
+	i = 0;
+	j = 0;
 	if (!output)
 		return (NULL);
-
 	while (i < len)
 	{
 		if (input[i] == '\\' && i + 1 < len)
 		{
-			// Handle escaped characters
 			handle_escape_char(input[i + 1], output, &j);
 			i += 2;
 		}
 		else
-		{
 			output[j++] = input[i++];
-		}
 	}
 	output[j] = '\0';
 	return (output);

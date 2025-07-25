@@ -1,10 +1,10 @@
 #include "minishell.h"
 
 /* Characters considered as whitespace */
-char			space[] = " \t\r\n\v";
+char			g_space[] = " \t\r\n\v";
 
 /* Special shell syntax characters */
-char			symbols[] = "<>|&;()";
+char			g_symbols[] = "<>|&;()";
 
 /*
  * is_escaped - Check if a character is escaped with backslash
@@ -28,7 +28,6 @@ static int	is_escaped(const char *s, const char *start)
 		s--;
 	}
 	return (count % 2);
-		// Odd number of backslashes means the character is escaped
 }
 
 /*
@@ -53,55 +52,37 @@ int	gettoken(char **input_ptr, char *input_end, char **token_start,
 {
 	char	*s;
 	int		ret;
+	char	quote;
 
-	char quote = 0; // Track quote type (' or ")
+	quote = 0;
 	s = *input_ptr;
-	// Skip leading whitespace
-	while (s < input_end && strchr(space, *s))
+	while (s < input_end && strchr(g_space, *s))
 		s++;
 	if (token_start)
 		*token_start = s;
 	ret = *s;
 	if (*s == 0)
 	{
-		// End of string
 	}
 	else if (*s == '|' || *s == '&' || *s == ';' || *s == '(' || *s == ')'
 		|| *s == '<')
 	{
-		// Only treat as special if not escaped
 		if (!is_escaped(s, *input_ptr))
-		{
 			s++;
-			// Handle << operator (here document)
-			if (ret == '<' && *s == '<' && !is_escaped(s, *input_ptr))
-			{
-				ret = 'h'; // Use 'h' for here document
-				s++;
-			}
-		}
 		else
 		{
-			// Escaped special character - treat as regular argument
-			ret = 'a';
-			// Continue until we hit a special character or whitespace,
-				handling quotes
-			while (s < input_end)
+			if (*s == '>' && !is_escaped(s, *input_ptr))
 			{
-				if (!quote && !is_escaped(s, *input_ptr))
-				{
-					// Not in quotes and not escaped
-					if (strchr(symbols, *s) || strchr(space, *s))
-						break ;
-					if (*s == '"' || *s == '\'')
-						quote = *s;
-				}
-				else if (quote && !is_escaped(s, *input_ptr) && *s == quote)
-				{
-					// End of quoted section
-					quote = 0;
-				}
 				s++;
+				if (*s == '>' && !is_escaped(s, *input_ptr))
+				{
+					ret = '+';
+					s++;
+				}
+			}
+			else
+			{
+				ret = 'a';
 			}
 		}
 	}
@@ -110,7 +91,6 @@ int	gettoken(char **input_ptr, char *input_end, char **token_start,
 		if (!is_escaped(s, *input_ptr))
 		{
 			s++;
-			// Handle >> operator
 			if (*s == '>' && !is_escaped(s, *input_ptr))
 			{
 				ret = '+';
@@ -119,56 +99,29 @@ int	gettoken(char **input_ptr, char *input_end, char **token_start,
 		}
 		else
 		{
-			// Escaped special character - treat as regular argument
 			ret = 'a';
-			// Continue until we hit a special character or whitespace,
-				handling quotes
-			while (s < input_end)
-			{
-				if (!quote && !is_escaped(s, *input_ptr))
-				{
-					// Not in quotes and not escaped
-					if (strchr(symbols, *s) || strchr(space, *s))
-						break ;
-					if (*s == '"' || *s == '\'')
-						quote = *s;
-				}
-				else if (quote && !is_escaped(s, *input_ptr) && *s == quote)
-				{
-					// End of quoted section
-					quote = 0;
-				}
-				s++;
-			}
 		}
 	}
 	else
 	{
 		ret = 'a';
-		// Continue until we hit a special character or whitespace,
-			handling quotes
 		while (s < input_end)
 		{
 			if (!quote && !is_escaped(s, *input_ptr))
 			{
-				// Not in quotes and not escaped
-				if (strchr(symbols, *s) || strchr(space, *s))
+				if (strchr(g_symbols, *s) || strchr(g_space, *s))
 					break ;
 				if (*s == '"' || *s == '\'')
 					quote = *s;
 			}
 			else if (quote && !is_escaped(s, *input_ptr) && *s == quote)
-			{
-				// End of quoted section
 				quote = 0;
-			}
 			s++;
 		}
 	}
 	if (token_end)
 		*token_end = s;
-	// Skip trailing whitespace
-	while (s < input_end && strchr(space, *s))
+	while (s < input_end && strchr(g_space, *s))
 		s++;
 	*input_ptr = s;
 	return (ret);
@@ -191,7 +144,7 @@ int	peek(char **input_ptr, char *input_end, char *toks)
 	char	*s;
 
 	s = *input_ptr;
-	while (s < input_end && strchr(space, *s))
+	while (s < input_end && strchr(g_space, *s))
 		s++;
 	return (*s && strchr(toks, *s));
 }

@@ -172,14 +172,14 @@ char	*ft_itoa(int n)
 	temp = n;
 	// Handle special case
 	if (n == 0)
-		return ft_strdup("0");
+		return (ft_strdup("0"));
 	// Calculate length
 	if (n < 0)
 	{
 		len = 1; // for minus sign
 		temp = -temp;
 		if (n == -2147483648) // Handle INT_MIN
-			return ft_strdup("-2147483648");
+			return (ft_strdup("-2147483648"));
 	}
 	while (temp > 0)
 	{
@@ -204,7 +204,7 @@ char	*ft_itoa(int n)
 	}
 	if (n < 0)
 		result[0] = '-';
-	return result;
+	return (result);
 }
 
 /*
@@ -212,30 +212,25 @@ char	*ft_itoa(int n)
  */
 char	*ft_strnstr(const char *haystack, const char *needle, size_t len)
 {
-	size_t needle_len;
-	size_t i;
-	size_t j;
+	size_t	needle_len;
+	size_t	i;
+	size_t	j;
 
 	if (!haystack || !needle)
-		return NULL;
-
+		return (NULL);
 	needle_len = ft_strlen(needle);
 	if (needle_len == 0)
-		return (char *)haystack;
-
+		return ((char *)haystack);
 	i = 0;
 	while (i < len && haystack[i])
 	{
 		j = 0;
 		while (j < needle_len && i + j < len && haystack[i + j] && haystack[i
-			+ j] == needle[j])
+				+ j] == needle[j])
 			j++;
-
 		if (j == needle_len)
-			return (char *)(haystack + i);
-
+			return ((char *)(haystack + i));
 		i++;
 	}
-
-	return NULL;
+	return (NULL);
 }

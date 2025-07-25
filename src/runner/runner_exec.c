@@ -23,7 +23,6 @@ char	*find_command(const char *cmd)
 	path = getenv("PATH");
 	if (!path)
 		return (NULL);
-	// Handle absolute or relative paths
 	if (cmd[0] == '/' || cmd[0] == '.')
 	{
 		if (access(cmd, X_OK) == 0)
@@ -34,7 +33,10 @@ char	*find_command(const char *cmd)
 	while (curr && *curr)
 	{
 		next = ft_strchr(curr, ':');
-		len = next ? (size_t)(next - curr) : ft_strlen(curr);
+		if (next)
+			len = (size_t)(next - curr);
+		else
+			len = ft_strlen(curr);
 		if (len + ft_strlen(cmd) + 2 > sizeof(full_path))
 		{
 			fprintf(stderr, "Path too long: %.*s/%s\n", (int)len, curr, cmd);
@@ -59,7 +61,6 @@ static void	reset_signals(void)
 {
 	struct sigaction	sa;
 
-	// Reset both SIGINT and SIGQUIT to default behavior
 	sa.sa_handler = SIG_DFL;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_RESTART;
@@ -82,30 +83,27 @@ void	handle_exec_cmd(struct s_cmd *cmd)
 	ex = (struct s_execcmd *)cmd;
 	if (ex->av[0] == 0)
 		exit(0);
-	// Check for builtin commands first
 	if (is_builtin(ex->av[0]))
 	{
 		status = handle_builtin(ex->av);
 		set_exit_status(status);
-		if (cmd->type != LIST) // Only exit if not part of a list
+		if (cmd->type != LIST)
 			exit(status);
 		return ;
 	}
-	// Find and execute external command
 	cmd_path = find_command(ex->av[0]);
 	if (cmd_path)
 	{
-		// Reset signals to default before execve
 		reset_signals();
 		execve(cmd_path, ex->av, environ);
 		perror("execve failed");
 		free(cmd_path);
-		exit(1); // execve failed
+		exit(1);
 	}
 	else
 	{
 		fprintf(stderr, "command not found: %s\n", ex->av[0]);
-		exit(127); // Command not found exit code
+		exit(127);
 	}
 }
 
@@ -116,9 +114,10 @@ void	handle_exec_cmd(struct s_cmd *cmd)
  */
 void	handle_redir_cmd(struct s_cmd *cmd)
 {
-	struct s_redircmd *rdir = (struct s_redircmd *)cmd;
-	int fd;
+	struct s_redircmd	*rdir;
+	int					fd;
 
+	rdir = (struct s_redircmd *)cmd;
 	close(rdir->fd);
 	fd = open(rdir->file, rdir->mode, 0644);
 	if (fd < 0)
@@ -131,13 +130,10 @@ void	handle_redir_cmd(struct s_cmd *cmd)
 		dup2(fd, rdir->fd);
 		close(fd);
 	}
-
-	// Clean up temporary heredoc files
 	if (ft_strnstr(rdir->file, "/tmp/minishell_heredoc_",
 			ft_strlen(rdir->file)) != NULL)
 	{
 		unlink(rdir->file);
 	}
-
 	runcmd(rdir->cmd);
 }

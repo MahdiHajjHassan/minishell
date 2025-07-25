@@ -14,7 +14,7 @@
  */
 struct s_cmd	*heredoccmd(struct s_cmd *subcmd, char *delimiter, int fd)
 {
-	struct s_heredoccmd *cmd;
+	struct s_heredoccmd	*cmd;
 
 	cmd = malloc(sizeof(*cmd));
 	memset(cmd, 0, sizeof(*cmd));

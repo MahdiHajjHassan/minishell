@@ -44,7 +44,7 @@ int	builtin_pwd(char **argv)
 {
 	char	cwd[1024];
 
-	(void)argv; // Unused parameter
+	(void)argv;
 	if (!getcwd(cwd, sizeof(cwd)))
 	{
 		perror("pwd");
@@ -67,7 +67,7 @@ int	builtin_env(char **argv)
 	int			i;
 
 	i = 0;
-	(void)argv; // Unused parameter
+	(void)argv;
 	while (environ[i])
 	{
 		printf("%s\n", environ[i]);
@@ -112,8 +112,9 @@ static int	check_numeric_arg(char *arg)
  */
 int	builtin_exit(char **argv)
 {
-	int status = 0;
+	int	status;
 
+	status = 0;
 	if (argv[1])
 	{
 		if (!check_numeric_arg(argv[1]))

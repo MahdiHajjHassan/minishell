@@ -16,38 +16,26 @@ void	runcmd(struct s_cmd *cmd)
 {
 	if (cmd == 0)
 		exit(0);
-
 	if (cmd->type == EXEC)
-	{
 		handle_exec_cmd(cmd);
-	}
 	else if (cmd->type == REDIR)
-	{
 		handle_redir_cmd(cmd);
-	}
 	else if (cmd->type == LIST)
 	{
 		handle_list_cmd(cmd);
 		return ;
 	}
 	else if (cmd->type == PIPE)
-	{
 		handle_pipe_cmd(cmd);
-	}
 	else if (cmd->type == BACK)
-	{
 		handle_back_cmd(cmd);
-	}
 	else if (cmd->type == HEREDOC)
-	{
 		handle_heredoc_cmd(cmd);
-	}
 	else
 	{
 		fprintf(stderr, "unknown command type: %d\n", cmd->type);
 		exit(1);
 	}
-
-	if (cmd->type != LIST) // Only exit if not part of a list
+	if (cmd->type != LIST)
 		exit(0);
 }

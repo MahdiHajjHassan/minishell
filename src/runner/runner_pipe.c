@@ -50,7 +50,6 @@ void	handle_list_cmd(struct s_cmd *cmd)
 	int					status;
 
 	list = (struct s_listcmd *)cmd;
-	// Handle left command
 	if (list->left->type == EXEC)
 	{
 		ex = (struct s_execcmd *)list->left;
@@ -63,7 +62,6 @@ void	handle_list_cmd(struct s_cmd *cmd)
 	{
 		handle_fork_and_wait(list->left);
 	}
-	// Handle right command
 	if (list->right)
 	{
 		if (list->right->type == EXEC)
@@ -87,16 +85,15 @@ void	handle_list_cmd(struct s_cmd *cmd)
  */
 void	handle_pipe_cmd(struct s_cmd *cmd)
 {
-	struct s_pipecmd *pipecmd = (struct s_pipecmd *)cmd;
-	int p[2];
+	struct s_pipecmd	*pipecmd;
+	int				p[2];
 
+	pipecmd = (struct s_pipecmd *)cmd;
 	if (pipe(p) < 0)
 	{
 		perror("pipe failed");
 		wtf();
 	}
-
-	// Left side of pipe
 	if (forkk() == 0)
 	{
 		close(1);
@@ -105,8 +102,6 @@ void	handle_pipe_cmd(struct s_cmd *cmd)
 		close(p[1]);
 		runcmd(pipecmd->left);
 	}
-
-	// Right side of pipe
 	if (forkk() == 0)
 	{
 		close(0);
@@ -115,8 +110,6 @@ void	handle_pipe_cmd(struct s_cmd *cmd)
 		close(p[1]);
 		runcmd(pipecmd->right);
 	}
-
-	// Parent closes pipe and waits
 	close(p[0]);
 	close(p[1]);
 	wait(0);

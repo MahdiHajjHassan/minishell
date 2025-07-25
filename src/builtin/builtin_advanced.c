@@ -97,9 +97,8 @@ int	builtin_export(char **argv)
 			return (1);
 		}
 		name = argv[i];
-		*equals = '\0'; // Split string at '='
+		*equals = '\0';
 		value = equals + 1;
-		// Remove surrounding quotes if present
 		value = remove_quotes(value);
 		if (setenv(name, value, 1) != 0)
 		{
@@ -121,8 +120,9 @@ int	builtin_export(char **argv)
  */
 int	builtin_unset(char **argv)
 {
-	int i = 1;
+	int	i;
 
+	i = 1;
 	while (argv[i])
 	{
 		if (unsetenv(argv[i]) != 0)
