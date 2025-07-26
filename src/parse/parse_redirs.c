@@ -117,20 +117,24 @@ static struct s_cmd	*handle_heredoc_redir(struct s_cmd *cmd, char *file)
 {
 	char	*delimiter;
 	char	*temp_filename;
-	int			expand_vars;
+	int		expand_vars;
 
 	delimiter = file;
-	expand_variables = 1;
+	expand_vars = 1;
 	if ((*delimiter == '"' && delimiter[ft_strlen(delimiter) - 1] == '"')
 		|| (*delimiter == '\'' && delimiter[ft_strlen(delimiter) - 1] == '\''))
 	{
 		expand_vars = 0;
 		delimiter = ft_strdup(delimiter + 1);
+		if (!delimiter)
+			wtf();
 		delimiter[ft_strlen(delimiter) - 1] = '\0';
 	}
 	else
 	{
 		delimiter = ft_strdup(delimiter);
+		if (!delimiter)
+			wtf();
 	}
 	temp_filename = create_heredoc_temp(delimiter, expand_vars);
 	free(delimiter);
@@ -139,9 +143,11 @@ static struct s_cmd	*handle_heredoc_redir(struct s_cmd *cmd, char *file)
 		fprintf(stderr, "heredoc creation failed\n");
 		wtf();
 	}
-	return (redircmd(cmd, temp_filename, temp_filename
-			+ ft_strlen(temp_filename), O_RDONLY, 0));
+	return (redircmd(cmd, temp_filename,
+			temp_filename + ft_strlen(temp_filename),
+			O_RDONLY, 0));
 }
+
 
 /*
  * parse_redirs - Parse input/output redirections

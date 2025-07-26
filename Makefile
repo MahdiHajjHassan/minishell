@@ -1,38 +1,49 @@
+# Compiler and flags
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
 
+# Directories
+SRC_DIR = src
+OBJ_DIR = obj
+INC_DIR = inc
+LIBFT_DIR = ./inc/libft
+
+# Output binary
 NAME = minishell
 
-SRC_DIR = src
-INC_DIR = inc
-LIBFT_DIR = inc/libft
-OBJ_DIR = obj
+# Source files (recursively all .c files in src/)
+SRCS = $(shell find $(SRC_DIR) -name '*.c')
 
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
+# Object files (obj/foo.o corresponding to src/foo.c)
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
+# Default target
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	$(CC) $(CFLAGS) -I$(INC_DIR) -o $@ $(OBJS)
+# Link final binary
+$(NAME): $(OBJS) $(LIBFT_DIR)/libft.a
+	$(CC) $(CFLAGS) $(OBJS) -I$(INC_DIR) -L$(LIBFT_DIR) -lft -o $(NAME)
 
-# Special rule for runner.c to disable infinite recursion warning
-$(OBJ_DIR)/runner.o: $(SRC_DIR)/runner.c | $(OBJ_DIR)
-	$(CC) $(CFLAGS) -Wno-infinite-recursion -I$(INC_DIR) -c $< -o $@
-
-# General rule for other object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+# Compile each source to object
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
 
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
+# Compile libft
+$(LIBFT_DIR)/libft.a:
+	$(MAKE) -C $(LIBFT_DIR)
 
+# Remove object files
 clean:
 	rm -rf $(OBJ_DIR)
+	$(MAKE) -C $(LIBFT_DIR) clean
 
+# Remove binary and object files
 fclean: clean
 	rm -f $(NAME)
+	$(MAKE) -C $(LIBFT_DIR) fclean
 
+# Recompile everything
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re bonus

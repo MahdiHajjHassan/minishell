@@ -1,185 +1,154 @@
 #ifndef MINISHELL_H
-#define MINISHELL_H
+# define MINISHELL_H
 
-#include <signal.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <dirent.h>
-#include <string.h>
-#include <ctype.h>
+# include <ctype.h>
+# include <dirent.h>
+# include <errno.h>
+# include <fcntl.h>
+# include <signal.h>
+# include <stddef.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <string.h>
+# include <sys/stat.h>
+# include <sys/types.h>
+# include <sys/wait.h>
+# include <unistd.h>
 
-/* Libft helper functions (our implementations) */
-size_t ft_strlen(const char *s);
-char *ft_strchr(const char *s, int c);
-int ft_strncmp(const char *s1, const char *s2, size_t n);
-char *ft_strdup(const char *s);
-size_t ft_strlcpy(char *dst, const char *src, size_t size);
-size_t ft_strlcat(char *dst, const char *src, size_t size);
-int ft_atoi(const char *nptr);
-char *ft_itoa(int n);
-char *ft_strnstr(const char *haystack, const char *needle, size_t len);
+/* Libft helper functions */
+size_t			ft_strlen(const char *s);
+char			*ft_strchr(const char *s, int c);
+int				ft_strncmp(const char *s1, const char *s2, size_t n);
+char			*ft_strdup(const char *s);
+size_t			ft_strlcpy(char *dst, const char *src, size_t size);
+size_t			ft_strlcat(char *dst, const char *src, size_t size);
+int				ft_atoi(const char *nptr);
+char			*ft_itoa(int n);
+char			*ft_strnstr(const char *haystack,
+					const char *needle, size_t len);
 
 /* Signal handling structure */
 typedef struct s_sig
 {
-    volatile sig_atomic_t sigint;    // SIGINT received
-    volatile sig_atomic_t sigquit;   // SIGQUIT received
-    volatile pid_t pid;              // Current foreground process PID
-    volatile int exit_status;        // Exit status from signal
-} t_sig;
+	volatile sig_atomic_t	sigint;
+	volatile sig_atomic_t	sigquit;
+	volatile pid_t			pid;
+	volatile int			exit_status;
+}				t_sig;
 
-extern t_sig g_sig;  // Global signal state
+extern t_sig				g_sig;
 
-/* Command Types - Used to identify different command structures */
-#define EXEC  1
-#define REDIR 2
-#define PIPE  3
-#define LIST  4
-#define BACK  5
-#define HEREDOC 6   // New type for here documents
+/* Command Types */
+# define EXEC 1
+# define REDIR 2
+# define PIPE 3
+# define LIST 4
+# define BACK 5
+# define HEREDOC 6
 
-/* Maximum number of arguments allowed in a command */
-#define MAXARGS 100
+# define MAXARGS 100
 
-/* Global variable to store the exit status of the last command */
-extern int g_last_exit_status;
+extern int					g_last_exit_status;
 
-/*
- * Base command structure
- * All other command structures start with this to allow type-based casting
- */
 typedef struct s_cmd
 {
-    int type;  // Identifies the type of command (EXEC, REDIR, etc.)
-}   t_cmd;
+	int						type;
+}				t_cmd;
 
-/*
- * Structure for simple command execution
- * Example: ls -l /home
- */
 typedef struct s_execcmd
 {
-    int type;                  // Must be EXEC
-    char *av[MAXARGS];        // Array of argument strings (av[0] is the command)
-    char *eav[MAXARGS];       // Array of pointers to end of each argument string
-}   t_execcmd;
+	int						type;
+	char					*av[MAXARGS];
+	char					*eav[MAXARGS];
+}				t_execcmd;
 
-/*
- * Structure for input/output redirection
- * Examples: ls > output.txt, cat < input.txt
- */
 typedef struct s_redircmd
 {
-    int type;              // Must be REDIR
-    struct s_cmd *cmd;     // The command being redirected
-    char *file;           // The file to redirect to/from
-    char *efile;          // Pointer to end of file string
-    int mode;            // File mode (O_RDONLY, O_WRONLY, etc.)
-    int fd;             // File descriptor to redirect (0 for input, 1 for output)
-}   t_redircmd;
+	int						type;
+	struct s_cmd			*cmd;
+	char					*file;
+	char					*efile;
+	int						mode;
+	int						fd;
+}				t_redircmd;
 
-/*
- * Structure for command pipelines
- * Example: ls -l | grep .txt | wc -l
- */
 typedef struct s_pipecmd
 {
-    int type;              // Must be PIPE
-    struct s_cmd *left;    // Command before the pipe
-    struct s_cmd *right;   // Command after the pipe
-}   t_pipecmd;
+	int						type;
+	struct s_cmd			*left;
+	struct s_cmd			*right;
+}				t_pipecmd;
 
-/*
- * Structure for command lists (commands separated by semicolon)
- * Example: ls ; pwd ; echo hello
- */
 typedef struct s_listcmd
 {
-    int type;              // Must be LIST
-    struct s_cmd *left;    // First command in sequence
-    struct s_cmd *right;   // Next command in sequence
-}   t_listcmd;
+	int						type;
+	struct s_cmd			*left;
+	struct s_cmd			*right;
+}				t_listcmd;
 
-/*
- * Structure for background commands
- * Example: sleep 100 &
- */
 typedef struct s_backcmd
 {
-    int type;              // Must be BACK
-    struct s_cmd *cmd;     // The command to run in background
-}   t_backcmd;
+	int						type;
+	struct s_cmd			*cmd;
+}				t_backcmd;
 
-/*
- * Structure for here document redirection
- * Example: cat << EOF
- */
 typedef struct s_heredoccmd
 {
-    int type;              // Must be HEREDOC
-    struct s_cmd *cmd;     // The command to receive the input
-    char *delimiter;       // The delimiter string (e.g., "EOF")
-    int fd;               // File descriptor to redirect (usually 0 for stdin)
-}   t_heredoccmd;
+	int						type;
+	struct s_cmd			*cmd;
+	char					*delimiter;
+	int						fd;
+}				t_heredoccmd;
 
 /* Basic shell functions */
-char *readline_helper(void);              // Read a line from input with prompt
-void *get_cwd(char *buf, size_t size);   // Get current working directory
-void wtf(void);                          // Error handler
-int forkk(void);                         // Fork wrapper with error checking
-void runcmd(struct s_cmd *cmd);          // Execute a command structure
-struct s_cmd *tokenize(const char *line); // Convert input line to command structure
-struct s_cmd* nulterm(struct s_cmd *cmd); // Ensure proper string termination
+char			*readline_helper(void);
+void			*get_cwd(char *buf, size_t size);
+void			wtf(void);
+int				forkk(void);
+void			runcmd(struct s_cmd *cmd);
+struct s_cmd	*tokenize(const char *line);
+struct s_cmd	*nulterm(struct s_cmd *cmd);
 
 /* Parser and command constructor functions */
-struct s_cmd *parseexec(char **input_ptr, char *input_end);     // Parse a simple command
-int peek(char **input_ptr, char *input_end, char *toks);        // Look ahead for tokens
-int gettoken(char **input_ptr, char *input_end,                 // Get next token
-            char **token_start, char **token_end);
-struct s_cmd *pipecmd(struct s_cmd *left, struct s_cmd *right); // Create a pipe command
-struct s_cmd *backcmd(struct s_cmd *subcmd);                    // Create a background command
-struct s_cmd *listcmd(struct s_cmd *left, struct s_cmd *right); // Create a command list
-struct s_cmd *redircmd(struct s_cmd *subcmd, char *file,        // Create a redirection
-                      char *efile, int mode, int fd);
-struct s_cmd *execcmd(void);                                    // Create a simple command
-struct s_cmd *parse_redirs(struct s_cmd *cmd,                   // Parse redirections
-                          char **input_ptr, char *input_end);
-struct s_cmd *parse_block(char **input_ptr, char *input_end);   // Parse parenthesized block
-struct s_cmd *parse_line(char **input_ptr, char *input_end);    // Parse entire command line
-struct s_cmd* heredoccmd(struct s_cmd *subcmd, char *delimiter, int fd);
-char* process_escaped(const char* input, size_t len);          // Process escape sequences
+struct s_cmd	*parseexec(char **input_ptr, char *input_end);
+int				peek(char **input_ptr, char *input_end, char *toks);
+int				gettoken(char **input_ptr, char *input_end,
+					char **token_start, char **token_end);
+struct s_cmd	*pipecmd(struct s_cmd *left, struct s_cmd *right);
+struct s_cmd	*backcmd(struct s_cmd *subcmd);
+struct s_cmd	*listcmd(struct s_cmd *left, struct s_cmd *right);
+struct s_cmd	*redircmd(struct s_cmd *subcmd, char *file,
+					char *efile, int mode, int fd);
+struct s_cmd	*execcmd(void);
+struct s_cmd	*parse_redirs(struct s_cmd *cmd,
+					char **input_ptr, char *input_end);
+struct s_cmd	*parse_block(char **input_ptr, char *input_end);
+struct s_cmd	*parse_line(char **input_ptr, char *input_end);
+struct s_cmd	*heredoccmd(struct s_cmd *subcmd, char *delimiter, int fd);
+char			*process_escaped(const char *input, size_t len);
 
 /* Built-in command handling */
-int is_builtin(char *cmd);                                      // Check if command is built-in
-int handle_builtin(char **argv);                                // Execute built-in command
-char *expand_variables(const char *str, size_t len);            // Expand environment variables
-void set_exit_status(int status);                              // Set last command exit status
+int				is_builtin(char *cmd);
+int				handle_builtin(char **argv);
+char			*expand_variables(const char *str, size_t len);
+void			set_exit_status(int status);
 
-/* Individual builtin functions */
-int builtin_echo(char **argv);                                 // Echo command
-int builtin_cd(char **argv);                                   // Change directory
-int builtin_pwd(char **argv);                                  // Print working directory
-int builtin_export(char **argv);                               // Export environment variables
-int builtin_unset(char **argv);                                // Unset environment variables
-int builtin_env(char **argv);                                  // Print environment variables
-int builtin_exit(char **argv);                                 // Exit shell
+/* Builtin functions */
+int				builtin_echo(char **argv);
+int				builtin_cd(char **argv);
+int				builtin_pwd(char **argv);
+int				builtin_export(char **argv);
+int				builtin_unset(char **argv);
+int				builtin_env(char **argv);
+int				builtin_exit(char **argv);
 
-
-
-/* Internal command handler functions (not part of public interface) */
-char *find_command(const char *cmd);
-void handle_exec_cmd(struct s_cmd *cmd);
-void handle_redir_cmd(struct s_cmd *cmd);
-void handle_list_cmd(struct s_cmd *cmd);
-void handle_pipe_cmd(struct s_cmd *cmd);
-void handle_back_cmd(struct s_cmd *cmd);
-void handle_heredoc_cmd(struct s_cmd *cmd);
+/* Internal command handlers */
+char			*find_command(const char *cmd);
+void			handle_exec_cmd(struct s_cmd *cmd);
+void			handle_redir_cmd(struct s_cmd *cmd);
+void			handle_list_cmd(struct s_cmd *cmd);
+void			handle_pipe_cmd(struct s_cmd *cmd);
+void			handle_back_cmd(struct s_cmd *cmd);
+void			handle_heredoc_cmd(struct s_cmd *cmd);
 
 #endif
