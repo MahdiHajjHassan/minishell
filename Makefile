@@ -11,7 +11,10 @@ OBJ_DIR = obj
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 
-all: $(NAME)
+all: clean-files $(NAME)
+
+clean-files:
+	@rm -f files.txt
 
 $(NAME): $(OBJS) $(LIBFT_DIR)/libft.a
 	$(CC) $(CFLAGS) -I$(INC_DIR) -I$(LIBFT_DIR) -L$(LIBFT_DIR) -lft -o $@ $(OBJS)
@@ -32,6 +35,7 @@ $(LIBFT_DIR)/libft.a:
 
 clean:
 	rm -f $(OBJ_DIR)/*.o
+	rm -f files.txt
 	$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean: clean
@@ -40,4 +44,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re clean-files

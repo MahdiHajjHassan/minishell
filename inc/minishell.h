@@ -105,6 +105,16 @@ void runcmd(struct s_cmd *cmd);          // Execute a command structure
 struct s_cmd *tokenize(const char *line); // Convert input line to command structure
 struct s_cmd* nulterm(struct s_cmd *cmd); // Ensure proper string termination
 
+/* Main helper functions */
+void display_prompt(void);               // Display shell prompt
+void init_signals(void);                 // Initialize signal state
+int handle_line_input(char **line);      // Handle line input from user
+int handle_tokenize(char *line, struct s_cmd **cmd); // Handle command tokenization
+void expand_builtin_args(struct s_execcmd *ecmd); // Expand variables in builtin args
+int handle_builtin_cmd(struct s_cmd *cmd, char *line); // Handle builtin command execution
+void handle_child_status(int status);    // Handle child process status
+void execute_cmd(struct s_cmd *cmd);     // Execute external command
+
 /* Parser and command constructor functions */
 struct s_cmd *parseexec(char **input_ptr, char *input_end);     // Parse a simple command
 int peek(char **input_ptr, char *input_end, char *toks);        // Look ahead for tokens
