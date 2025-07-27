@@ -19,118 +19,37 @@
 
 int	is_builtin(char *cmd)
 {
-	return (!strcmp(cmd, "echo") || !strcmp(cmd, "cd") ||
-		!strcmp(cmd, "pwd") || !strcmp(cmd, "export") ||
-		!strcmp(cmd, "unset") || !strcmp(cmd, "env") ||
-		!strcmp(cmd, "exit"));
-}
-
-static int	builtin_echo(char **argv)
-{
-	int	i;
-	int	print_newline;
-
-	i = 1;
-	print_newline = 1;
-	if (argv[1] && !strcmp(argv[1], "-n"))
-	{
-		print_newline = 0;
-		i++;
-	}
-	while (argv[i])
-	{
-		printf("%s", argv[i]);
-		if (argv[i + 1])
-			printf(" ");
-		i++;
-	}
-	if (print_newline)
-		printf("\n");
-	return (0);
-}
-
-static int	builtin_cd(char **argv)
-{
-	char	*home;
-
-	if (!argv[1])
-	{
-		home = getenv("HOME");
-		if (!home)
-		{
-			fprintf(stderr, "minishell: cd: HOME not set\n");
-			return (1);
-		}
-		if (chdir(home) != 0)
-		{
-			fprintf(stderr, "minishell: cd: %s: %s\n", home, strerror(errno));
-			return (1);
-		}
-	}
-	else if (argv[2])
-	{
-		fprintf(stderr, "minishell: cd: too many arguments\n");
+	if (!strcmp(cmd, "echo"))
 		return (1);
-	}
-	else
-	{
-		if (chdir(argv[1]) != 0)
-		{
-			fprintf(stderr, "minishell: cd: %s: %s\n", argv[1], strerror(errno));
-			return (1);
-		}
-	}
-	return (0);
-}
-
-static int	builtin_pwd(char **argv)
-{
-	char	cwd[1024];
-
-	(void)argv;
-	if (!getcwd(cwd, sizeof(cwd)))
-	{
-		perror("pwd");
+	if (!strcmp(cmd, "cd"))
 		return (1);
-	}
-	printf("%s\n", cwd);
+	if (!strcmp(cmd, "pwd"))
+		return (1);
+	if (!strcmp(cmd, "export"))
+		return (1);
+	if (!strcmp(cmd, "unset"))
+		return (1);
+	if (!strcmp(cmd, "env"))
+		return (1);
+	if (!strcmp(cmd, "exit"))
+		return (1);
 	return (0);
 }
 
 static int	builtin_export(char **argv)
 {
 	int		i;
-	char	*equals;
 	char	*name;
 	char	*value;
 
 	i = 1;
 	while (argv[i])
 	{
-		equals = strchr(argv[i], '=');
-		if (!equals)
-		{
-			fprintf(stderr, "minishell: export: invalid format: %s\n", argv[i]);
+		if (parse_export_arg(argv[i], &name, &value))
 			return (1);
-		}
-		name = argv[i];
-		*equals = '\0';
-		value = equals + 1;
-		if (*value == '"' && value[strlen(value) - 1] == '"')
-		{
-			value++;
-			value[strlen(value) - 1] = '\0';
-		}
-		else if (*value == '\'' && value[strlen(value) - 1] == '\'')
-		{
-			value++;
-			value[strlen(value) - 1] = '\0';
-		}
-		if (setenv(name, value, 1) != 0)
-		{
-			fprintf(stderr, "minishell: export: %s\n", strerror(errno));
+		remove_quotes(&value);
+		if (set_environment_var(name, value))
 			return (1);
-		}
 		i++;
 	}
 	return (0);
@@ -168,32 +87,6 @@ static int	builtin_env(char **argv)
 	return (0);
 }
 
-static int	builtin_exit(char **argv)
-{
-	int	status;
-	int	i;
-
-	status = 0;
-	if (argv[1])
-	{
-		i = 0;
-		if (argv[1][i] == '-' || argv[1][i] == '+')
-			i++;
-		while (argv[1][i])
-		{
-			if (!isdigit(argv[1][i]))
-			{
-				fprintf(stderr, "minishell: exit: %s: numeric argument required\n", argv[1]);
-				exit(255);
-			}
-			i++;
-		}
-		status = atoi(argv[1]);
-	}
-	printf("exit\n");
-	exit(status);
-}
-
 int	handle_builtin(char **argv)
 {
 	if (!argv[0])
@@ -213,4 +106,4 @@ int	handle_builtin(char **argv)
 	if (!strcmp(argv[0], "exit"))
 		return (builtin_exit(argv));
 	return (1);
-} 
+}

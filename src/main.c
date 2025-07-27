@@ -20,8 +20,6 @@
 
 t_sig	g_sig = {0, 0, 0, 0};
 
-
-
 static void	sigint_handler(int signo)
 {
 	(void)signo;

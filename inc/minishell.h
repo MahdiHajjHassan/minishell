@@ -137,4 +137,17 @@ int handle_builtin(char **argv);                                // Execute built
 char *expand_variables(const char *str, size_t len);            // Expand environment variables
 void set_exit_status(int status);                              // Set last command exit status
 
+/* Builtin helper functions */
+int cd_to_home(void);                                           // Change directory to home
+int cd_to_path(char *path);                                     // Change directory to specified path
+int parse_export_arg(char *arg, char **name, char **value);     // Parse export argument
+void remove_quotes(char **value);                               // Remove quotes from value
+int set_environment_var(char *name, char *value);               // Set environment variable
+
+/* Builtin command functions */
+int builtin_echo(char **argv);                                  // Echo command implementation
+int builtin_cd(char **argv);                                    // Cd command implementation
+int builtin_pwd(char **argv);                                   // Pwd command implementation
+int builtin_exit(char **argv);                                  // Exit command implementation
+
 #endif
