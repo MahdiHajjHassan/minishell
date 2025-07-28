@@ -27,6 +27,22 @@ extern t_sig g_sig;  // Global signal state
 /* Maximum number of arguments allowed in a command */
 #define MAXARGS 100
 
+/* Structure to hold redirection parameters */
+typedef struct s_redir_params
+{
+    int mode;  /* File mode (O_RDONLY, O_WRONLY, etc.) */
+    int fd;    /* File descriptor to redirect (0 for input, 1 for output) */
+}   t_redir_params;
+
+/* Structure to hold process arguments parameters */
+typedef struct s_process_args_params
+{
+    struct s_execcmd	*cmd;
+    char				**input_ptr;
+    char				*input_end;
+    int					*argc;
+}   t_process_args_params;
+
 /* Global variable to store the exit status of the last command */
 extern int g_last_exit_status;
 
@@ -124,12 +140,32 @@ struct s_cmd *pipecmd(struct s_cmd *left, struct s_cmd *right); // Create a pipe
 struct s_cmd *backcmd(struct s_cmd *subcmd);                    // Create a background command
 struct s_cmd *listcmd(struct s_cmd *left, struct s_cmd *right); // Create a command list
 struct s_cmd *redircmd(struct s_cmd *subcmd, char *file,        // Create a redirection
-                      char *efile, int mode, int fd);
+                      char *efile, t_redir_params params);
 struct s_cmd *execcmd(void);                                    // Create a simple command
 struct s_cmd *parse_redirs(struct s_cmd *cmd,                   // Parse redirections
                           char **input_ptr, char *input_end);
 struct s_cmd *parse_block(char **input_ptr, char *input_end);   // Parse parenthesized block
 struct s_cmd *parse_line(char **input_ptr, char *input_end);    // Parse entire command line
+
+/* Parser helper functions */
+char *init_output_buffer(size_t len);
+char get_escape_char(char c);
+void handle_escape_sequence(const char *input, size_t *i, char *output, size_t *j);
+char *process_escaped(const char *input, size_t len);
+int get_redir_token(char **input_ptr, char *input_end, char **q, char **eq);
+void remove_redir_quotes(char **q, char **eq);
+char *process_filename(char *q, char *eq);
+struct s_cmd *apply_input_redir(struct s_cmd *cmd, char *file);
+struct s_cmd *apply_output_redir(struct s_cmd *cmd, char *file);
+struct s_cmd *apply_append_redir(struct s_cmd *cmd, char *file);
+struct s_cmd *handle_redir_token(struct s_cmd *cmd, int tok, char *file);
+struct s_cmd *init_exec_cmd(void);
+int get_exec_token(char **input_ptr, char *input_end, char **q, char **eq);
+void remove_exec_quotes(char **q, char **eq);
+char *process_argument(char *q, char *eq);
+void add_argument(struct s_execcmd *cmd, char *processed, int *argc);
+void finalize_exec_cmd(struct s_execcmd *cmd, int argc);
+struct s_cmd *process_arguments(struct s_cmd *ret, t_process_args_params params);
 
 /* Built-in command handling */
 int is_builtin(char *cmd);                                      // Check if command is built-in

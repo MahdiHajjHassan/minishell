@@ -24,7 +24,8 @@ struct s_cmd	*execcmd(void)
 	return ((struct s_cmd *)cmd);
 }
 
-struct s_cmd	*redircmd(struct s_cmd *subcmd, char *file, char *efile, int mode, int fd)
+struct s_cmd	*redircmd(struct s_cmd *subcmd, char *file,
+							char *efile, t_redir_params params)
 {
 	struct s_redircmd	*cmd;
 
@@ -34,8 +35,8 @@ struct s_cmd	*redircmd(struct s_cmd *subcmd, char *file, char *efile, int mode, 
 	cmd->cmd = subcmd;
 	cmd->file = file;
 	cmd->efile = efile;
-	cmd->mode = mode;
-	cmd->fd = fd;
+	cmd->mode = params.mode;
+	cmd->fd = params.fd;
 	return ((struct s_cmd *)cmd);
 }
 
@@ -73,4 +74,3 @@ struct s_cmd	*backcmd(struct s_cmd *subcmd)
 	cmd->cmd = subcmd;
 	return ((struct s_cmd *)cmd);
 }
-    
