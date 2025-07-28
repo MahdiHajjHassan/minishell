@@ -14,13 +14,16 @@
 
 void	expand_builtin_args(struct s_execcmd *ecmd)
 {
-	for (int i = 0; ecmd->av[i]; i++)
-	{
-		char	*original;
+	int		i;
+	char	*original;
 
+	i = 0;
+	while (ecmd->av[i])
+	{
 		original = ecmd->av[i];
 		ecmd->av[i] = expand_variables(original, strlen(original));
 		free(original);
+		i++;
 	}
 }
 

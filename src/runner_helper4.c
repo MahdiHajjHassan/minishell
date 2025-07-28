@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main_helper2.c                                    :+:      :+:    :+:   */
+/*   runner_helper4.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,27 +12,42 @@
 
 #include "minishell.h"
 
-int	handle_tokenize(char *line, struct s_cmd **cmd)
+void	setup_pipe_left(int *p, struct s_pipecmd *pipecmd)
 {
-	*cmd = tokenize(line);
-	if (!*cmd)
+	if (forkk() == 0)
 	{
-		free(line);
-		return (1);
+		close(1);
+		dup(p[1]);
+		close(p[0]);
+		close(p[1]);
+		runcmd(pipecmd->left);
 	}
-	return (0);
 }
 
-void	execute_cmd(struct s_cmd *cmd)
+void	setup_pipe_right(int *p, struct s_pipecmd *pipecmd)
 {
-	int	status;
-
-	g_sig.pid = forkk();
-	if (g_sig.pid == 0)
+	if (forkk() == 0)
 	{
-		runcmd(cmd);
+		close(0);
+		dup(p[0]);
+		close(p[0]);
+		close(p[1]);
+		runcmd(pipecmd->right);
+	}
+}
+
+void	run_back_cmd(struct s_cmd *cmd)
+{
+	struct s_backcmd	*back;
+
+	back = (struct s_backcmd *)cmd;
+	if (forkk() == 0)
+	{
+		if (forkk() == 0)
+		{
+			runcmd(back->cmd);
+		}
 		exit(0);
 	}
-	wait(&status);
-	handle_child_status(status);
+	wait(0);
 }

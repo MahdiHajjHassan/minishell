@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main_helper2.c                                    :+:      :+:    :+:   */
+/*   utils1.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,27 +12,37 @@
 
 #include "minishell.h"
 
-int	handle_tokenize(char *line, struct s_cmd **cmd)
+void	handle_redir_case(struct s_cmd *cmd)
 {
-	*cmd = tokenize(line);
-	if (!*cmd)
-	{
-		free(line);
-		return (1);
-	}
-	return (0);
+	struct s_redircmd	*rcmd;
+
+	rcmd = (struct s_redircmd *)cmd;
+	nulterm(rcmd->cmd);
+	*rcmd->efile = 0;
 }
 
-void	execute_cmd(struct s_cmd *cmd)
+void	handle_pipe_case(struct s_cmd *cmd)
 {
-	int	status;
+	struct s_pipecmd	*pcmd;
 
-	g_sig.pid = forkk();
-	if (g_sig.pid == 0)
-	{
-		runcmd(cmd);
-		exit(0);
-	}
-	wait(&status);
-	handle_child_status(status);
+	pcmd = (struct s_pipecmd *)cmd;
+	nulterm(pcmd->left);
+	nulterm(pcmd->right);
+}
+
+void	handle_list_case(struct s_cmd *cmd)
+{
+	struct s_listcmd	*lcmd;
+
+	lcmd = (struct s_listcmd *)cmd;
+	nulterm(lcmd->left);
+	nulterm(lcmd->right);
+}
+
+void	handle_back_case(struct s_cmd *cmd)
+{
+	struct s_backcmd	*bcmd;
+
+	bcmd = (struct s_backcmd *)cmd;
+	nulterm(bcmd->cmd);
 }

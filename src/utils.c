@@ -38,49 +38,18 @@ void	wtf(void)
 	exit(1);
 }
 
-static void	handle_exec_case(struct s_cmd *cmd)
+void	handle_exec_case(struct s_cmd *cmd)
 {
 	int					i;
 	struct s_execcmd	*ecmd;
 
 	ecmd = (struct s_execcmd *)cmd;
-	for (i = 0; ecmd->av[i]; i++)
+	i = 0;
+	while (ecmd->av[i])
+	{
 		*ecmd->eav[i] = 0;
-}
-
-static void	handle_redir_case(struct s_cmd *cmd)
-{
-	struct s_redircmd	*rcmd;
-
-	rcmd = (struct s_redircmd *)cmd;
-	nulterm(rcmd->cmd);
-	*rcmd->efile = 0;
-}
-
-static void	handle_pipe_case(struct s_cmd *cmd)
-{
-	struct s_pipecmd	*pcmd;
-
-	pcmd = (struct s_pipecmd *)cmd;
-	nulterm(pcmd->left);
-	nulterm(pcmd->right);
-}
-
-static void	handle_list_case(struct s_cmd *cmd)
-{
-	struct s_listcmd	*lcmd;
-
-	lcmd = (struct s_listcmd *)cmd;
-	nulterm(lcmd->left);
-	nulterm(lcmd->right);
-}
-
-static void	handle_back_case(struct s_cmd *cmd)
-{
-	struct s_backcmd	*bcmd;
-
-	bcmd = (struct s_backcmd *)cmd;
-	nulterm(bcmd->cmd);
+		i++;
+	}
 }
 
 struct s_cmd	*nulterm(struct s_cmd *cmd)
