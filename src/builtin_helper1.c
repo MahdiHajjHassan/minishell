@@ -79,4 +79,4 @@ int	set_environment_var(char *name, char *value)
 		return (1);
 	}
 	return (0);
-} 
+}

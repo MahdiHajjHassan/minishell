@@ -69,6 +69,37 @@ typedef struct s_process_default_params
     char	*space;
 }   t_process_default_params;
 
+/* Structure to hold environment variable handling parameters */
+typedef struct s_env_var_params
+{
+    const char	*str;
+    size_t		*i;
+    char		**result;
+    size_t		*j;
+    size_t		*alloc_size;
+}   t_env_var_params;
+
+/* Structure to hold regular character handling parameters */
+typedef struct s_regular_char_params
+{
+    const char	*str;
+    size_t		*i;
+    char		**result;
+    size_t		*j;
+    size_t		*alloc_size;
+}   t_regular_char_params;
+
+/* Structure to hold process character parameters */
+typedef struct s_process_char_params
+{
+    const char	*str;
+    size_t		len;
+    size_t		*i;
+    char		**result;
+    size_t		*j;
+    size_t		*alloc_size;
+}   t_process_char_params;
+
 /* Global variable to store the exit status of the last command */
 extern int g_last_exit_status;
 
@@ -183,6 +214,18 @@ void	setup_token_processing(char **input_ptr, char *input_end,
 								char **token_start, char **s_ptr);
 int		handle_token_cases(char **s_ptr, char *input_ptr,
 								char *input_end);
+
+/* Env helper functions */
+size_t	get_var_name_len(const char *str);
+char	*get_env_value(const char *name, size_t name_len);
+char	*init_result_buffer(size_t len, size_t *alloc_size);
+char	*resize_for_env_value(char *result, size_t *alloc_size,
+								size_t j, size_t value_len);
+int		handle_env_variable(t_env_var_params params);
+char	*resize_for_char(char *result, size_t *alloc_size, size_t j);
+int		handle_regular_char(t_regular_char_params params);
+int		is_variable_char(const char *str, size_t i, size_t len);
+int		process_character(t_process_char_params params);
 
 struct s_cmd *pipecmd(struct s_cmd *left, struct s_cmd *right); // Create a pipe command
 struct s_cmd *backcmd(struct s_cmd *subcmd);                    // Create a background command
