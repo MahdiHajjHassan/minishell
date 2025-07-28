@@ -38,44 +38,64 @@ void	wtf(void)
 	exit(1);
 }
 
-struct s_cmd	*nulterm(struct s_cmd *cmd)
+static void	handle_exec_case(struct s_cmd *cmd)
 {
 	int					i;
-	struct s_backcmd	*bcmd;
 	struct s_execcmd	*ecmd;
-	struct s_listcmd	*lcmd;
-	struct s_pipecmd	*pcmd;
+
+	ecmd = (struct s_execcmd *)cmd;
+	for (i = 0; ecmd->av[i]; i++)
+		*ecmd->eav[i] = 0;
+}
+
+static void	handle_redir_case(struct s_cmd *cmd)
+{
 	struct s_redircmd	*rcmd;
 
-	i = 0;
+	rcmd = (struct s_redircmd *)cmd;
+	nulterm(rcmd->cmd);
+	*rcmd->efile = 0;
+}
+
+static void	handle_pipe_case(struct s_cmd *cmd)
+{
+	struct s_pipecmd	*pcmd;
+
+	pcmd = (struct s_pipecmd *)cmd;
+	nulterm(pcmd->left);
+	nulterm(pcmd->right);
+}
+
+static void	handle_list_case(struct s_cmd *cmd)
+{
+	struct s_listcmd	*lcmd;
+
+	lcmd = (struct s_listcmd *)cmd;
+	nulterm(lcmd->left);
+	nulterm(lcmd->right);
+}
+
+static void	handle_back_case(struct s_cmd *cmd)
+{
+	struct s_backcmd	*bcmd;
+
+	bcmd = (struct s_backcmd *)cmd;
+	nulterm(bcmd->cmd);
+}
+
+struct s_cmd	*nulterm(struct s_cmd *cmd)
+{
 	if (cmd == 0)
 		return (0);
-	switch (cmd->type)
-	{
-		case EXEC:
-			ecmd = (struct s_execcmd *)cmd;
-			for (i = 0; ecmd->av[i]; i++)
-				*ecmd->eav[i] = 0;
-			break;
-		case REDIR:
-			rcmd = (struct s_redircmd *)cmd;
-			nulterm(rcmd->cmd);
-			*rcmd->efile = 0;
-			break;
-		case PIPE:
-			pcmd = (struct s_pipecmd *)cmd;
-			nulterm(pcmd->left);
-			nulterm(pcmd->right);
-			break;
-		case LIST:
-			lcmd = (struct s_listcmd *)cmd;
-			nulterm(lcmd->left);
-			nulterm(lcmd->right);
-			break;
-		case BACK:
-			bcmd = (struct s_backcmd *)cmd;
-			nulterm(bcmd->cmd);
-			break;
-	}
+	if (cmd->type == EXEC)
+		handle_exec_case(cmd);
+	else if (cmd->type == REDIR)
+		handle_redir_case(cmd);
+	else if (cmd->type == PIPE)
+		handle_pipe_case(cmd);
+	else if (cmd->type == LIST)
+		handle_list_case(cmd);
+	else if (cmd->type == BACK)
+		handle_back_case(cmd);
 	return (cmd);
 }

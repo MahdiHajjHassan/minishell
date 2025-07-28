@@ -49,6 +49,26 @@ typedef struct s_process_args_params
     int					*argc;
 }   t_process_args_params;
 
+/* Structure to hold token processing parameters */
+typedef struct s_token_params
+{
+    char	*s;
+    char	*input_end;
+    char	*input_ptr;
+    char	*symbols;
+    char	*space;
+}   t_token_params;
+
+/* Structure to hold process default case parameters */
+typedef struct s_process_default_params
+{
+    char	**s_ptr;
+    char	*input_end;
+    char	*input_ptr;
+    char	*symbols;
+    char	*space;
+}   t_process_default_params;
+
 /* Global variable to store the exit status of the last command */
 extern int g_last_exit_status;
 
@@ -143,6 +163,27 @@ struct s_cmd *parseexec(char **input_ptr, char *input_end);     // Parse a simpl
 int peek(char **input_ptr, char *input_end, char *toks);        // Look ahead for tokens
 int gettoken(char **input_ptr, char *input_end,                 // Get next token
             char **token_start, char **token_end);
+
+/* Tokenize helper functions */
+int		is_escaped(const char *s, const char *start);
+char	*skip_whitespace(char *s, char *input_end, char *space);
+int		handle_basic_symbols(char **s_ptr, char *input_ptr);
+int		handle_greater_than(char **s_ptr, char *input_ptr);
+int		handle_special_chars(char **s_ptr, char *input_ptr);
+char	*handle_default_token(char *s, char *input_end, char *input_ptr,
+								t_token_params params);
+void	init_space_array(char *space);
+void	init_symbols_array(char *symbols);
+void	init_token_arrays(char *space, char *symbols);
+t_token_params	setup_token_params(char *s, char *input_end,
+								t_token_params params);
+int		process_default_case(char **s_ptr, char *input_end,
+								t_process_default_params params);
+void	setup_token_processing(char **input_ptr, char *input_end,
+								char **token_start, char **s_ptr);
+int		handle_token_cases(char **s_ptr, char *input_ptr,
+								char *input_end);
+
 struct s_cmd *pipecmd(struct s_cmd *left, struct s_cmd *right); // Create a pipe command
 struct s_cmd *backcmd(struct s_cmd *subcmd);                    // Create a background command
 struct s_cmd *listcmd(struct s_cmd *left, struct s_cmd *right); // Create a command list
