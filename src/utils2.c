@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main_healper3.c                                   :+:      :+:    :+:   */
+/*   utils2.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,50 +12,43 @@
 
 #include "minishell.h"
 
-void	expand_builtin_args(struct s_execcmd *ecmd)
+void	free_exec_cmd(struct s_execcmd *ecmd)
 {
-	int		i;
-	char	*original;
+	int	i;
 
 	i = 0;
 	while (ecmd->av[i])
 	{
-		original = ecmd->av[i];
-		ecmd->av[i] = expand_variables(original, strlen(original));
-		free(original);
+		free(ecmd->av[i]);
 		i++;
 	}
+	free(ecmd);
 }
 
-int	handle_builtin_cmd(struct s_cmd *cmd, char *line)
+void	free_redir_cmd(struct s_redircmd *rcmd)
 {
-	struct s_execcmd	*ecmd;
-	int					status;
-
-	if (cmd->type == EXEC)
-	{
-		ecmd = (struct s_execcmd *)cmd;
-		if (ecmd->av[0] && is_builtin(ecmd->av[0]))
-		{
-			expand_builtin_args(ecmd);
-			status = handle_builtin(ecmd->av);
-			set_exit_status(status);
-			free_cmd(cmd);
-			free(line);
-			return (1);
-		}
-	}
-	return (0);
+	free_cmd(rcmd->cmd);
+	free(rcmd->file);
+	free(rcmd->efile);
+	free(rcmd);
 }
 
-void	handle_child_status(int status)
+void	free_pipe_cmd(struct s_pipecmd *pcmd)
 {
-	if (WIFSIGNALED(status))
-	{
-		set_exit_status(128 + WTERMSIG(status));
-	}
-	else
-	{
-		set_exit_status(WEXITSTATUS(status));
-	}
+	free_cmd(pcmd->left);
+	free_cmd(pcmd->right);
+	free(pcmd);
+}
+
+void	free_list_cmd(struct s_listcmd *lcmd)
+{
+	free_cmd(lcmd->left);
+	free_cmd(lcmd->right);
+	free(lcmd);
+}
+
+void	free_back_cmd(struct s_backcmd *bcmd)
+{
+	free_cmd(bcmd->cmd);
+	free(bcmd);
 }

@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main_healper3.c                                   :+:      :+:    :+:   */
+/*   main_helper1_helper_helper.c                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,50 +12,39 @@
 
 #include "minishell.h"
 
-void	expand_builtin_args(struct s_execcmd *ecmd)
+int	handle_eof_char(char **buf, size_t *len)
 {
-	int		i;
-	char	*original;
-
-	i = 0;
-	while (ecmd->av[i])
-	{
-		original = ecmd->av[i];
-		ecmd->av[i] = expand_variables(original, strlen(original));
-		free(original);
-		i++;
-	}
-}
-
-int	handle_builtin_cmd(struct s_cmd *cmd, char *line)
-{
-	struct s_execcmd	*ecmd;
-	int					status;
-
-	if (cmd->type == EXEC)
-	{
-		ecmd = (struct s_execcmd *)cmd;
-		if (ecmd->av[0] && is_builtin(ecmd->av[0]))
-		{
-			expand_builtin_args(ecmd);
-			status = handle_builtin(ecmd->av);
-			set_exit_status(status);
-			free_cmd(cmd);
-			free(line);
-			return (1);
-		}
-	}
+	handle_eof(*buf, *len);
+	(*buf)[*len] = '\0';
 	return (0);
 }
 
-void	handle_child_status(int status)
+int	handle_error_char(char **buf)
 {
-	if (WIFSIGNALED(status))
+	free(*buf);
+	return (-1);
+}
+
+int	handle_newline_char(char **buf, size_t *len)
+{
+	(*buf)[*len] = '\0';
+	return (1);
+}
+
+int	handle_backspace_char(size_t *len)
+{
+	handle_backspace(len);
+	return (0);
+}
+
+int	handle_char_input(char **buf, size_t *capacity, size_t *len, int c)
+{
+	if (*len + 1 >= *capacity)
 	{
-		set_exit_status(128 + WTERMSIG(status));
+		*buf = resize_buffer(*buf, capacity);
+		if (!*buf)
+			return (-1);
 	}
-	else
-	{
-		set_exit_status(WEXITSTATUS(status));
-	}
+	(*buf)[(*len)++] = c;
+	return (0);
 }

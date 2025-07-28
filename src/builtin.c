@@ -12,22 +12,20 @@
 
 #include "minishell.h"
 
-int	is_builtin(char *cmd)
+static int	process_export_arg(char *arg_copy, char **name, char **value)
 {
-	if (!strcmp(cmd, "echo"))
+	if (parse_export_arg(arg_copy, name, value))
+	{
+		free(arg_copy);
 		return (1);
-	if (!strcmp(cmd, "cd"))
+	}
+	remove_quotes(value);
+	if (set_environment_var(*name, *value))
+	{
+		free(arg_copy);
 		return (1);
-	if (!strcmp(cmd, "pwd"))
-		return (1);
-	if (!strcmp(cmd, "export"))
-		return (1);
-	if (!strcmp(cmd, "unset"))
-		return (1);
-	if (!strcmp(cmd, "env"))
-		return (1);
-	if (!strcmp(cmd, "exit"))
-		return (1);
+	}
+	free(arg_copy);
 	return (0);
 }
 
@@ -36,14 +34,15 @@ static int	builtin_export(char **argv)
 	int		i;
 	char	*name;
 	char	*value;
+	char	*arg_copy;
 
 	i = 1;
 	while (argv[i])
 	{
-		if (parse_export_arg(argv[i], &name, &value))
+		arg_copy = strdup(argv[i]);
+		if (!arg_copy)
 			return (1);
-		remove_quotes(&value);
-		if (set_environment_var(name, value))
+		if (process_export_arg(arg_copy, &name, &value))
 			return (1);
 		i++;
 	}

@@ -56,27 +56,12 @@ char	*init_buffer(size_t *capacity, size_t *len)
 int	process_char(int c, char **buf, size_t *capacity, size_t *len)
 {
 	if (c == EOF)
-	{
-		handle_eof(*buf, *len);
-		(*buf)[*len] = '\0';
-		return (0);
-	}
+		return (handle_eof_char(buf, len));
+	if (c == -1)
+		return (handle_error_char(buf));
 	if (c == '\n')
-	{
-		(*buf)[*len] = '\0';
-		return (1);
-	}
+		return (handle_newline_char(buf, len));
 	if (c == 127 || c == 8)
-	{
-		handle_backspace(len);
-		return (0);
-	}
-	if (*len + 1 >= *capacity)
-	{
-		*buf = resize_buffer(*buf, capacity);
-		if (!*buf)
-			return (-1);
-	}
-	(*buf)[(*len)++] = c;
-	return (0);
+		return (handle_backspace_char(len));
+	return (handle_char_input(buf, capacity, len, c));
 }

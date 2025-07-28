@@ -19,6 +19,7 @@ static void	sigint_handler(int signo)
 	(void)signo;
 	if (g_sig.pid == 0)
 	{
+		write(STDERR_FILENO, "\b\b  \b\b", 6);
 		write(STDERR_FILENO, "\n", 1);
 		display_prompt();
 		g_sig.exit_status = 1;
@@ -80,6 +81,7 @@ int	main(int argc, char **argv, char **envp)
 		if (handle_builtin_cmd(cmd, line))
 			continue ;
 		execute_cmd(cmd);
+		free_cmd(cmd);
 		free(line);
 	}
 	return (g_last_exit_status);

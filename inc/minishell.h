@@ -266,6 +266,12 @@ void			handle_redir_case(struct s_cmd *cmd);
 void			handle_pipe_case(struct s_cmd *cmd);
 void			handle_list_case(struct s_cmd *cmd);
 void			handle_back_case(struct s_cmd *cmd);
+void			free_exec_cmd(struct s_execcmd *ecmd);
+void			free_redir_cmd(struct s_redircmd *rcmd);
+void			free_pipe_cmd(struct s_pipecmd *pcmd);
+void			free_list_cmd(struct s_listcmd *lcmd);
+void			free_back_cmd(struct s_backcmd *bcmd);
+void			free_cmd(struct s_cmd *cmd);
 
 /* Runner helper2 functions */
 size_t			get_path_segment_len(char *curr, char **next);
@@ -314,6 +320,11 @@ int				handle_eof(char *buf, size_t len);
 void			handle_backspace(size_t *len);
 char			*resize_buffer(char *buf, size_t *capacity);
 char			*init_buffer(size_t *capacity, size_t *len);
+int				handle_eof_char(char **buf, size_t *len);
+int				handle_error_char(char **buf);
+int				handle_newline_char(char **buf, size_t *len);
+int				handle_backspace_char(size_t *len);
+int				handle_char_input(char **buf, size_t *capacity, size_t *len, int c);
 int				process_char(int c, char **buf, size_t *capacity, size_t *len);
 
 struct s_cmd	*pipecmd(struct s_cmd *left, struct s_cmd *right);

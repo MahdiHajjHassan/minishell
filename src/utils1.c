@@ -46,3 +46,19 @@ void	handle_back_case(struct s_cmd *cmd)
 	bcmd = (struct s_backcmd *)cmd;
 	nulterm(bcmd->cmd);
 }
+
+void	free_cmd(struct s_cmd *cmd)
+{
+	if (!cmd)
+		return ;
+	if (cmd->type == EXEC)
+		free_exec_cmd((struct s_execcmd *)cmd);
+	else if (cmd->type == REDIR)
+		free_redir_cmd((struct s_redircmd *)cmd);
+	else if (cmd->type == PIPE)
+		free_pipe_cmd((struct s_pipecmd *)cmd);
+	else if (cmd->type == LIST)
+		free_list_cmd((struct s_listcmd *)cmd);
+	else if (cmd->type == BACK)
+		free_back_cmd((struct s_backcmd *)cmd);
+}
