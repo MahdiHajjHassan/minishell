@@ -11,9 +11,6 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <stdio.h>
-#include <string.h>
-#include <fcntl.h>
 
 char	*init_output_buffer(size_t len)
 {

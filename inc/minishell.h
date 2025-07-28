@@ -5,6 +5,12 @@
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <sys/wait.h>
+#include <ctype.h>
 
 /* Signal handling structure */
 typedef struct s_sig
@@ -120,6 +126,7 @@ int forkk(void);                         // Fork wrapper with error checking
 void runcmd(struct s_cmd *cmd);          // Execute a command structure
 struct s_cmd *tokenize(const char *line); // Convert input line to command structure
 struct s_cmd* nulterm(struct s_cmd *cmd); // Ensure proper string termination
+char *find_command(const char *cmd);      // Find command in PATH
 
 /* Main helper functions */
 void display_prompt(void);               // Display shell prompt
@@ -185,5 +192,25 @@ int builtin_echo(char **argv);                                  // Echo command 
 int builtin_cd(char **argv);                                    // Cd command implementation
 int builtin_pwd(char **argv);                                   // Pwd command implementation
 int builtin_exit(char **argv);                                  // Exit command implementation
+
+/* Runner helper functions */
+char *check_absolute_path(const char *cmd);
+size_t get_path_segment_len(char *curr, char **next);
+int build_full_path(char *full_path, char *curr, size_t len, const char *cmd);
+char *search_in_paths(char *path, const char *cmd);
+void reset_signals(void);
+void expand_exec_args(struct s_execcmd *ex);
+void handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd);
+void execute_external_cmd(struct s_execcmd *ex);
+int open_redir_file_create(struct s_redircmd *rdir);
+void open_redir_file_regular(struct s_redircmd *rdir);
+void handle_list_builtin(struct s_execcmd *ex);
+void handle_list_external(struct s_cmd *cmd);
+void process_list_left(struct s_listcmd *list);
+void process_list_right(struct s_listcmd *list);
+void setup_pipe_left(int *p, struct s_pipecmd *pipecmd);
+void setup_pipe_right(int *p, struct s_pipecmd *pipecmd);
+void run_pipe_cmd(struct s_cmd *cmd);
+void run_back_cmd(struct s_cmd *cmd);
 
 #endif

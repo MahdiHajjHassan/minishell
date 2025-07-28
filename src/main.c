@@ -11,12 +11,6 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <signal.h>
-#include <errno.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <string.h>
 
 t_sig	g_sig = {0, 0, 0, 0};
 

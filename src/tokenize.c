@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <stdio.h>
-#include <string.h>
 
 /* Characters considered as whitespace */
 char	space[] = " \t\r\n\v";

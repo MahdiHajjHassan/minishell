@@ -11,12 +11,6 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <signal.h>
-#include <errno.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <string.h>
 
 void	expand_builtin_args(struct s_execcmd *ecmd)
 {

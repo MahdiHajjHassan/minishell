@@ -11,9 +11,6 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <stdio.h>
-#include <string.h>
-#include <fcntl.h>
 
 struct s_cmd	*parse_pipe(char **input_ptr, char *input_end)
 {

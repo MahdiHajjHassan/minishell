@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <stdlib.h>
-#include <string.h>
 
 struct s_cmd	*execcmd(void)
 {
