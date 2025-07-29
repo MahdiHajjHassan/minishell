@@ -429,4 +429,12 @@ int				ft_fprintf_stderr(const char *format, ...);
 int				ft_setenv(const char *name, const char *value, int overwrite);
 int				ft_unsetenv(const char *name);
 
+/* Memory management functions */
+char			**copy_environ(char **envp);
+void			free_environ_copy(void);
+void			clean_exit(int status);
+#ifdef DEBUG
+void			check_leaks(void);
+#endif
+
 #endif

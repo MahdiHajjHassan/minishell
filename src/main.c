@@ -49,12 +49,22 @@ int	main(int argc, char **argv, char **envp)
 {
 	char			*line;
 	struct s_cmd	*cmd;
+	extern char		**environ;
 
 	(void)argc;
 	(void)argv;
-	(void)envp;
+	
+	/* Copy environment */
+	environ = copy_environ(envp);
+	if (!environ)
+	{
+		ft_putstr_fd("Failed to copy environment\n", STDERR_FILENO);
+		clean_exit(1);
+	}
+	
 	setup_signals();
 	rl_catch_signals = 0;
+	
 	while (1)
 	{
 		init_signals();

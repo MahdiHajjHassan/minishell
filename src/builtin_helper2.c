@@ -73,6 +73,8 @@ int	builtin_exit(char **argv)
 	int	i;
 
 	status = 0;
+	ft_putstr_fd("exit\n", STDOUT_FILENO);
+	
 	if (argv[1])
 	{
 		i = 0;
@@ -80,19 +82,27 @@ int	builtin_exit(char **argv)
 			i++;
 		while (argv[1][i])
 		{
-			if (!isdigit(argv[1][i]))
+			if (!ft_isdigit(argv[1][i]))
 			{
-				ft_fprintf_stderr(
-					"minishell: exit: %s: numeric argument required\n",
-					argv[1]);
-				exit(255);
+				ft_fprintf_stderr("minishell: exit: ", STDERR_FILENO);
+				ft_fprintf_stderr(argv[1], STDERR_FILENO);
+				ft_fprintf_stderr(": numeric argument required\n", STDERR_FILENO);
+				clean_exit(255);
 			}
 			i++;
 		}
 		status = ft_atoi(argv[1]);
+		
+		/* Check for too many arguments */
+		if (argv[2])
+		{
+			ft_fprintf_stderr("minishell: exit: too many arguments\n", STDERR_FILENO);
+			return (1);  /* Don't exit, just return error */
+		}
 	}
-	printf("exit\n");
-	exit(status);
+	
+	clean_exit(status);
+	return (0);  /* Never reached */
 }
 
 int	is_builtin(char *cmd)

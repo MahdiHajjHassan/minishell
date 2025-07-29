@@ -35,7 +35,7 @@ int	forkk(void)
 void	wtf(void)
 {
 	printf("wtf\n");
-	exit(1);
+	clean_exit(1);
 }
 
 void	handle_exec_case(struct s_cmd *cmd)

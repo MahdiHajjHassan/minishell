@@ -19,7 +19,7 @@ int	handle_eof(char *buf, size_t len)
 		if (isatty(STDIN_FILENO))
 			printf("exit\n");
 		free(buf);
-		exit(g_sig.exit_status);
+		clean_exit(g_sig.exit_status);
 	}
 	clearerr(stdin);
 	return (1);
@@ -41,7 +41,7 @@ int	handle_line_input(char **line)
 	if (!*line)
 	{
 		printf("exit\n");
-		exit(0);
+		clean_exit(0);
 	}
 	if (**line)
 		add_history(*line);
