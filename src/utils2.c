@@ -40,11 +40,10 @@ void	free_pipe_cmd(struct s_pipecmd *pcmd)
 	free(pcmd);
 }
 
+/* List command freeing removed - semicolon not supported in this minishell */
 void	free_list_cmd(struct s_listcmd *lcmd)
 {
-	free_cmd(lcmd->left);
-	free_cmd(lcmd->right);
-	free(lcmd);
+	(void)lcmd;
 }
 
 void	free_back_cmd(struct s_backcmd *bcmd)

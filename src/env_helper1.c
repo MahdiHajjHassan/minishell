@@ -28,12 +28,13 @@ char	*get_env_value(const char *name, size_t name_len)
 {
 	char	*temp;
 	char	*value;
-	char	num[32];
 
 	if (name_len == 1 && *name == '?')
 	{
-		ft_snprintf(num, sizeof(num), "%d", g_last_exit_status);
-		return (ft_strdup(num));
+		char *status_str = ft_itoa(g_sig.exit_status);
+		if (!status_str)
+			return (ft_strdup("0"));
+		return (status_str);
 	}
 	temp = malloc(name_len + 1);
 	if (!temp)

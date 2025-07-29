@@ -12,11 +12,9 @@
 
 #include "minishell.h"
 
-int	g_last_exit_status = 0;
-
 void	set_exit_status(int status)
 {
-	g_last_exit_status = status;
+	g_sig.exit_status = status;
 }
 
 static char	*finalize_result(char *result, size_t j)

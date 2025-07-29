@@ -39,11 +39,7 @@ struct s_cmd	*parse_line(char **input_ptr, char *input_end)
 			return (parse_line(input_ptr, input_end));
 		}
 	}
-	else if (peek(input_ptr, input_end, ";"))
-	{
-		gettoken(input_ptr, input_end, NULL, NULL);
-		cmd = listcmd(cmd, parse_line(input_ptr, input_end));
-	}
+	/* Semicolon handling removed - not supported in this minishell */
 	return (cmd);
 }
 

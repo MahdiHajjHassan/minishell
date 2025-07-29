@@ -22,29 +22,22 @@ char	*init_output_buffer(size_t len)
 	return (output);
 }
 
+/* Backslash processing removed - not supported in this minishell */
 char	*process_escaped(const char *input, size_t len)
 {
 	char	*output;
 	size_t	i;
-	size_t	j;
 
-	output = init_output_buffer(len);
-	i = 0;
-	j = 0;
+	output = malloc(len + 1);
 	if (!output)
 		return (NULL);
+	i = 0;
 	while (i < len)
 	{
-		if (input[i] == '\\' && i + 1 < len)
-		{
-			handle_escape_sequence(input, &i, output, &j);
-		}
-		else
-		{
-			output[j++] = input[i++];
-		}
+		output[i] = input[i];
+		i++;
 	}
-	output[j] = '\0';
+	output[i] = '\0';
 	return (output);
 }
 

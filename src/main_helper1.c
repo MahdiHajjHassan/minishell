@@ -19,32 +19,10 @@ int	handle_eof(char *buf, size_t len)
 		if (isatty(STDIN_FILENO))
 			printf("exit\n");
 		free(buf);
-		exit(g_last_exit_status);
+		exit(g_sig.exit_status);
 	}
 	clearerr(stdin);
 	return (1);
-}
-
-char	*readline_helper(void)
-{
-	char	*buf;
-	size_t	capacity;
-	size_t	len;
-	int		c;
-	int		result;
-
-	buf = init_buffer(&capacity, &len);
-	if (!buf)
-		return (NULL);
-	while (1)
-	{
-		c = getchar();
-		result = process_char(c, &buf, &capacity, &len);
-		if (result == 1)
-			return (buf);
-		if (result == -1)
-			return (NULL);
-	}
 }
 
 void	init_signals(void)
@@ -54,27 +32,18 @@ void	init_signals(void)
 	g_sig.pid = 0;
 }
 
-void	display_prompt(void)
-{
-	char	cwd[1024];
 
-	if (isatty(STDIN_FILENO))
-	{
-		if (get_cwd(cwd, sizeof(cwd)))
-		{
-			write(STDOUT_FILENO, cwd, ft_strlen(cwd));
-			write(STDOUT_FILENO, "> ", 2);
-		}
-	}
-}
 
 int	handle_line_input(char **line)
 {
-	*line = readline_helper();
+	g_sig.sigint = 0;
+	*line = readline("minishell$ ");
 	if (!*line)
 	{
-		display_prompt();
-		return (1);
+		printf("exit\n");
+		exit(0);
 	}
+	if (**line)
+		add_history(*line);
 	return (0);
 }

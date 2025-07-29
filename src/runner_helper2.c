@@ -53,10 +53,10 @@ void	handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd)
 {
 	int	status;
 
+	(void)cmd;
 	status = handle_builtin(ex->av);
 	set_exit_status(status);
-	if (cmd->type != LIST)
-		exit(status);
+	exit(status);
 }
 
 int	open_redir_file_create(struct s_redircmd *rdir)

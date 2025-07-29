@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600
 
 NAME = minishell
 
@@ -17,7 +17,7 @@ clean-files:
 	@rm -f files.txt
 
 $(NAME): $(OBJS) $(LIBFT_DIR)/libft.a
-	$(CC) $(CFLAGS) -I$(INC_DIR) -I$(LIBFT_DIR) -o $@ $(OBJS) -L$(LIBFT_DIR) -lft
+	$(CC) $(CFLAGS) -I$(INC_DIR) -I$(LIBFT_DIR) -o $@ $(OBJS) -L$(LIBFT_DIR) -lft -lreadline
 
 # Special rule for runner.c to disable infinite recursion warning
 $(OBJ_DIR)/runner.o: $(SRC_DIR)/runner.c | $(OBJ_DIR)

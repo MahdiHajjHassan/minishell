@@ -67,7 +67,7 @@ char	*read_heredoc_content(char *delimiter)
 	while (1)
 	{
 		write(STDOUT_FILENO, "> ", 2);
-		line = readline_helper();
+		line = readline("");
 		
 		if (!line)
 		{

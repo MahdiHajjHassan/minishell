@@ -12,17 +12,12 @@
 
 #include "minishell.h"
 
+/* Backslash handling removed - not supported in this minishell */
 int	is_escaped(const char *s, const char *start)
 {
-	int	count;
-
-	count = 0;
-	while (s > start && *(s - 1) == '\\')
-	{
-		count++;
-		s--;
-	}
-	return (count % 2);
+	(void)s;
+	(void)start;
+	return (0);
 }
 
 char	*skip_whitespace(char *s, char *input_end, char *space)
@@ -53,17 +48,18 @@ char	*handle_default_token(char *s, char *input_end, char *input_ptr,
 {
 	char	quote;
 
+	(void)input_ptr;
 	quote = 0;
 	while (s < input_end)
 	{
-		if (!quote && !is_escaped(s, input_ptr))
+		if (!quote)
 		{
 			if (strchr(params.symbols, *s) || strchr(params.space, *s))
 				break ;
 			if (*s == '"' || *s == '\'')
 				quote = *s;
 		}
-		else if (quote && !is_escaped(s, input_ptr) && *s == quote)
+		else if (quote && *s == quote)
 		{
 			quote = 0;
 		}

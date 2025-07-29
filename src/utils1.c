@@ -30,13 +30,10 @@ void	handle_pipe_case(struct s_cmd *cmd)
 	nulterm(pcmd->right);
 }
 
+/* List command handling removed - semicolon not supported in this minishell */
 void	handle_list_case(struct s_cmd *cmd)
 {
-	struct s_listcmd	*lcmd;
-
-	lcmd = (struct s_listcmd *)cmd;
-	nulterm(lcmd->left);
-	nulterm(lcmd->right);
+	(void)cmd;
 }
 
 void	handle_back_case(struct s_cmd *cmd)
@@ -67,8 +64,7 @@ void	free_cmd(struct s_cmd *cmd)
 		free_heredoc_cmd((struct s_heredoccmd *)cmd);
 	else if (cmd->type == PIPE)
 		free_pipe_cmd((struct s_pipecmd *)cmd);
-	else if (cmd->type == LIST)
-		free_list_cmd((struct s_listcmd *)cmd);
+	/* List command handling removed - semicolon not supported in this minishell */
 	else if (cmd->type == BACK)
 		free_back_cmd((struct s_backcmd *)cmd);
 }

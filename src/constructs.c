@@ -50,16 +50,12 @@ struct s_cmd	*pipecmd(struct s_cmd *left, struct s_cmd *right)
 	return ((struct s_cmd *)cmd);
 }
 
+/* List command constructor removed - semicolon not supported in this minishell */
 struct s_cmd	*listcmd(struct s_cmd *left, struct s_cmd *right)
 {
-	struct s_listcmd	*cmd;
-
-	cmd = malloc(sizeof(*cmd));
-	ft_memset(cmd, 0, sizeof(*cmd));
-	cmd->type = LIST;
-	cmd->left = left;
-	cmd->right = right;
-	return ((struct s_cmd *)cmd);
+	(void)left;
+	(void)right;
+	return (NULL);
 }
 
 struct s_cmd	*backcmd(struct s_cmd *subcmd)

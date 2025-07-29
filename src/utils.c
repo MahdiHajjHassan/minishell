@@ -64,8 +64,7 @@ struct s_cmd	*nulterm(struct s_cmd *cmd)
 		handle_heredoc_case(cmd);
 	else if (cmd->type == PIPE)
 		handle_pipe_case(cmd);
-	else if (cmd->type == LIST)
-		handle_list_case(cmd);
+	/* List command handling removed - semicolon not supported in this minishell */
 	else if (cmd->type == BACK)
 		handle_back_case(cmd);
 	return (cmd);

@@ -19,7 +19,7 @@ int	handle_basic_symbols(char **s_ptr, char *input_ptr)
 
 	s = *s_ptr;
 	ret = *s;
-	if (*s == '|' || *s == '&' || *s == ';' || *s == '('
+	if (*s == '|' || *s == '&' || *s == '('
 		|| *s == ')')
 	{
 		if (!is_escaped(s, input_ptr))
@@ -78,10 +78,10 @@ void	init_symbols_array(char *symbols)
 	symbols[1] = '>';
 	symbols[2] = '|';
 	symbols[3] = '&';
-	symbols[4] = ';';
-	symbols[5] = '(';
-	symbols[6] = ')';
-	symbols[7] = '\0';
+	/* Semicolon removed - not supported in this minishell */
+	symbols[4] = '(';
+	symbols[5] = ')';
+	symbols[6] = '\0';
 }
 
 int	handle_less_than(char **s_ptr, char *input_ptr)

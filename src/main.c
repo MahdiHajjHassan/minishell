@@ -17,34 +17,17 @@ t_sig	g_sig = {0, 0, 0, 0};
 static void	sigint_handler(int signo)
 {
 	(void)signo;
-	if (g_sig.pid == 0)
-	{
-		write(STDERR_FILENO, "\b\b  \b\b", 6);
-		write(STDERR_FILENO, "\n", 1);
-		display_prompt();
-		g_sig.exit_status = 1;
-	}
-	else
-	{
-		write(STDERR_FILENO, "\n", 1);
-		g_sig.exit_status = 130;
-	}
-	g_sig.sigint = 1;
+	write(STDERR_FILENO, "\n", 1);
+	rl_on_new_line();
+	rl_replace_line("", 0);
+	rl_redisplay();
+	g_sig.exit_status = 130;
 }
 
 static void	sigquit_handler(int signo)
 {
 	(void)signo;
-	if (g_sig.pid != 0)
-	{
-		write(STDERR_FILENO, "Quit: 3\n", 8);
-		g_sig.exit_status = 131;
-		g_sig.sigquit = 1;
-	}
-	else
-	{
-		write(STDERR_FILENO, "\b\b  \b\b", 6);
-	}
+	/* Do nothing in interactive mode */
 }
 
 static void	setup_signals(void)
@@ -71,6 +54,7 @@ int	main(int argc, char **argv, char **envp)
 	(void)argv;
 	(void)envp;
 	setup_signals();
+	rl_catch_signals = 0;
 	while (1)
 	{
 		init_signals();
@@ -84,5 +68,5 @@ int	main(int argc, char **argv, char **envp)
 		free_cmd(cmd);
 		free(line);
 	}
-	return (g_last_exit_status);
+	return (g_sig.exit_status);
 }

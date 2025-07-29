@@ -59,6 +59,13 @@ int	ft_vsnprintf(char *str, size_t size, const char *format, va_list args)
 			free(num_str);
 			format += 2;
 		}
+		else if (*format == '%' && *(format + 1) == 's')
+		{
+			char *s = va_arg(args, char *);
+			for (int j = 0; s && s[j] && i < (int)size - 1; j++)
+				str[i++] = s[j];
+			format += 2;
+		}
 		else
 		{
 			str[i++] = *format++;
@@ -168,12 +175,12 @@ int	ft_setenv(const char *name, const char *value, int overwrite)
 		}
 		i++;
 	}
-	new_var = ft_strjoin(name, "=");
+	new_var = malloc(ft_strlen(name) + ft_strlen(value) + 2);
 	if (!new_var)
 		return (-1);
-	new_var = ft_strjoin(new_var, value);
-	if (!new_var)
-		return (-1);
+	ft_strcpy(new_var, name);
+	ft_strlcat(new_var, "=", ft_strlen(name) + 2);
+	ft_strlcat(new_var, value, ft_strlen(name) + ft_strlen(value) + 2);
 	if (environ[i])
 	{
 		free(environ[i]);
@@ -210,6 +217,8 @@ int	ft_unsetenv(const char *name)
 	int			name_len;
 	char		**new_environ;
 	int			j;
+	int			total_vars;
+	int			var_index;
 
 	if (!name || !*name || ft_strchr(name, '='))
 		return (-1);
@@ -218,21 +227,32 @@ int	ft_unsetenv(const char *name)
 	while (environ[i])
 	{
 		if (ft_strncmp(environ[i], name, name_len) == 0 && environ[i][name_len] == '=')
+		{
+			var_index = i;
 			break ;
+		}
 		i++;
 	}
 	if (!environ[i])
 		return (0);
-	while (environ[i])
-		i++;
-	new_environ = malloc(i * sizeof(char *));
+	
+	/* Count total variables */
+	total_vars = 0;
+	while (environ[total_vars])
+		total_vars++;
+	
+	/* Free the variable being removed */
+	free(environ[var_index]);
+	
+	new_environ = malloc((total_vars) * sizeof(char *));
 	if (!new_environ)
 		return (-1);
+	
 	i = 0;
 	j = 0;
 	while (environ[i])
 	{
-		if (ft_strncmp(environ[i], name, name_len) != 0 || environ[i][name_len] != '=')
+		if (i != var_index)
 		{
 			new_environ[j] = environ[i];
 			j++;

@@ -31,10 +31,24 @@ static int	process_export_arg(char *arg_copy, char **name, char **value)
 
 static int	builtin_export(char **argv)
 {
-	int		i;
-	char	*name;
-	char	*value;
-	char	*arg_copy;
+	extern char	**environ;
+	int			i;
+	char		*name;
+	char		*value;
+	char		*arg_copy;
+	char		*equals;
+
+	/* If no arguments, print all environment variables */
+	if (!argv[1])
+	{
+		i = 0;
+		while (environ[i])
+		{
+			printf("declare -x %s\n", environ[i]);
+			i++;
+		}
+		return (0);
+	}
 
 	i = 1;
 	while (argv[i])
@@ -42,6 +56,16 @@ static int	builtin_export(char **argv)
 		arg_copy = ft_strdup(argv[i]);
 		if (!arg_copy)
 			return (1);
+		
+		equals = ft_strchr(arg_copy, '=');
+		if (!equals)
+		{
+			/* Variable without value - just check if it exists */
+			free(arg_copy);
+			ft_fprintf_stderr("minishell: export: `%s': not a valid identifier\n", argv[i]);
+			return (1);
+		}
+		
 		if (process_export_arg(arg_copy, &name, &value))
 			return (1);
 		i++;

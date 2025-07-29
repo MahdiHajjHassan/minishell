@@ -22,65 +22,23 @@ void	open_redir_file_regular(struct s_redircmd *rdir)
 	}
 }
 
+/* List command functions removed - semicolon not supported in this minishell */
 void	handle_list_builtin(struct s_execcmd *ex)
 {
-	int	status;
-
-	expand_exec_args(ex);
-	status = handle_builtin(ex->av);
-	set_exit_status(status);
+	(void)ex;
 }
 
 void	handle_list_external(struct s_cmd *cmd)
 {
-	int	status;
-
-	if (forkk() == 0)
-		runcmd(cmd);
-	wait(&status);
-	if (WIFSIGNALED(status))
-		set_exit_status(128 + WTERMSIG(status));
-	else
-		set_exit_status(WEXITSTATUS(status));
+	(void)cmd;
 }
 
 void	process_list_left(struct s_listcmd *list)
 {
-	struct s_execcmd	*ex;
-
-	if (list->left->type == EXEC)
-	{
-		ex = (struct s_execcmd *)list->left;
-		if (ex->av[0] && is_builtin(ex->av[0]))
-		{
-			handle_list_builtin(ex);
-		}
-		else
-		{
-			handle_list_external(list->left);
-		}
-	}
-	else
-	{
-		handle_list_external(list->left);
-	}
+	(void)list;
 }
 
 void	process_list_right(struct s_listcmd *list)
 {
-	struct s_execcmd	*ex;
-
-	if (list->right)
-	{
-		if (list->right->type == EXEC)
-		{
-			ex = (struct s_execcmd *)list->right;
-			if (ex->av[0] && is_builtin(ex->av[0]))
-			{
-				handle_list_builtin(ex);
-				return ;
-			}
-		}
-		runcmd(list->right);
-	}
+	(void)list;
 }

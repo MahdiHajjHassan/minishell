@@ -45,10 +45,10 @@ int	parse_export_arg(char *arg, char **name, char **value)
 {
 	char	*equals;
 
-	equals = strchr(arg, '=');
+	equals = ft_strchr(arg, '=');
 	if (!equals)
 	{
-		ft_fprintf_stderr("minishell: export: invalid format: %s\n", arg);
+		ft_fprintf_stderr("minishell: export: `%s': not a valid identifier\n", arg);
 		return (1);
 	}
 	*name = arg;
@@ -59,15 +59,15 @@ int	parse_export_arg(char *arg, char **name, char **value)
 
 void	remove_quotes(char **value)
 {
-	if (**value == '"' && (*value)[strlen(*value) - 1] == '"')
+	if (**value == '"' && (*value)[ft_strlen(*value) - 1] == '"')
 	{
 		(*value)++;
-		(*value)[strlen(*value) - 1] = '\0';
+		(*value)[ft_strlen(*value) - 1] = '\0';
 	}
-	else if (**value == '\'' && (*value)[strlen(*value) - 1] == '\'')
+	else if (**value == '\'' && (*value)[ft_strlen(*value) - 1] == '\'')
 	{
 		(*value)++;
-		(*value)[strlen(*value) - 1] = '\0';
+		(*value)[ft_strlen(*value) - 1] = '\0';
 	}
 }
 

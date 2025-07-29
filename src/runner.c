@@ -59,13 +59,10 @@ void	run_redir_cmd(struct s_cmd *cmd)
 	runcmd(rdir->cmd);
 }
 
+/* List command execution removed - semicolon not supported in this minishell */
 void	run_list_cmd(struct s_cmd *cmd)
 {
-	struct s_listcmd	*list;
-
-	list = (struct s_listcmd *)cmd;
-	process_list_left(list);
-	process_list_right(list);
+	(void)cmd;
 }
 
 void	runcmd(struct s_cmd *cmd)
@@ -78,11 +75,7 @@ void	runcmd(struct s_cmd *cmd)
 		run_redir_cmd(cmd);
 	else if (cmd->type == HEREDOC)
 		run_heredoc_cmd(cmd);
-	else if (cmd->type == LIST)
-	{
-		run_list_cmd(cmd);
-		return ;
-	}
+	/* List command handling removed - semicolon not supported in this minishell */
 	else if (cmd->type == PIPE)
 		run_pipe_cmd(cmd);
 	else if (cmd->type == BACK)
@@ -92,6 +85,5 @@ void	runcmd(struct s_cmd *cmd)
 		ft_fprintf_stderr("unknown command type: %d\n", cmd->type);
 		exit(1);
 	}
-	if (cmd->type != LIST)
-		exit(0);
+	exit(0);
 }
