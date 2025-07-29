@@ -60,6 +60,8 @@ struct s_cmd	*nulterm(struct s_cmd *cmd)
 		handle_exec_case(cmd);
 	else if (cmd->type == REDIR)
 		handle_redir_case(cmd);
+	else if (cmd->type == HEREDOC)
+		handle_heredoc_case(cmd);
 	else if (cmd->type == PIPE)
 		handle_pipe_case(cmd);
 	else if (cmd->type == LIST)

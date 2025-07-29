@@ -42,6 +42,9 @@ int	handle_special_chars(char **s_ptr, char *input_ptr)
 	ret = handle_greater_than(s_ptr, input_ptr);
 	if (ret != -1)
 		return (ret);
+	ret = handle_less_than(s_ptr, input_ptr);
+	if (ret != -1)
+		return (ret);
 	return ('a');
 }
 

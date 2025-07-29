@@ -74,14 +74,22 @@ struct s_cmd	*parse_redirs(struct s_cmd *cmd, char **input_ptr,
 	int		tok;
 	char	*q;
 	char	*eq;
-	char	*file;
+	char	*file_or_delimiter;
 
-	while (peek(input_ptr, input_end, "<>"))
+	while (peek(input_ptr, input_end, "<>H"))
 	{
 		tok = get_redir_token(input_ptr, input_end, &q, &eq);
 		remove_redir_quotes(&q, &eq);
-		file = process_filename(q, eq);
-		cmd = handle_redir_token(cmd, tok, file);
+		file_or_delimiter = process_filename(q, eq);
+		
+		if (tok == 'H')
+		{
+			cmd = handle_heredoc_token(cmd, file_or_delimiter);
+		}
+		else
+		{
+			cmd = handle_redir_token(cmd, tok, file_or_delimiter);
+		}
 	}
 	return (cmd);
 }

@@ -72,3 +72,25 @@ struct s_cmd	*backcmd(struct s_cmd *subcmd)
 	cmd->cmd = subcmd;
 	return ((struct s_cmd *)cmd);
 }
+
+struct s_cmd	*heredoccmd(struct s_cmd *subcmd, char *delimiter, char *content)
+{
+	struct s_heredoccmd	*cmd;
+
+	cmd = malloc(sizeof(*cmd));
+	if (!cmd)
+	{
+		free(delimiter);
+		free(content);
+		return (NULL);
+	}
+	
+	ft_memset(cmd, 0, sizeof(*cmd));
+	cmd->type = HEREDOC;
+	cmd->cmd = subcmd;
+	cmd->delimiter = delimiter;
+	cmd->content = content;
+	cmd->fd = 0;
+	
+	return ((struct s_cmd *)cmd);
+}

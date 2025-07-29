@@ -76,6 +76,8 @@ void	runcmd(struct s_cmd *cmd)
 		run_exec_cmd(cmd);
 	else if (cmd->type == REDIR)
 		run_redir_cmd(cmd);
+	else if (cmd->type == HEREDOC)
+		run_heredoc_cmd(cmd);
 	else if (cmd->type == LIST)
 	{
 		run_list_cmd(cmd);

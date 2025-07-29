@@ -47,6 +47,14 @@ void	handle_back_case(struct s_cmd *cmd)
 	nulterm(bcmd->cmd);
 }
 
+void	handle_heredoc_case(struct s_cmd *cmd)
+{
+	struct s_heredoccmd	*hcmd;
+
+	hcmd = (struct s_heredoccmd *)cmd;
+	nulterm(hcmd->cmd);
+}
+
 void	free_cmd(struct s_cmd *cmd)
 {
 	if (!cmd)
@@ -55,6 +63,8 @@ void	free_cmd(struct s_cmd *cmd)
 		free_exec_cmd((struct s_execcmd *)cmd);
 	else if (cmd->type == REDIR)
 		free_redir_cmd((struct s_redircmd *)cmd);
+	else if (cmd->type == HEREDOC)
+		free_heredoc_cmd((struct s_heredoccmd *)cmd);
 	else if (cmd->type == PIPE)
 		free_pipe_cmd((struct s_pipecmd *)cmd);
 	else if (cmd->type == LIST)

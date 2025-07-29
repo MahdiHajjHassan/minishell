@@ -51,3 +51,53 @@ void	run_back_cmd(struct s_cmd *cmd)
 	}
 	wait(0);
 }
+
+void	run_heredoc_cmd(struct s_cmd *cmd)
+{
+	struct s_heredoccmd	*hcmd;
+	int					pipe_fd[2];
+	pid_t				pid;
+	int					status;
+
+	hcmd = (struct s_heredoccmd *)cmd;
+	
+	if (pipe(pipe_fd) < 0)
+	{
+		perror("pipe failed");
+		exit(1);
+	}
+	
+	pid = fork();
+	if (pid < 0)
+	{
+		perror("fork failed");
+		exit(1);
+	}
+	
+	if (pid == 0)
+	{
+		close(pipe_fd[0]);
+		
+		if (hcmd->content && ft_strlen(hcmd->content) > 0)
+		{
+			write(pipe_fd[1], hcmd->content, ft_strlen(hcmd->content));
+		}
+		close(pipe_fd[1]);
+		exit(0);
+	}
+	else
+	{
+		close(pipe_fd[1]);
+		
+		waitpid(pid, &status, 0);
+		
+		if (dup2(pipe_fd[0], STDIN_FILENO) < 0)
+		{
+			perror("dup2 failed");
+			exit(1);
+		}
+		close(pipe_fd[0]);
+		
+		runcmd(hcmd->cmd);
+	}
+}

@@ -50,3 +50,17 @@ struct s_cmd	*process_arguments(struct s_cmd *ret,
 	}
 	return (ret);
 }
+
+struct s_cmd	*handle_heredoc_token(struct s_cmd *cmd, char *delimiter)
+{
+	char	*content;
+	
+	content = read_heredoc_content(delimiter);
+	if (!content)
+	{
+		free(delimiter);
+		return (NULL);
+	}
+	
+	return (heredoccmd(cmd, delimiter, content));
+}

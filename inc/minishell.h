@@ -41,6 +41,7 @@ extern t_sig	g_sig;
 # define PIPE	3
 # define LIST	4
 # define BACK	5
+# define HEREDOC	6
 
 /* Maximum number of arguments allowed in a command */
 # define MAXARGS	100
@@ -181,6 +182,19 @@ typedef struct s_backcmd
 	struct s_cmd	*cmd;
 }	t_backcmd;
 
+/*
+ * Structure for heredoc commands
+ * Example: cat << EOF
+ */
+typedef struct s_heredoccmd
+{
+	int				type;
+	struct s_cmd	*cmd;
+	char			*delimiter;
+	char			*content;
+	int				fd;
+}	t_heredoccmd;
+
 /* Basic shell functions */
 char			*readline_helper(void);
 void			*get_cwd(char *buf, size_t size);
@@ -266,11 +280,13 @@ void			handle_redir_case(struct s_cmd *cmd);
 void			handle_pipe_case(struct s_cmd *cmd);
 void			handle_list_case(struct s_cmd *cmd);
 void			handle_back_case(struct s_cmd *cmd);
+void			handle_heredoc_case(struct s_cmd *cmd);
 void			free_exec_cmd(struct s_execcmd *ecmd);
 void			free_redir_cmd(struct s_redircmd *rcmd);
 void			free_pipe_cmd(struct s_pipecmd *pcmd);
 void			free_list_cmd(struct s_listcmd *lcmd);
 void			free_back_cmd(struct s_backcmd *bcmd);
+void			free_heredoc_cmd(struct s_heredoccmd *hcmd);
 void			free_cmd(struct s_cmd *cmd);
 
 /* Runner helper2 functions */
@@ -292,10 +308,12 @@ void			process_list_right(struct s_listcmd *list);
 void			setup_pipe_left(int *p, struct s_pipecmd *pipecmd);
 void			setup_pipe_right(int *p, struct s_pipecmd *pipecmd);
 void			run_back_cmd(struct s_cmd *cmd);
+void			run_heredoc_cmd(struct s_cmd *cmd);
 
 /* Tokenize helper2 functions */
 int				handle_basic_symbols(char **s_ptr, char *input_ptr);
 int				handle_greater_than(char **s_ptr, char *input_ptr);
+int				handle_less_than(char **s_ptr, char *input_ptr);
 void			init_space_array(char *space);
 void			init_symbols_array(char *symbols);
 void			init_token_arrays(char *space, char *symbols);
@@ -332,6 +350,7 @@ struct s_cmd	*backcmd(struct s_cmd *subcmd);
 struct s_cmd	*listcmd(struct s_cmd *left, struct s_cmd *right);
 struct s_cmd	*redircmd(struct s_cmd *subcmd, char *file,
 					char *efile, t_redir_params params);
+struct s_cmd	*heredoccmd(struct s_cmd *subcmd, char *delimiter, char *content);
 struct s_cmd	*execcmd(void);
 struct s_cmd	*parse_redirs(struct s_cmd *cmd,
 					char **input_ptr, char *input_end);
@@ -352,6 +371,7 @@ struct s_cmd	*apply_input_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*apply_output_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*apply_append_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*handle_redir_token(struct s_cmd *cmd, int tok, char *file);
+struct s_cmd	*handle_heredoc_token(struct s_cmd *cmd, char *delimiter);
 struct s_cmd	*init_exec_cmd(void);
 int				get_exec_token(char **input_ptr, char *input_end, char **q,
 					char **eq);
@@ -367,6 +387,12 @@ int				is_builtin(char *cmd);
 int				handle_builtin(char **argv);
 char			*expand_variables(const char *str, size_t len);
 void			set_exit_status(int status);
+
+/* Heredoc functions */
+char			*read_heredoc_content(char *delimiter);
+char			*append_line_to_content(char *content, char *line);
+void			setup_heredoc_signals(void);
+void			heredoc_sigint_handler(int signo);
 
 /* Builtin helper functions */
 int				cd_to_home(void);

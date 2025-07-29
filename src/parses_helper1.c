@@ -93,5 +93,7 @@ struct s_cmd	*handle_redir_token(struct s_cmd *cmd, int tok, char *file)
 		return (apply_output_redir(cmd, file));
 	else if (tok == '+')
 		return (apply_append_redir(cmd, file));
+	else if (tok == 'H')
+		return (handle_heredoc_token(cmd, file));
 	return (cmd);
 }

@@ -52,3 +52,19 @@ void	free_back_cmd(struct s_backcmd *bcmd)
 	free_cmd(bcmd->cmd);
 	free(bcmd);
 }
+
+void	free_heredoc_cmd(struct s_heredoccmd *hcmd)
+{
+	if (!hcmd)
+		return ;
+	
+	free_cmd(hcmd->cmd);
+	
+	if (hcmd->delimiter)
+		free(hcmd->delimiter);
+	
+	if (hcmd->content)
+		free(hcmd->content);
+	
+	free(hcmd);
+}
