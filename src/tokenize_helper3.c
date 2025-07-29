@@ -46,3 +46,9 @@ void	setup_token_processing(char **input_ptr, char *input_end,
 	if (token_start)
 		*token_start = *s_ptr;
 }
+
+void	init_token_arrays(char *space, char *symbols)
+{
+	init_space_array(space);
+	init_symbols_array(symbols);
+}

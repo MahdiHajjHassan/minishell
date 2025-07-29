@@ -78,7 +78,6 @@ void	init_symbols_array(char *symbols)
 	symbols[1] = '>';
 	symbols[2] = '|';
 	symbols[3] = '&';
-	/* Semicolon removed - not supported in this minishell */
 	symbols[4] = '(';
 	symbols[5] = ')';
 	symbols[6] = '\0';
@@ -109,10 +108,4 @@ int	handle_less_than(char **s_ptr, char *input_ptr)
 	}
 	*s_ptr = s;
 	return (-1);
-}
-
-void	init_token_arrays(char *space, char *symbols)
-{
-	init_space_array(space);
-	init_symbols_array(symbols);
 }

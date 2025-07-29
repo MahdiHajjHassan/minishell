@@ -19,7 +19,6 @@ int	builtin_echo(char **argv)
 
 	i = 1;
 	print_newline = 1;
-	/* Process -n options only at the beginning */
 	while (argv[i] && !ft_strcmp(argv[i], "-n"))
 	{
 		print_newline = 0;
@@ -94,16 +93,15 @@ int	builtin_exit(char **argv)
 		}
 		status = ft_atoi(argv[1]);
 		
-		/* Check for too many arguments */
 		if (argv[2])
 		{
 			ft_fprintf_stderr("minishell: exit: too many arguments\n", STDERR_FILENO);
-			return (1);  /* Don't exit, just return error */
+			return (1);
 		}
 	}
 	
 	clean_exit(status);
-	return (0);  /* Never reached */
+	return (0);
 }
 
 int	is_builtin(char *cmd)
