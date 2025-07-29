@@ -31,7 +31,7 @@ void	execute_cmd(struct s_cmd *cmd)
 	if (g_sig.pid == 0)
 	{
 		runcmd(cmd);
-		exit(0);
+		clean_exit(0);
 	}
 	wait(&status);
 	handle_child_status(status);

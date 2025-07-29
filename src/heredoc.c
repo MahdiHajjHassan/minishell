@@ -26,7 +26,7 @@ void	heredoc_sigint_handler(int signo)
 {
 	(void)signo;
 	write(STDERR_FILENO, "\n", 1);
-	exit(130);
+	clean_exit(130);
 }
 
 char	*append_line_to_content(char *content, char *line)

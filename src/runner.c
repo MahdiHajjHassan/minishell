@@ -32,7 +32,7 @@ void	run_exec_cmd(struct s_cmd *cmd)
 
 	ex = (struct s_execcmd *)cmd;
 	if (ex->av[0] == 0)
-		exit(0);
+		clean_exit(0);
 	expand_exec_args(ex);
 	if (is_builtin(ex->av[0]))
 	{
@@ -50,11 +50,19 @@ void	run_redir_cmd(struct s_cmd *cmd)
 	close(rdir->fd);
 	if ((rdir->mode & O_CREAT) && (rdir->mode & (O_WRONLY | O_RDWR)))
 	{
-		open_redir_file_create(rdir);
+		if (open_redir_file_create(rdir) != 0)
+		{
+			set_exit_status(1);
+			clean_exit(1); // Exit with error if redirection fails
+		}
 	}
 	else
 	{
-		open_redir_file_regular(rdir);
+		if (open_redir_file_regular(rdir) != 0)
+		{
+			set_exit_status(1);
+			clean_exit(1); // Exit with error if redirection fails
+		}
 	}
 	runcmd(rdir->cmd);
 }
@@ -68,7 +76,7 @@ void	run_list_cmd(struct s_cmd *cmd)
 void	runcmd(struct s_cmd *cmd)
 {
 	if (cmd == 0)
-		exit(0);
+		clean_exit(0);
 	if (cmd->type == EXEC)
 		run_exec_cmd(cmd);
 	else if (cmd->type == REDIR)
@@ -83,7 +91,7 @@ void	runcmd(struct s_cmd *cmd)
 	else
 	{
 		ft_fprintf_stderr("unknown command type: %d\n", cmd->type);
-		exit(1);
+		clean_exit(1);
 	}
-	exit(0);
+	// Don't call clean_exit(0) here - let the calling function handle exit
 }

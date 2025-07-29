@@ -300,7 +300,7 @@ void			handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd);
 int				open_redir_file_create(struct s_redircmd *rdir);
 
 /* Runner helper3 functions */
-void			open_redir_file_regular(struct s_redircmd *rdir);
+int				open_redir_file_regular(struct s_redircmd *rdir);
 /* List command functions removed - semicolon not supported in this minishell */
 
 /* Runner helper4 functions */
@@ -410,7 +410,7 @@ void			expand_exec_args(struct s_execcmd *ex);
 void			handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd);
 void			execute_external_cmd(struct s_execcmd *ex);
 int				open_redir_file_create(struct s_redircmd *rdir);
-void			open_redir_file_regular(struct s_redircmd *rdir);
+int				open_redir_file_regular(struct s_redircmd *rdir);
 /* List command functions removed - semicolon not supported in this minishell */
 void			setup_pipe_left(int *p, struct s_pipecmd *pipecmd);
 void			setup_pipe_right(int *p, struct s_pipecmd *pipecmd);
@@ -431,7 +431,7 @@ int				ft_unsetenv(const char *name);
 
 /* Memory management functions */
 char			**copy_environ(char **envp);
-void			free_environ_copy(void);
+void			free_environ_copy(char **environ_copy);
 void			clean_exit(int status);
 #ifdef DEBUG
 void			check_leaks(void);

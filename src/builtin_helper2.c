@@ -19,7 +19,8 @@ int	builtin_echo(char **argv)
 
 	i = 1;
 	print_newline = 1;
-	if (argv[1] && !ft_strcmp(argv[1], "-n"))
+	/* Process -n options only at the beginning */
+	while (argv[i] && !ft_strcmp(argv[i], "-n"))
 	{
 		print_newline = 0;
 		i++;

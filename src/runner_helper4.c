@@ -47,7 +47,7 @@ void	run_back_cmd(struct s_cmd *cmd)
 		{
 			runcmd(back->cmd);
 		}
-		exit(0);
+		clean_exit(0);
 	}
 	wait(0);
 }
@@ -64,14 +64,14 @@ void	run_heredoc_cmd(struct s_cmd *cmd)
 	if (pipe(pipe_fd) < 0)
 	{
 		perror("pipe failed");
-		exit(1);
+		clean_exit(1);
 	}
 	
 	pid = fork();
 	if (pid < 0)
 	{
 		perror("fork failed");
-		exit(1);
+		clean_exit(1);
 	}
 	
 	if (pid == 0)
@@ -83,7 +83,7 @@ void	run_heredoc_cmd(struct s_cmd *cmd)
 			write(pipe_fd[1], hcmd->content, ft_strlen(hcmd->content));
 		}
 		close(pipe_fd[1]);
-		exit(0);
+		clean_exit(0);
 	}
 	else
 	{
@@ -94,7 +94,7 @@ void	run_heredoc_cmd(struct s_cmd *cmd)
 		if (dup2(pipe_fd[0], STDIN_FILENO) < 0)
 		{
 			perror("dup2 failed");
-			exit(1);
+			clean_exit(1);
 		}
 		close(pipe_fd[0]);
 		

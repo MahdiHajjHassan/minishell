@@ -12,14 +12,31 @@
 
 #include "minishell.h"
 
-void	open_redir_file_regular(struct s_redircmd *rdir)
+int	open_redir_file_regular(struct s_redircmd *rdir)
 {
-	if (open(rdir->file, rdir->mode) < 0)
+	int	fd;
+	int	save_errno;
+
+	fd = open(rdir->file, rdir->mode);
+	if (fd < 0)
 	{
+		save_errno = errno;
 		ft_fprintf_stderr("open failed: %s: %s\n", rdir->file,
-			strerror(errno));
-		exit(1);
+			strerror(save_errno));
+		return (1);
 	}
+	if (fd != rdir->fd)
+	{
+		if (dup2(fd, rdir->fd) < 0)
+		{
+			save_errno = errno;
+			ft_fprintf_stderr("dup2 failed: %s\n", strerror(save_errno));
+			close(fd);
+			return (1);
+		}
+		close(fd);
+	}
+	return (0);
 }
 
 /* List command functions removed - semicolon not supported in this minishell */

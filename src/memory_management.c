@@ -55,27 +55,28 @@ char	**copy_environ(char **envp)
 }
 
 /* Free environment copy on exit */
-void	free_environ_copy(void)
+void	free_environ_copy(char **environ_copy)
 {
 	int	i;
-	extern char	**environ;
 
 	i = 0;
-	if (environ)
+	if (environ_copy)
 	{
-		while (environ[i])
+		while (environ_copy[i])
 		{
-			free(environ[i]);
+			free(environ_copy[i]);
 			i++;
 		}
-		free(environ);
+		free(environ_copy);
 	}
 }
 
 /* Clean exit function */
 void	clean_exit(int status)
 {
-	free_environ_copy();
+	extern char	**environ;
+	free_environ_copy(environ);
+	environ = NULL;
 	rl_clear_history();
 	exit(status);
 }

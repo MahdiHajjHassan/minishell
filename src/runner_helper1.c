@@ -72,12 +72,12 @@ void	execute_external_cmd(struct s_execcmd *ex)
 		execve(cmd_path, ex->av, environ);
 		perror("execve failed");
 		free(cmd_path);
-		exit(1);
+		clean_exit(1);
 	}
 	else
 	{
 		ft_fprintf_stderr("command not found: %s\n", ex->av[0]);
-		exit(127);
+		clean_exit(127);
 	}
 }
 

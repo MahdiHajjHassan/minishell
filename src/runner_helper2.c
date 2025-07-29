@@ -56,23 +56,31 @@ void	handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd)
 	(void)cmd;
 	status = handle_builtin(ex->av);
 	set_exit_status(status);
-	exit(status);
+	clean_exit(status);
 }
 
 int	open_redir_file_create(struct s_redircmd *rdir)
 {
 	int	fd;
+	int	save_errno;
 
 	fd = open(rdir->file, rdir->mode, 0644);
 	if (fd < 0)
 	{
+		save_errno = errno;
 		ft_fprintf_stderr("open failed: %s: %s\n", rdir->file,
-			strerror(errno));
-		exit(1);
+			strerror(save_errno));
+		return (1);
 	}
 	if (fd != rdir->fd)
 	{
-		dup2(fd, rdir->fd);
+		if (dup2(fd, rdir->fd) < 0)
+		{
+			save_errno = errno;
+			ft_fprintf_stderr("dup2 failed: %s\n", strerror(save_errno));
+			close(fd);
+			return (1);
+		}
 		close(fd);
 	}
 	return (0);
