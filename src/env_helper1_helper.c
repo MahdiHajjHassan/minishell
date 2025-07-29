@@ -31,7 +31,7 @@ char	*resize_for_env_value(char *result, size_t *alloc_size,
 	if (j + value_len >= *alloc_size)
 	{
 		*alloc_size = (j + value_len) * 2;
-		new_result = realloc(result, *alloc_size);
+		new_result = ft_realloc(result, *alloc_size);
 		if (!new_result)
 		{
 			free(result);
@@ -49,7 +49,7 @@ char	*resize_for_char(char *result, size_t *alloc_size, size_t j)
 	if (j + 1 >= *alloc_size)
 	{
 		*alloc_size *= 2;
-		new_result = realloc(result, *alloc_size);
+		new_result = ft_realloc(result, *alloc_size);
 		if (!new_result)
 		{
 			free(result);

@@ -53,7 +53,7 @@ struct s_cmd	*tokenize(const char *line)
 	char			*input_end;
 	struct s_cmd	*cmd;
 
-	input = strdup(line);
+	input = ft_strdup(line);
 	input_ptr = input;
 	input_end = input + strlen(input);
 	cmd = parse_line(&input_ptr, input_end);

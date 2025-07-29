@@ -19,12 +19,12 @@ int	cd_to_home(void)
 	home = getenv("HOME");
 	if (!home)
 	{
-		fprintf(stderr, "minishell: cd: HOME not set\n");
+		ft_fprintf_stderr("minishell: cd: HOME not set\n");
 		return (1);
 	}
 	if (chdir(home) != 0)
 	{
-		fprintf(stderr, "minishell: cd: %s: %s\n", home, strerror(errno));
+		ft_fprintf_stderr("minishell: cd: %s: %s\n", home, strerror(errno));
 		return (1);
 	}
 	return (0);
@@ -34,7 +34,7 @@ int	cd_to_path(char *path)
 {
 	if (chdir(path) != 0)
 	{
-		fprintf(stderr, "minishell: cd: %s: %s\n",
+		ft_fprintf_stderr("minishell: cd: %s: %s\n",
 			path, strerror(errno));
 		return (1);
 	}
@@ -48,7 +48,7 @@ int	parse_export_arg(char *arg, char **name, char **value)
 	equals = strchr(arg, '=');
 	if (!equals)
 	{
-		fprintf(stderr, "minishell: export: invalid format: %s\n", arg);
+		ft_fprintf_stderr("minishell: export: invalid format: %s\n", arg);
 		return (1);
 	}
 	*name = arg;
@@ -73,9 +73,9 @@ void	remove_quotes(char **value)
 
 int	set_environment_var(char *name, char *value)
 {
-	if (setenv(name, value, 1) != 0)
+	if (ft_setenv(name, value, 1) != 0)
 	{
-		fprintf(stderr, "minishell: export: %s\n", strerror(errno));
+		ft_fprintf_stderr("minishell: export: %s\n", strerror(errno));
 		return (1);
 	}
 	return (0);

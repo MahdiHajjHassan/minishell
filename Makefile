@@ -17,7 +17,7 @@ clean-files:
 	@rm -f files.txt
 
 $(NAME): $(OBJS) $(LIBFT_DIR)/libft.a
-	$(CC) $(CFLAGS) -I$(INC_DIR) -I$(LIBFT_DIR) -L$(LIBFT_DIR) -lft -o $@ $(OBJS)
+	$(CC) $(CFLAGS) -I$(INC_DIR) -I$(LIBFT_DIR) -o $@ $(OBJS) -L$(LIBFT_DIR) -lft
 
 # Special rule for runner.c to disable infinite recursion warning
 $(OBJ_DIR)/runner.o: $(SRC_DIR)/runner.c | $(OBJ_DIR)

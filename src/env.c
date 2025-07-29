@@ -24,7 +24,7 @@ static char	*finalize_result(char *result, size_t j)
 	char	*final;
 
 	result[j] = '\0';
-	final = realloc(result, j + 1);
+	final = ft_realloc(result, j + 1);
 	if (final)
 		return (final);
 	else

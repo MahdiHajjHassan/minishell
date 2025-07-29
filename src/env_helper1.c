@@ -32,20 +32,20 @@ char	*get_env_value(const char *name, size_t name_len)
 
 	if (name_len == 1 && *name == '?')
 	{
-		snprintf(num, sizeof(num), "%d", g_last_exit_status);
-		return (strdup(num));
+		ft_snprintf(num, sizeof(num), "%d", g_last_exit_status);
+		return (ft_strdup(num));
 	}
 	temp = malloc(name_len + 1);
 	if (!temp)
 		return (NULL);
-	strncpy(temp, name, name_len);
+	ft_strncpy(temp, name, name_len);
 	temp[name_len] = '\0';
 	value = getenv(temp);
 	free(temp);
 	if (value)
-		return (strdup(value));
+		return (ft_strdup(value));
 	else
-		return (strdup(""));
+		return (ft_strdup(""));
 }
 
 int	handle_env_variable(t_env_var_params params)
@@ -67,7 +67,7 @@ int	handle_env_variable(t_env_var_params params)
 			free(env_value);
 			return (1);
 		}
-		strcpy(*params.result + *params.j, env_value);
+		ft_strcpy(*params.result + *params.j, env_value);
 		*params.j += value_len;
 		free(env_value);
 	}

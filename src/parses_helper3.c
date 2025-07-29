@@ -35,7 +35,7 @@ int	get_exec_token(char **input_ptr, char *input_end, char **q, char **eq)
 		return (0);
 	if (tok != 'a')
 	{
-		fprintf(stderr, "missing file name\n");
+		ft_fprintf_stderr("missing file name\n");
 		wtf();
 	}
 	return (tok);
@@ -64,7 +64,7 @@ char	*process_argument(char *q, char *eq)
 	processed = process_escaped(q, len);
 	if (!processed)
 	{
-		fprintf(stderr, "malloc failed\n");
+		ft_fprintf_stderr("malloc failed\n");
 		wtf();
 	}
 	return (processed);

@@ -56,7 +56,7 @@ int	get_redir_token(char **input_ptr, char *input_end,
 	tok = gettoken(input_ptr, input_end, NULL, NULL);
 	if (gettoken(input_ptr, input_end, q, eq) != 'a')
 	{
-		fprintf(stderr, "missing file name\n");
+		ft_fprintf_stderr("missing file name\n");
 		wtf();
 	}
 	return (tok);
@@ -72,14 +72,14 @@ char	*process_filename(char *q, char *eq)
 	processed = process_escaped(q, len);
 	if (!processed)
 	{
-		fprintf(stderr, "malloc failed\n");
+		ft_fprintf_stderr("malloc failed\n");
 		wtf();
 	}
 	expanded = expand_variables(processed, strlen(processed));
 	free(processed);
 	if (!expanded)
 	{
-		fprintf(stderr, "malloc failed\n");
+		ft_fprintf_stderr("malloc failed\n");
 		wtf();
 	}
 	return (expanded);

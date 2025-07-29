@@ -17,7 +17,7 @@ char	*check_absolute_path(const char *cmd)
 	if (cmd[0] == '/' || cmd[0] == '.')
 	{
 		if (access(cmd, X_OK) == 0)
-			return (strdup(cmd));
+			return (ft_strdup(cmd));
 		return (NULL);
 	}
 	return ((char *)1);
@@ -37,7 +37,7 @@ char	*search_in_paths(char *path, const char *cmd)
 		if (build_full_path(full_path, curr, len, cmd))
 			return (NULL);
 		if (access(full_path, X_OK) == 0)
-			return (strdup(full_path));
+			return (ft_strdup(full_path));
 		if (!next)
 			break ;
 		curr = next + 1;
@@ -76,7 +76,7 @@ void	execute_external_cmd(struct s_execcmd *ex)
 	}
 	else
 	{
-		fprintf(stderr, "command not found: %s\n", ex->av[0]);
+		ft_fprintf_stderr("command not found: %s\n", ex->av[0]);
 		exit(127);
 	}
 }

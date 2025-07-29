@@ -39,7 +39,7 @@ static int	builtin_export(char **argv)
 	i = 1;
 	while (argv[i])
 	{
-		arg_copy = strdup(argv[i]);
+		arg_copy = ft_strdup(argv[i]);
 		if (!arg_copy)
 			return (1);
 		if (process_export_arg(arg_copy, &name, &value))
@@ -56,7 +56,7 @@ static int	builtin_unset(char **argv)
 	i = 1;
 	while (argv[i])
 	{
-		if (unsetenv(argv[i]) != 0)
+		if (ft_unsetenv(argv[i]) != 0)
 		{
 			perror("unset");
 			return (1);
@@ -85,19 +85,19 @@ int	handle_builtin(char **argv)
 {
 	if (!argv[0])
 		return (1);
-	if (!strcmp(argv[0], "echo"))
+	if (!ft_strcmp(argv[0], "echo"))
 		return (builtin_echo(argv));
-	if (!strcmp(argv[0], "cd"))
+	if (!ft_strcmp(argv[0], "cd"))
 		return (builtin_cd(argv));
-	if (!strcmp(argv[0], "pwd"))
+	if (!ft_strcmp(argv[0], "pwd"))
 		return (builtin_pwd(argv));
-	if (!strcmp(argv[0], "export"))
+	if (!ft_strcmp(argv[0], "export"))
 		return (builtin_export(argv));
-	if (!strcmp(argv[0], "unset"))
+	if (!ft_strcmp(argv[0], "unset"))
 		return (builtin_unset(argv));
-	if (!strcmp(argv[0], "env"))
+	if (!ft_strcmp(argv[0], "env"))
 		return (builtin_env(argv));
-	if (!strcmp(argv[0], "exit"))
+	if (!ft_strcmp(argv[0], "exit"))
 		return (builtin_exit(argv));
 	return (1);
 }

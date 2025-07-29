@@ -29,12 +29,12 @@ int	build_full_path(char *full_path, char *curr,
 {
 	if (len + strlen(cmd) + 2 > 1024)
 	{
-		fprintf(stderr, "Path too long: %.*s/%s\n", (int)len, curr, cmd);
+		ft_fprintf_stderr("Path too long: %.*s/%s\n", (int)len, curr, cmd);
 		return (1);
 	}
-	strncpy(full_path, curr, len);
+	ft_strncpy(full_path, curr, len);
 	full_path[len] = '/';
-	strcpy(full_path + len + 1, cmd);
+	ft_strcpy(full_path + len + 1, cmd);
 	return (0);
 }
 
@@ -66,7 +66,7 @@ int	open_redir_file_create(struct s_redircmd *rdir)
 	fd = open(rdir->file, rdir->mode, 0644);
 	if (fd < 0)
 	{
-		fprintf(stderr, "open failed: %s: %s\n", rdir->file,
+		ft_fprintf_stderr("open failed: %s: %s\n", rdir->file,
 			strerror(errno));
 		exit(1);
 	}

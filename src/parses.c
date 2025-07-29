@@ -53,14 +53,14 @@ struct s_cmd	*parse_block(char **input_ptr, char *input_end)
 
 	if (!peek(input_ptr, input_end, "("))
 	{
-		fprintf(stderr, "missing (\n");
+		ft_fprintf_stderr("missing (\n");
 		wtf();
 	}
 	gettoken(input_ptr, input_end, NULL, NULL);
 	cmd = parse_line(input_ptr, input_end);
 	if (!peek(input_ptr, input_end, ")"))
 	{
-		fprintf(stderr, "missing )\n");
+		ft_fprintf_stderr("missing )\n");
 		wtf();
 	}
 	gettoken(input_ptr, input_end, NULL, NULL);

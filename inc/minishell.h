@@ -402,4 +402,16 @@ void			setup_pipe_right(int *p, struct s_pipecmd *pipecmd);
 void			run_pipe_cmd(struct s_cmd *cmd);
 void			run_back_cmd(struct s_cmd *cmd);
 
+/* Utils3 functions - Custom implementations of forbidden functions */
+int				ft_strcmp(const char *s1, const char *s2);
+int				ft_snprintf(char *str, size_t size, const char *format, ...);
+int				ft_vsnprintf(char *str, size_t size, const char *format, va_list args);
+void			*ft_realloc(void *ptr, size_t size);
+char			*ft_strncpy(char *dest, const char *src, size_t n);
+char			*ft_strcpy(char *dest, const char *src);
+int				ft_fflush_stdout(void);
+int				ft_fprintf_stderr(const char *format, ...);
+int				ft_setenv(const char *name, const char *value, int overwrite);
+int				ft_unsetenv(const char *name);
+
 #endif

@@ -19,8 +19,7 @@ void	handle_backspace(size_t *len)
 		(*len)--;
 		if (isatty(STDIN_FILENO))
 		{
-			printf("\b \b");
-			fflush(stdout);
+			write(STDOUT_FILENO, "\b \b", 3);
 		}
 	}
 }
@@ -30,7 +29,7 @@ char	*resize_buffer(char *buf, size_t *capacity)
 	char	*new_buf;
 
 	*capacity *= 2;
-	new_buf = realloc(buf, *capacity);
+	new_buf = ft_realloc(buf, *capacity);
 	if (!new_buf)
 	{
 		free(buf);

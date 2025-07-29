@@ -19,7 +19,7 @@ int	builtin_echo(char **argv)
 
 	i = 1;
 	print_newline = 1;
-	if (argv[1] && !strcmp(argv[1], "-n"))
+	if (argv[1] && !ft_strcmp(argv[1], "-n"))
 	{
 		print_newline = 0;
 		i++;
@@ -44,7 +44,7 @@ int	builtin_cd(char **argv)
 	}
 	else if (argv[2])
 	{
-		fprintf(stderr, "minishell: cd: too many arguments\n");
+		ft_fprintf_stderr("minishell: cd: too many arguments\n");
 		return (1);
 	}
 	else
@@ -82,14 +82,14 @@ int	builtin_exit(char **argv)
 		{
 			if (!isdigit(argv[1][i]))
 			{
-				fprintf(stderr,
+				ft_fprintf_stderr(
 					"minishell: exit: %s: numeric argument required\n",
 					argv[1]);
 				exit(255);
 			}
 			i++;
 		}
-		status = atoi(argv[1]);
+		status = ft_atoi(argv[1]);
 	}
 	printf("exit\n");
 	exit(status);
@@ -97,19 +97,19 @@ int	builtin_exit(char **argv)
 
 int	is_builtin(char *cmd)
 {
-	if (!strcmp(cmd, "echo"))
+	if (!ft_strcmp(cmd, "echo"))
 		return (1);
-	if (!strcmp(cmd, "cd"))
+	if (!ft_strcmp(cmd, "cd"))
 		return (1);
-	if (!strcmp(cmd, "pwd"))
+	if (!ft_strcmp(cmd, "pwd"))
 		return (1);
-	if (!strcmp(cmd, "export"))
+	if (!ft_strcmp(cmd, "export"))
 		return (1);
-	if (!strcmp(cmd, "unset"))
+	if (!ft_strcmp(cmd, "unset"))
 		return (1);
-	if (!strcmp(cmd, "env"))
+	if (!ft_strcmp(cmd, "env"))
 		return (1);
-	if (!strcmp(cmd, "exit"))
+	if (!ft_strcmp(cmd, "exit"))
 		return (1);
 	return (0);
 }

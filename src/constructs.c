@@ -17,7 +17,7 @@ struct s_cmd	*execcmd(void)
 	struct s_execcmd	*cmd;
 
 	cmd = malloc(sizeof(*cmd));
-	memset(cmd, 0, sizeof(*cmd));
+	ft_memset(cmd, 0, sizeof(*cmd));
 	cmd->type = EXEC;
 	return ((struct s_cmd *)cmd);
 }
@@ -28,7 +28,7 @@ struct s_cmd	*redircmd(struct s_cmd *subcmd, char *file,
 	struct s_redircmd	*cmd;
 
 	cmd = malloc(sizeof(*cmd));
-	memset(cmd, 0, sizeof(*cmd));
+	ft_memset(cmd, 0, sizeof(*cmd));
 	cmd->type = REDIR;
 	cmd->cmd = subcmd;
 	cmd->file = file;
@@ -43,7 +43,7 @@ struct s_cmd	*pipecmd(struct s_cmd *left, struct s_cmd *right)
 	struct s_pipecmd	*cmd;
 
 	cmd = malloc(sizeof(*cmd));
-	memset(cmd, 0, sizeof(*cmd));
+	ft_memset(cmd, 0, sizeof(*cmd));
 	cmd->type = PIPE;
 	cmd->left = left;
 	cmd->right = right;
@@ -55,7 +55,7 @@ struct s_cmd	*listcmd(struct s_cmd *left, struct s_cmd *right)
 	struct s_listcmd	*cmd;
 
 	cmd = malloc(sizeof(*cmd));
-	memset(cmd, 0, sizeof(*cmd));
+	ft_memset(cmd, 0, sizeof(*cmd));
 	cmd->type = LIST;
 	cmd->left = left;
 	cmd->right = right;
@@ -67,7 +67,7 @@ struct s_cmd	*backcmd(struct s_cmd *subcmd)
 	struct s_backcmd	*cmd;
 
 	cmd = malloc(sizeof(*cmd));
-	memset(cmd, 0, sizeof(*cmd));
+	ft_memset(cmd, 0, sizeof(*cmd));
 	cmd->type = BACK;
 	cmd->cmd = subcmd;
 	return ((struct s_cmd *)cmd);

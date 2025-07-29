@@ -16,7 +16,7 @@ void	add_argument(struct s_execcmd *cmd, char *processed, int *argc)
 {
 	if (*argc >= MAXARGS)
 	{
-		fprintf(stderr, "too many args\n");
+		ft_fprintf_stderr("too many args\n");
 		wtf();
 	}
 	cmd->av[*argc] = processed;

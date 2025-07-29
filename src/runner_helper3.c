@@ -16,7 +16,7 @@ void	open_redir_file_regular(struct s_redircmd *rdir)
 {
 	if (open(rdir->file, rdir->mode) < 0)
 	{
-		fprintf(stderr, "open failed: %s: %s\n", rdir->file,
+		ft_fprintf_stderr("open failed: %s: %s\n", rdir->file,
 			strerror(errno));
 		exit(1);
 	}

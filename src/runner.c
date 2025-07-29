@@ -87,7 +87,7 @@ void	runcmd(struct s_cmd *cmd)
 		run_back_cmd(cmd);
 	else
 	{
-		fprintf(stderr, "unknown command type: %d\n", cmd->type);
+		ft_fprintf_stderr("unknown command type: %d\n", cmd->type);
 		exit(1);
 	}
 	if (cmd->type != LIST)

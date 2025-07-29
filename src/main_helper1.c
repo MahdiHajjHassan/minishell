@@ -62,8 +62,8 @@ void	display_prompt(void)
 	{
 		if (get_cwd(cwd, sizeof(cwd)))
 		{
-			printf("%s> ", cwd);
-			fflush(stdout);
+			write(STDOUT_FILENO, cwd, ft_strlen(cwd));
+			write(STDOUT_FILENO, "> ", 2);
 		}
 	}
 }
