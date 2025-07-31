@@ -27,23 +27,16 @@ int	handle_eof(char *buf, size_t len)
 
 void	init_signals(void)
 {
-	g_signal = 0;
+	/* Signal handling is now done in main.c with different handlers for different modes */
 }
 
 int	handle_line_input(char **line)
 {
-	g_signal = 0;
 	*line = readline("minishell$ ");
 	if (!*line)
 	{
 		ft_putstr_fd("exit\n", STDOUT_FILENO);
 		clean_exit(0);
-	}
-	if (g_signal == SIGINT)
-	{
-		free(*line);
-		*line = NULL;
-		return (1);
 	}
 	if (ft_strlen(*line) > 0)
 		add_history(*line);

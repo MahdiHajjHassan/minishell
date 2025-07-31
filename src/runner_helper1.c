@@ -65,7 +65,6 @@ void	execute_external_cmd(struct s_execcmd *ex, char **env_copy)
 	char			*cmd_path;
 	pid_t			pid;
 	int				status;
-	extern char		**environ;
 
 	cmd_path = find_command(ex->av[0], env_copy);
 	if (!cmd_path)
@@ -88,7 +87,7 @@ void	execute_external_cmd(struct s_execcmd *ex, char **env_copy)
 	{
 		/* Child process */
 		reset_signals();
-		execve(cmd_path, ex->av, environ);
+		execve(cmd_path, ex->av, env_copy);
 		perror("execve failed");
 		free(cmd_path);
 		clean_exit(1);
@@ -180,13 +179,22 @@ void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
 	close(p[0]);
 	close(p[1]);
 	
-	/* Wait for both children */
+	/* Wait for both children with proper signal handling */
 	waitpid(pid1, &status1, 0);
 	waitpid(pid2, &status2, 0);
 	
 	/* Set exit status to the rightmost command's status */
 	if (WIFEXITED(status2))
 		set_exit_status(WEXITSTATUS(status2));
+	else if (WIFSIGNALED(status2))
+	{
+		if (WTERMSIG(status2) == SIGINT)
+			set_exit_status(130);
+		else if (WTERMSIG(status2) == SIGQUIT)
+			set_exit_status(131);
+		else
+			set_exit_status(128 + WTERMSIG(status2));
+	}
 	else
 		set_exit_status(1);
 }
