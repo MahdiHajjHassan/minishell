@@ -16,10 +16,17 @@ void	free_exec_cmd(struct s_execcmd *ecmd)
 {
 	int	i;
 
+	if (!ecmd)
+		return ;
+	
 	i = 0;
 	while (ecmd->av[i])
 	{
-		free(ecmd->av[i]);
+		if (ecmd->av[i])
+		{
+			free(ecmd->av[i]);
+			ecmd->av[i] = NULL;
+		}
 		i++;
 	}
 	free(ecmd);
@@ -27,16 +34,38 @@ void	free_exec_cmd(struct s_execcmd *ecmd)
 
 void	free_redir_cmd(struct s_redircmd *rcmd)
 {
-	free_cmd(rcmd->cmd);
-	free(rcmd->file);
-	free(rcmd->efile);
+	if (!rcmd)
+		return ;
+	
+	if (rcmd->cmd)
+		free_cmd(rcmd->cmd);
+	
+	if (rcmd->file)
+	{
+		free(rcmd->file);
+		rcmd->file = NULL;
+	}
+	
+	if (rcmd->efile)
+	{
+		free(rcmd->efile);
+		rcmd->efile = NULL;
+	}
+	
 	free(rcmd);
 }
 
 void	free_pipe_cmd(struct s_pipecmd *pcmd)
 {
-	free_cmd(pcmd->left);
-	free_cmd(pcmd->right);
+	if (!pcmd)
+		return ;
+	
+	if (pcmd->left)
+		free_cmd(pcmd->left);
+	
+	if (pcmd->right)
+		free_cmd(pcmd->right);
+	
 	free(pcmd);
 }
 
@@ -48,7 +77,12 @@ void	free_list_cmd(struct s_listcmd *lcmd)
 
 void	free_back_cmd(struct s_backcmd *bcmd)
 {
-	free_cmd(bcmd->cmd);
+	if (!bcmd)
+		return ;
+	
+	if (bcmd->cmd)
+		free_cmd(bcmd->cmd);
+	
 	free(bcmd);
 }
 
@@ -57,13 +91,20 @@ void	free_heredoc_cmd(struct s_heredoccmd *hcmd)
 	if (!hcmd)
 		return ;
 	
-	free_cmd(hcmd->cmd);
+	if (hcmd->cmd)
+		free_cmd(hcmd->cmd);
 	
 	if (hcmd->delimiter)
+	{
 		free(hcmd->delimiter);
+		hcmd->delimiter = NULL;
+	}
 	
 	if (hcmd->content)
+	{
 		free(hcmd->content);
+		hcmd->content = NULL;
+	}
 	
 	free(hcmd);
 }

@@ -22,7 +22,7 @@ int	is_escaped(const char *s, const char *start)
 
 char	*skip_whitespace(char *s, char *input_end, char *space)
 {
-	while (s < input_end && strchr(space, *s))
+	while (s < input_end && ft_strchr(space, *s))
 		s++;
 	return (s);
 }
@@ -54,7 +54,7 @@ char	*handle_default_token(char *s, char *input_end, char *input_ptr,
 	{
 		if (!quote)
 		{
-			if (strchr(params.symbols, *s) || strchr(params.space, *s))
+			if (ft_strchr(params.symbols, *s) || ft_strchr(params.space, *s))
 				break ;
 			if (*s == '"' || *s == '\'')
 				quote = *s;

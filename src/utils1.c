@@ -16,18 +16,28 @@ void	handle_redir_case(struct s_cmd *cmd)
 {
 	struct s_redircmd	*rcmd;
 
+	if (!cmd)
+		return ;
+	
 	rcmd = (struct s_redircmd *)cmd;
-	nulterm(rcmd->cmd);
-	*rcmd->efile = 0;
+	if (rcmd->cmd)
+		nulterm(rcmd->cmd);
+	if (rcmd->efile)
+		*rcmd->efile = 0;
 }
 
 void	handle_pipe_case(struct s_cmd *cmd)
 {
 	struct s_pipecmd	*pcmd;
 
+	if (!cmd)
+		return ;
+	
 	pcmd = (struct s_pipecmd *)cmd;
-	nulterm(pcmd->left);
-	nulterm(pcmd->right);
+	if (pcmd->left)
+		nulterm(pcmd->left);
+	if (pcmd->right)
+		nulterm(pcmd->right);
 }
 
 /* List command handling removed - semicolon not supported in this minishell */
@@ -40,22 +50,31 @@ void	handle_back_case(struct s_cmd *cmd)
 {
 	struct s_backcmd	*bcmd;
 
+	if (!cmd)
+		return ;
+	
 	bcmd = (struct s_backcmd *)cmd;
-	nulterm(bcmd->cmd);
+	if (bcmd->cmd)
+		nulterm(bcmd->cmd);
 }
 
 void	handle_heredoc_case(struct s_cmd *cmd)
 {
 	struct s_heredoccmd	*hcmd;
 
+	if (!cmd)
+		return ;
+	
 	hcmd = (struct s_heredoccmd *)cmd;
-	nulterm(hcmd->cmd);
+	if (hcmd->cmd)
+		nulterm(hcmd->cmd);
 }
 
 void	free_cmd(struct s_cmd *cmd)
 {
 	if (!cmd)
 		return ;
+	
 	if (cmd->type == EXEC)
 		free_exec_cmd((struct s_execcmd *)cmd);
 	else if (cmd->type == REDIR)

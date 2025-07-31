@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main_healper3.c                                   :+:      :+:    :+:   */
+/*   main_helper3.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 
-void	expand_builtin_args(struct s_execcmd *ecmd)
+void	expand_builtin_args(struct s_execcmd *ecmd, char **env_copy)
 {
 	int		i;
 	char	*original;
@@ -21,27 +21,27 @@ void	expand_builtin_args(struct s_execcmd *ecmd)
 	while (ecmd->av[i])
 	{
 		original = ecmd->av[i];
-		ecmd->av[i] = expand_variables(original, strlen(original));
+		ecmd->av[i] = expand_variables(original, ft_strlen(original), env_copy);
 		free(original);
 		i++;
 	}
 }
 
-int	handle_builtin_cmd(struct s_cmd *cmd, char *line)
+int	handle_builtin_cmd(struct s_cmd *cmd, char *line, char ***env_copy)
 {
 	struct s_execcmd	*ecmd;
 	int					status;
 
+	(void)line; /* Parameter not used in this function */
 	if (cmd->type == EXEC)
 	{
 		ecmd = (struct s_execcmd *)cmd;
 		if (ecmd->av[0] && is_builtin(ecmd->av[0]))
 		{
-			expand_builtin_args(ecmd);
-			status = handle_builtin(ecmd->av);
+			expand_builtin_args(ecmd, *env_copy);
+			status = handle_builtin(ecmd->av, env_copy);
 			set_exit_status(status);
-			free_cmd(cmd);
-			free(line);
+			/* Don't free cmd and line here - let the main loop handle it */
 			return (1);
 		}
 	}
@@ -52,7 +52,12 @@ void	handle_child_status(int status)
 {
 	if (WIFSIGNALED(status))
 	{
-		set_exit_status(128 + WTERMSIG(status));
+		if (WTERMSIG(status) == SIGINT)
+			set_exit_status(130);
+		else if (WTERMSIG(status) == SIGQUIT)
+			set_exit_status(131);
+		else
+			set_exit_status(128 + WTERMSIG(status));
 	}
 	else
 	{

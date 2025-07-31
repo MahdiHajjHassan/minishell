@@ -3,8 +3,6 @@
 /*                                                        :::      ::::::::   */
 /*   memory_management.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/27 00:00:00 by mahajj-h          #+#    #+#             */
 /*   Updated: 2025/07/27 00:00:00 by mahajj-h         ###   ########.fr       */
 /*                                                                            */
@@ -59,24 +57,26 @@ void	free_environ_copy(char **environ_copy)
 {
 	int	i;
 
+	if (!environ_copy)
+		return ;
+	
 	i = 0;
-	if (environ_copy)
+	while (environ_copy[i])
 	{
-		while (environ_copy[i])
+		if (environ_copy[i])
 		{
 			free(environ_copy[i]);
-			i++;
+			environ_copy[i] = NULL;
 		}
-		free(environ_copy);
+		i++;
 	}
+	free(environ_copy);
 }
 
 /* Clean exit function */
 void	clean_exit(int status)
 {
-	extern char	**environ;
-	free_environ_copy(environ);
-	environ = NULL;
+	/* Don't free global environ - we work with our local copy */
 	rl_clear_history();
 	exit(status);
 }

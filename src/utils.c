@@ -28,13 +28,16 @@ int	forkk(void)
 
 	pid = fork();
 	if (pid == -1)
-		wtf();
+	{
+		perror("fork failed");
+		return (-1);
+	}
 	return (pid);
 }
 
 void	wtf(void)
 {
-	printf("wtf\n");
+	ft_putstr_fd("minishell: internal error\n", STDERR_FILENO);
 	clean_exit(1);
 }
 

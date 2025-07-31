@@ -52,12 +52,12 @@ void	remove_redir_quotes(char **q, char **eq)
 
 struct s_cmd	*apply_input_redir(struct s_cmd *cmd, char *file)
 {
-	return (redircmd(cmd, file, file + strlen(file),
+	return (redircmd(cmd, file, NULL,
 			(t_redir_params){O_RDONLY, 0}));
 }
 
 struct s_cmd	*apply_output_redir(struct s_cmd *cmd, char *file)
 {
-	return (redircmd(cmd, file, file + strlen(file),
-			(t_redir_params){O_WRONLY | O_CREAT | O_TRUNC | 0644, 1}));
+	return (redircmd(cmd, file, NULL,
+			(t_redir_params){O_WRONLY | O_CREAT | O_TRUNC, 1}));
 }

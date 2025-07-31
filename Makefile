@@ -11,19 +11,12 @@ OBJ_DIR = obj
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 
-all: clean-files $(NAME)
-
-clean-files:
-	@rm -f files.txt
+all: $(NAME)
 
 $(NAME): $(OBJS) $(LIBFT_DIR)/libft.a
 	$(CC) $(CFLAGS) -I$(INC_DIR) -I$(LIBFT_DIR) -o $@ $(OBJS) -L$(LIBFT_DIR) -lft -lreadline
 
-# Special rule for runner.c to disable infinite recursion warning
-$(OBJ_DIR)/runner.o: $(SRC_DIR)/runner.c | $(OBJ_DIR)
-	$(CC) $(CFLAGS) -Wno-infinite-recursion -I$(INC_DIR) -I$(LIBFT_DIR) -c $< -o $@
-
-# General rule for other object files
+# General rule for object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -I$(INC_DIR) -I$(LIBFT_DIR) -c $< -o $@
 
@@ -35,7 +28,6 @@ $(LIBFT_DIR)/libft.a:
 
 clean:
 	rm -f $(OBJ_DIR)/*.o
-	rm -f files.txt
 	$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean: clean
@@ -44,4 +36,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re clean-files
+.PHONY: all clean fclean re

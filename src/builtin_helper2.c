@@ -26,31 +26,69 @@ int	builtin_echo(char **argv)
 	}
 	while (argv[i])
 	{
-		printf("%s", argv[i]);
+		ft_putstr_fd(argv[i], STDOUT_FILENO);
 		if (argv[i + 1])
-			printf(" ");
+			ft_putstr_fd(" ", STDOUT_FILENO);
 		i++;
 	}
 	if (print_newline)
-		printf("\n");
+		ft_putstr_fd("\n", STDOUT_FILENO);
 	return (0);
 }
 
-int	builtin_cd(char **argv)
+int	builtin_cd(char **argv, char ***env_copy)
 {
+	char	*old_pwd;
+	char	*new_pwd;
+	char	cwd[1024];
+
+	/* Get current directory before changing */
+	if (!getcwd(cwd, sizeof(cwd)))
+	{
+		ft_fprintf_stderr("minishell: cd: getcwd failed\n");
+		return (1);
+	}
+	old_pwd = ft_strdup(cwd);
+
+	/* Change directory */
 	if (!argv[1])
 	{
-		return (cd_to_home());
+		if (cd_to_home(*env_copy) != 0)
+		{
+			free(old_pwd);
+			return (1);
+		}
 	}
 	else if (argv[2])
 	{
 		ft_fprintf_stderr("minishell: cd: too many arguments\n");
+		free(old_pwd);
 		return (1);
 	}
 	else
 	{
-		return (cd_to_path(argv[1]));
+		if (cd_to_path(argv[1]) != 0)
+		{
+			free(old_pwd);
+			return (1);
+		}
 	}
+
+	/* Get new directory after changing */
+	if (!getcwd(cwd, sizeof(cwd)))
+	{
+		ft_fprintf_stderr("minishell: cd: getcwd failed\n");
+		free(old_pwd);
+		return (1);
+	}
+	new_pwd = ft_strdup(cwd);
+
+	/* Update PWD and OLDPWD in environment */
+	update_pwd_variables(old_pwd, new_pwd, env_copy);
+
+	free(old_pwd);
+	free(new_pwd);
+	return (0);
 }
 
 int	builtin_pwd(char **argv)
@@ -63,7 +101,8 @@ int	builtin_pwd(char **argv)
 		perror("pwd");
 		return (1);
 	}
-	printf("%s\n", cwd);
+	ft_putstr_fd(cwd, STDOUT_FILENO);
+	ft_putstr_fd("\n", STDOUT_FILENO);
 	return (0);
 }
 

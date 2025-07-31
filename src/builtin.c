@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 
-static int	process_export_arg(char *arg_copy, char **name, char **value)
+static int	process_export_arg(char *arg_copy, char **name, char **value, char ***env_copy)
 {
 	if (parse_export_arg(arg_copy, name, value))
 	{
@@ -20,7 +20,7 @@ static int	process_export_arg(char *arg_copy, char **name, char **value)
 		return (1);
 	}
 	remove_quotes(value);
-	if (set_environment_var(*name, *value))
+	if (set_environment_var(*name, *value, env_copy))
 	{
 		free(arg_copy);
 		return (1);
@@ -29,24 +29,18 @@ static int	process_export_arg(char *arg_copy, char **name, char **value)
 	return (0);
 }
 
-static int	builtin_export(char **argv)
+static int	builtin_export(char **argv, char ***env_copy)
 {
-	extern char	**environ;
 	int			i;
 	char		*name;
 	char		*value;
 	char		*arg_copy;
 	char		*equals;
 
-	/* If no arguments, print all environment variables */
+	/* If no arguments, print all environment variables in sorted order */
 	if (!argv[1])
 	{
-		i = 0;
-		while (environ[i])
-		{
-			printf("declare -x %s\n", environ[i]);
-			i++;
-		}
+		print_sorted_env_vars(*env_copy);
 		return (0);
 	}
 
@@ -60,27 +54,28 @@ static int	builtin_export(char **argv)
 		equals = ft_strchr(arg_copy, '=');
 		if (!equals)
 		{
-			/* Variable without value - just check if it exists */
+			/* Variable without value - just check if it exists, don't add it */
+			/* This is valid behavior for export */
 			free(arg_copy);
-			ft_fprintf_stderr("minishell: export: `%s': not a valid identifier\n", argv[i]);
-			return (1);
+			i++;
+			continue;
 		}
 		
-		if (process_export_arg(arg_copy, &name, &value))
+		if (process_export_arg(arg_copy, &name, &value, env_copy))
 			return (1);
 		i++;
 	}
 	return (0);
 }
 
-static int	builtin_unset(char **argv)
+static int	builtin_unset(char **argv, char ***env_copy)
 {
 	int	i;
 
 	i = 1;
 	while (argv[i])
 	{
-		if (ft_unsetenv(argv[i]) != 0)
+		if (ft_unsetenv(argv[i], env_copy) != 0)
 		{
 			perror("unset");
 			return (1);
@@ -90,37 +85,37 @@ static int	builtin_unset(char **argv)
 	return (0);
 }
 
-static int	builtin_env(char **argv)
+static int	builtin_env(char **argv, char ***env_copy)
 {
-	extern char	**environ;
 	int			i;
 
 	(void)argv;
 	i = 0;
-	while (environ[i])
+	while ((*env_copy)[i])
 	{
-		printf("%s\n", environ[i]);
+		ft_putstr_fd((*env_copy)[i], STDOUT_FILENO);
+		ft_putstr_fd("\n", STDOUT_FILENO);
 		i++;
 	}
 	return (0);
 }
 
-int	handle_builtin(char **argv)
+int	handle_builtin(char **argv, char ***env_copy)
 {
 	if (!argv[0])
 		return (1);
 	if (!ft_strcmp(argv[0], "echo"))
 		return (builtin_echo(argv));
 	if (!ft_strcmp(argv[0], "cd"))
-		return (builtin_cd(argv));
+		return (builtin_cd(argv, env_copy));
 	if (!ft_strcmp(argv[0], "pwd"))
 		return (builtin_pwd(argv));
 	if (!ft_strcmp(argv[0], "export"))
-		return (builtin_export(argv));
+		return (builtin_export(argv, env_copy));
 	if (!ft_strcmp(argv[0], "unset"))
-		return (builtin_unset(argv));
+		return (builtin_unset(argv, env_copy));
 	if (!ft_strcmp(argv[0], "env"))
-		return (builtin_env(argv));
+		return (builtin_env(argv, env_copy));
 	if (!ft_strcmp(argv[0], "exit"))
 		return (builtin_exit(argv));
 	return (1);

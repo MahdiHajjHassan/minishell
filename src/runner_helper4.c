@@ -12,70 +12,103 @@
 
 #include "minishell.h"
 
-void	setup_pipe_left(int *p, struct s_pipecmd *pipecmd)
+/* These functions are no longer used - pipe handling is now done in run_pipe_cmd */
+void	setup_pipe_left(int *p, struct s_pipecmd *pipecmd, char **env_copy)
 {
-	if (forkk() == 0)
-	{
-		close(1);
-		dup(p[1]);
-		close(p[0]);
-		close(p[1]);
-		runcmd(pipecmd->left);
-	}
+	(void)p;
+	(void)pipecmd;
+	(void)env_copy;
 }
 
-void	setup_pipe_right(int *p, struct s_pipecmd *pipecmd)
+void	setup_pipe_right(int *p, struct s_pipecmd *pipecmd, char **env_copy)
 {
-	if (forkk() == 0)
-	{
-		close(0);
-		dup(p[0]);
-		close(p[0]);
-		close(p[1]);
-		runcmd(pipecmd->right);
-	}
+	(void)p;
+	(void)pipecmd;
+	(void)env_copy;
 }
 
-void	run_back_cmd(struct s_cmd *cmd)
+void	run_back_cmd(struct s_cmd *cmd, char **env_copy)
 {
 	struct s_backcmd	*back;
+	pid_t				pid1;
+	pid_t				pid2;
 
 	back = (struct s_backcmd *)cmd;
-	if (forkk() == 0)
+	
+	pid1 = fork();
+	if (pid1 < 0)
 	{
-		if (forkk() == 0)
+		perror("fork failed");
+		set_exit_status(1);
+		return;
+	}
+	
+	if (pid1 == 0)
+	{
+		/* First child - create background process */
+		pid2 = fork();
+		if (pid2 < 0)
 		{
-			runcmd(back->cmd);
+			perror("fork failed");
+			clean_exit(1);
 		}
+		
+		if (pid2 == 0)
+		{
+			/* Second child - actual background command */
+			runcmd(back->cmd, env_copy);
+			clean_exit(get_exit_status());
+		}
+		
+		/* First child exits immediately */
 		clean_exit(0);
 	}
-	wait(0);
+	
+	/* Parent waits for first child only */
+	waitpid(pid1, NULL, 0);
 }
 
-void	run_heredoc_cmd(struct s_cmd *cmd)
+void	run_heredoc_cmd(struct s_cmd *cmd, char **env_copy)
 {
 	struct s_heredoccmd	*hcmd;
 	int					pipe_fd[2];
 	pid_t				pid;
 	int					status;
+	int					saved_stdin;
 
 	hcmd = (struct s_heredoccmd *)cmd;
+	
+	/* Save original stdin */
+	saved_stdin = dup(STDIN_FILENO);
+	if (saved_stdin < 0)
+	{
+		perror("dup failed");
+		set_exit_status(1);
+		return;
+	}
 	
 	if (pipe(pipe_fd) < 0)
 	{
 		perror("pipe failed");
-		clean_exit(1);
+		close(saved_stdin);
+		set_exit_status(1);
+		return;
 	}
 	
 	pid = fork();
 	if (pid < 0)
 	{
 		perror("fork failed");
-		clean_exit(1);
+		close(pipe_fd[0]);
+		close(pipe_fd[1]);
+		close(saved_stdin);
+		set_exit_status(1);
+		return;
 	}
 	
 	if (pid == 0)
 	{
+		/* Child process - write heredoc content to pipe */
 		close(pipe_fd[0]);
 		
 		if (hcmd->content && ft_strlen(hcmd->content) > 0)
@@ -87,17 +120,36 @@ void	run_heredoc_cmd(struct s_cmd *cmd)
 	}
 	else
 	{
+		/* Parent process */
 		close(pipe_fd[1]);
 		
 		waitpid(pid, &status, 0);
 		
+		/* Check if child failed */
+		if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+		{
+			close(pipe_fd[0]);
+			close(saved_stdin);
+			set_exit_status(WEXITSTATUS(status));
+			return;
+		}
+		
+		/* Redirect stdin to pipe */
 		if (dup2(pipe_fd[0], STDIN_FILENO) < 0)
 		{
 			perror("dup2 failed");
-			clean_exit(1);
+			close(pipe_fd[0]);
+			close(saved_stdin);
+			set_exit_status(1);
+			return;
 		}
 		close(pipe_fd[0]);
 		
-		runcmd(hcmd->cmd);
+		/* Execute the command */
+		runcmd(hcmd->cmd, env_copy);
+		
+		/* Restore original stdin */
+		dup2(saved_stdin, STDIN_FILENO);
+		close(saved_stdin);
 	}
 }

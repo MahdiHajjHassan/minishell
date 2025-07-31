@@ -41,12 +41,12 @@ int	peek(char **input_ptr, char *input_end, char *toks)
 
 	init_space_array(space);
 	s = *input_ptr;
-	while (s < input_end && strchr(space, *s))
+	while (s < input_end && ft_strchr(space, *s))
 		s++;
-	return (*s && strchr(toks, *s));
+	return (*s && ft_strchr(toks, *s));
 }
 
-struct s_cmd	*tokenize(const char *line)
+struct s_cmd	*tokenize(const char *line, char **env_copy)
 {
 	char			*input;
 	char			*input_ptr;
@@ -54,13 +54,18 @@ struct s_cmd	*tokenize(const char *line)
 	struct s_cmd	*cmd;
 
 	input = ft_strdup(line);
+	if (!input)
+		return (NULL);
 	input_ptr = input;
-	input_end = input + strlen(input);
-	cmd = parse_line(&input_ptr, input_end);
+	input_end = input + ft_strlen(input);
+	cmd = parse_line(&input_ptr, input_end, env_copy);
 	peek(&input_ptr, input_end, "\0");
 	if (input_ptr != input_end)
 	{
-		wtf();
+		ft_fprintf_stderr("minishell: syntax error\n");
+		free_cmd(cmd);
+		free(input);
+		return (NULL);
 	}
 	free(input);
 	return (cmd);

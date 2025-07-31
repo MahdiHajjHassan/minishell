@@ -153,66 +153,80 @@ int	ft_fprintf_stderr(const char *format, ...)
 }
 
 /* Custom setenv implementation */
-int	ft_setenv(const char *name, const char *value, int overwrite)
+int	ft_setenv(const char *name, const char *value, int overwrite, char ***env_copy)
 {
-	extern char	**environ;
 	int			i;
 	int			name_len;
 	char		*new_var;
 	char		**new_environ;
+	char		**old_environ;
 
-	if (!name || !*name || ft_strchr(name, '='))
+	if (!name || !*name || ft_strchr(name, '=') || !env_copy || !*env_copy)
 		return (-1);
 	name_len = ft_strlen(name);
 	i = 0;
-	while (environ[i])
+	while ((*env_copy)[i])
 	{
-		if (ft_strncmp(environ[i], name, name_len) == 0 && environ[i][name_len] == '=')
+		if (ft_strncmp((*env_copy)[i], name, name_len) == 0 && (*env_copy)[i][name_len] == '=')
 		{
 			if (!overwrite)
 				return (0);
-			break ;
+			/* Variable exists, just update it */
+			new_var = malloc(ft_strlen(name) + ft_strlen(value) + 2);
+			if (!new_var)
+				return (-1);
+			ft_strcpy(new_var, name);
+			ft_strlcat(new_var, "=", ft_strlen(name) + 2);
+			ft_strlcat(new_var, value, ft_strlen(name) + ft_strlen(value) + 2);
+			free((*env_copy)[i]);
+			(*env_copy)[i] = new_var;
+			return (0);
 		}
 		i++;
 	}
+	
+	/* Variable doesn't exist, add it */
 	new_var = malloc(ft_strlen(name) + ft_strlen(value) + 2);
 	if (!new_var)
 		return (-1);
 	ft_strcpy(new_var, name);
 	ft_strlcat(new_var, "=", ft_strlen(name) + 2);
 	ft_strlcat(new_var, value, ft_strlen(name) + ft_strlen(value) + 2);
-	if (environ[i])
+	
+	/* Count existing variables */
+	i = 0;
+	while ((*env_copy)[i])
+		i++;
+	
+	/* Allocate new array */
+	new_environ = malloc((i + 2) * sizeof(char *));
+	if (!new_environ)
 	{
-		free(environ[i]);
-		environ[i] = new_var;
+		free(new_var);
+		return (-1);
 	}
-	else
+	
+	/* Copy existing variables */
+	i = 0;
+	while ((*env_copy)[i])
 	{
-		while (environ[i])
-			i++;
-		new_environ = malloc((i + 2) * sizeof(char *));
-		if (!new_environ)
-		{
-			free(new_var);
-			return (-1);
-		}
-		i = 0;
-		while (environ[i])
-		{
-			new_environ[i] = environ[i];
-			i++;
-		}
-		new_environ[i] = new_var;
-		new_environ[i + 1] = NULL;
-		environ = new_environ;
+		new_environ[i] = (*env_copy)[i];
+		i++;
 	}
+	new_environ[i] = new_var;
+	new_environ[i + 1] = NULL;
+	
+	/* Update pointer and free old array */
+	old_environ = *env_copy;
+	*env_copy = new_environ;
+	free(old_environ);
+	
 	return (0);
 }
 
 /* Custom unsetenv implementation */
-int	ft_unsetenv(const char *name)
+int	ft_unsetenv(const char *name, char ***env_copy)
 {
-	extern char	**environ;
 	int			i;
 	int			name_len;
 	char		**new_environ;
@@ -220,29 +234,29 @@ int	ft_unsetenv(const char *name)
 	int			total_vars;
 	int			var_index;
 
-	if (!name || !*name || ft_strchr(name, '='))
+	if (!name || !*name || ft_strchr(name, '=') || !env_copy || !*env_copy)
 		return (-1);
 	name_len = ft_strlen(name);
 	i = 0;
-	while (environ[i])
+	while ((*env_copy)[i])
 	{
-		if (ft_strncmp(environ[i], name, name_len) == 0 && environ[i][name_len] == '=')
+		if (ft_strncmp((*env_copy)[i], name, name_len) == 0 && (*env_copy)[i][name_len] == '=')
 		{
 			var_index = i;
 			break ;
 		}
 		i++;
 	}
-	if (!environ[i])
+	if (!(*env_copy)[i])
 		return (0);
 	
 	/* Count total variables */
 	total_vars = 0;
-	while (environ[total_vars])
+	while ((*env_copy)[total_vars])
 		total_vars++;
 	
 	/* Free the variable being removed */
-	free(environ[var_index]);
+	free((*env_copy)[var_index]);
 	
 	new_environ = malloc((total_vars) * sizeof(char *));
 	if (!new_environ)
@@ -250,16 +264,19 @@ int	ft_unsetenv(const char *name)
 	
 	i = 0;
 	j = 0;
-	while (environ[i])
+	while ((*env_copy)[i])
 	{
 		if (i != var_index)
 		{
-			new_environ[j] = environ[i];
+			new_environ[j] = (*env_copy)[i];
 			j++;
 		}
 		i++;
 	}
 	new_environ[j] = NULL;
-	environ = new_environ;
+	
+	/* Free the old environment array */
+	free(*env_copy);
+	*env_copy = new_environ;
 	return (0);
 } 
