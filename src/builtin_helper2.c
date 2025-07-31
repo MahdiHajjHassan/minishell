@@ -19,10 +19,20 @@ int	builtin_echo(char **argv)
 
 	i = 1;
 	print_newline = 1;
-	while (argv[i] && !ft_strcmp(argv[i], "-n"))
+	while (argv[i] && argv[i][0] == '-' && argv[i][1] == 'n')
 	{
-		print_newline = 0;
-		i++;
+		int	j;
+		
+		j = 2;
+		while (argv[i][j] == 'n')
+			j++;
+		if (argv[i][j] == '\0')
+		{
+			print_newline = 0;
+			i++;
+		}
+		else
+			break;
 	}
 	while (argv[i])
 	{

@@ -12,34 +12,63 @@
 
 #include "minishell.h"
 
-volatile sig_atomic_t	g_signal = 0;
-
-static void	sigint_handler(int signo)
+/* Interactive signal handlers - used when reading input */
+static void	sigint_handler_interactive(int signo)
 {
 	(void)signo;
-	g_signal = SIGINT;
 	write(STDOUT_FILENO, "\n", 1);
 	rl_on_new_line();
 	rl_replace_line("", 0);
 	rl_redisplay();
 }
 
-static void	sigquit_handler(int signo)
+static void	sigquit_handler_interactive(int signo)
 {
 	(void)signo;
 	/* Do nothing in interactive mode as required by subject */
 }
 
-static void	setup_signals(void)
+/* Non-interactive signal handlers - used when commands are running */
+static void	sigint_handler_noninteractive(int signo)
+{
+	(void)signo;
+	/* Just print newline, don't interfere with running command */
+	write(STDOUT_FILENO, "\n", 1);
+}
+
+static void	sigquit_handler_noninteractive(int signo)
+{
+	(void)signo;
+	/* Do nothing in non-interactive mode */
+}
+
+static void	setup_signals_interactive(void)
 {
 	struct sigaction	sa_int;
 	struct sigaction	sa_quit;
 
-	sa_int.sa_handler = sigint_handler;
+	sa_int.sa_handler = sigint_handler_interactive;
 	sigemptyset(&sa_int.sa_mask);
 	sa_int.sa_flags = SA_RESTART;
 	sigaction(SIGINT, &sa_int, NULL);
-	sa_quit.sa_handler = sigquit_handler;
+	
+	sa_quit.sa_handler = sigquit_handler_interactive;
+	sigemptyset(&sa_quit.sa_mask);
+	sa_quit.sa_flags = SA_RESTART;
+	sigaction(SIGQUIT, &sa_quit, NULL);
+}
+
+static void	setup_signals_noninteractive(void)
+{
+	struct sigaction	sa_int;
+	struct sigaction	sa_quit;
+
+	sa_int.sa_handler = sigint_handler_noninteractive;
+	sigemptyset(&sa_int.sa_mask);
+	sa_int.sa_flags = SA_RESTART;
+	sigaction(SIGINT, &sa_int, NULL);
+	
+	sa_quit.sa_handler = sigquit_handler_noninteractive;
 	sigemptyset(&sa_quit.sa_mask);
 	sa_quit.sa_flags = SA_RESTART;
 	sigaction(SIGQUIT, &sa_quit, NULL);
@@ -67,7 +96,7 @@ int	main(int argc, char **argv, char **envp)
 	}
 	/* Don't set global environ - we work with our local copy */
 	
-	setup_signals();
+	setup_signals_interactive();
 	rl_catch_signals = 0;
 	
 	while (1)
@@ -86,7 +115,11 @@ int	main(int argc, char **argv, char **envp)
 					free(line);
 				continue ;
 			}
+			/* Set non-interactive signals before executing command */
+			setup_signals_noninteractive();
 			execute_cmd(cmd, environ_copy);
+			/* Restore interactive signals after command execution */
+			setup_signals_interactive();
 			free_cmd(cmd);
 		}
 		if (line)

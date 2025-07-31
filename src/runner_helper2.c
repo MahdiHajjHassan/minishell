@@ -42,6 +42,7 @@ void	reset_signals(void)
 {
 	struct sigaction	sa;
 
+	/* Set default signal handlers for child processes */
 	sa.sa_handler = SIG_DFL;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_RESTART;

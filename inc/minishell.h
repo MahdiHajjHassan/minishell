@@ -25,9 +25,11 @@
 # include <ctype.h>
 # include <readline/readline.h>
 # include <readline/history.h>
-
-/* Global variable to store signal number as required by subject */
-extern volatile sig_atomic_t	g_signal;
+# include <limits.h>
+# include <fcntl.h>
+# include <sys/stat.h>
+# include <sys/types.h>
+# include <sys/wait.h>
 
 /* Command Types - Used to identify different command structures */
 # define EXEC	1
