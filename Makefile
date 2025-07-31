@@ -1,4 +1,4 @@
-CC = gcc
+CC = cc
 CFLAGS = -Wall -Wextra -Werror -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600
 
 NAME = minishell
