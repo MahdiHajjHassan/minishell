@@ -16,18 +16,18 @@ size_t	get_path_segment_len(char *curr, char **next)
 {
 	size_t	len;
 
-	*next = strchr(curr, ':');
+	*next = ft_strchr(curr, ':');
 	if (*next)
 		len = (size_t)(*next - curr);
 	else
-		len = strlen(curr);
+		len = ft_strlen(curr);
 	return (len);
 }
 
 int	build_full_path(char *full_path, char *curr,
 					size_t len, const char *cmd)
 {
-	if (len + strlen(cmd) + 2 > 1024)
+	if (len + ft_strlen(cmd) + 2 > 1024)
 	{
 		ft_fprintf_stderr("Path too long: %.*s/%s\n", (int)len, curr, cmd);
 		return (1);
@@ -49,14 +49,14 @@ void	reset_signals(void)
 	sigaction(SIGQUIT, &sa, NULL);
 }
 
-void	handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd)
+void	handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd, char ***env_copy)
 {
 	int	status;
 
 	(void)cmd;
-	status = handle_builtin(ex->av);
+	status = handle_builtin(ex->av, env_copy);
 	set_exit_status(status);
-	clean_exit(status);
+	/* Don't call clean_exit - let the calling function handle the flow */
 }
 
 int	open_redir_file_create(struct s_redircmd *rdir)

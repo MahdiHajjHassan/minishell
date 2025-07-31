@@ -14,8 +14,8 @@
 
 struct s_cmd	*apply_append_redir(struct s_cmd *cmd, char *file)
 {
-	return (redircmd(cmd, file, file + strlen(file),
-			(t_redir_params){O_WRONLY | O_CREAT | O_APPEND | 0644, 1}));
+	return (redircmd(cmd, file, NULL,
+			(t_redir_params){O_WRONLY | O_CREAT | O_APPEND, 1}));
 }
 
 struct s_cmd	*init_exec_cmd(void)
@@ -35,8 +35,8 @@ int	get_exec_token(char **input_ptr, char *input_end, char **q, char **eq)
 		return (0);
 	if (tok != 'a')
 	{
-		ft_fprintf_stderr("missing file name\n");
-		wtf();
+		ft_fprintf_stderr("minishell: missing file name\n");
+		return (0);
 	}
 	return (tok);
 }
@@ -64,8 +64,8 @@ char	*process_argument(char *q, char *eq)
 	processed = process_escaped(q, len);
 	if (!processed)
 	{
-		ft_fprintf_stderr("malloc failed\n");
-		wtf();
+		ft_fprintf_stderr("minishell: malloc failed\n");
+		return (NULL);
 	}
 	return (processed);
 }

@@ -26,16 +26,8 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 
-/* Signal handling structure */
-typedef struct s_sig
-{
-	volatile sig_atomic_t	sigint;
-	volatile sig_atomic_t	sigquit;
-	volatile pid_t			pid;
-	volatile int			exit_status;
-}	t_sig;
-
-extern t_sig	g_sig;
+/* Global variable to store signal number as required by subject */
+extern volatile sig_atomic_t	g_signal;
 
 /* Command Types - Used to identify different command structures */
 # define EXEC	1
@@ -92,6 +84,7 @@ typedef struct s_env_var_params
 	char		**result;
 	size_t		*j;
 	size_t		*alloc_size;
+	char		**env_copy;
 }	t_env_var_params;
 
 /* Structure to hold regular character handling parameters */
@@ -113,6 +106,7 @@ typedef struct s_process_char_params
 	char		**result;
 	size_t		*j;
 	size_t		*alloc_size;
+	char		**env_copy;
 }	t_process_char_params;
 
 
@@ -202,23 +196,23 @@ typedef struct s_heredoccmd
 void			*get_cwd(char *buf, size_t size);
 void			wtf(void);
 int				forkk(void);
-void			runcmd(struct s_cmd *cmd);
-struct s_cmd	*tokenize(const char *line);
+void			runcmd(struct s_cmd *cmd, char **env_copy);
+struct s_cmd	*tokenize(const char *line, char **env_copy);
 struct s_cmd	*nulterm(struct s_cmd *cmd);
-char			*find_command(const char *cmd);
+char			*find_command(const char *cmd, char **env_copy);
 
 /* Main helper functions */
 
 void			init_signals(void);
 int				handle_line_input(char **line);
-int				handle_tokenize(char *line, struct s_cmd **cmd);
-void			expand_builtin_args(struct s_execcmd *ecmd);
-int				handle_builtin_cmd(struct s_cmd *cmd, char *line);
+int				handle_tokenize(char *line, struct s_cmd **cmd, char **env_copy);
+void			expand_builtin_args(struct s_execcmd *ecmd, char **env_copy);
+int				handle_builtin_cmd(struct s_cmd *cmd, char *line, char ***env_copy);
 void			handle_child_status(int status);
-void			execute_cmd(struct s_cmd *cmd);
+void			execute_cmd(struct s_cmd *cmd, char **env_copy);
 
 /* Parser and command constructor functions */
-struct s_cmd	*parseexec(char **input_ptr, char *input_end);
+struct s_cmd	*parseexec(char **input_ptr, char *input_end, char **env_copy);
 int				peek(char **input_ptr, char *input_end, char *toks);
 int				gettoken(char **input_ptr, char *input_end,
 					char **token_start, char **token_end);
@@ -245,11 +239,11 @@ int				handle_token_cases(char **s_ptr, char *input_ptr,
 
 /* Env helper functions */
 size_t			get_var_name_len(const char *str);
-char			*get_env_value(const char *name, size_t name_len);
+char			*get_env_value(const char *name, size_t name_len, char **env_copy);
 char			*init_result_buffer(size_t len, size_t *alloc_size);
 char			*resize_for_env_value(char *result, size_t *alloc_size,
 					size_t j, size_t value_len);
-int				handle_env_variable(t_env_var_params params);
+int				handle_env_variable(t_env_var_params params, char **env_copy);
 char			*resize_for_char(char *result, size_t *alloc_size, size_t j);
 int				handle_regular_char(t_regular_char_params params);
 int				is_variable_char(const char *str, size_t i, size_t len);
@@ -275,7 +269,9 @@ char			*process_argument(char *q, char *eq);
 void			add_argument(struct s_execcmd *cmd, char *processed, int *argc);
 void			finalize_exec_cmd(struct s_execcmd *cmd, int argc);
 struct s_cmd	*process_arguments(struct s_cmd *ret,
-					t_process_args_params params);
+					t_process_args_params params, char **env_copy);
+struct s_cmd	*process_arguments_and_redirs(struct s_cmd *ret,
+					t_process_args_params params, char **env_copy);
 
 /* Utils helper functions */
 void			handle_redir_case(struct s_cmd *cmd);
@@ -296,7 +292,7 @@ size_t			get_path_segment_len(char *curr, char **next);
 int				build_full_path(char *full_path, char *curr,
 					size_t len, const char *cmd);
 void			reset_signals(void);
-void			handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd);
+void			handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd, char ***env_copy);
 int				open_redir_file_create(struct s_redircmd *rdir);
 
 /* Runner helper3 functions */
@@ -304,11 +300,6 @@ int				open_redir_file_regular(struct s_redircmd *rdir);
 /* List command functions removed - semicolon not supported in this minishell */
 
 /* Runner helper4 functions */
-void			setup_pipe_left(int *p, struct s_pipecmd *pipecmd);
-void			setup_pipe_right(int *p, struct s_pipecmd *pipecmd);
-void			run_back_cmd(struct s_cmd *cmd);
-void			run_list_cmd(struct s_cmd *cmd);
-void			run_heredoc_cmd(struct s_cmd *cmd);
 
 /* Tokenize helper2 functions */
 int				handle_basic_symbols(char **s_ptr, char *input_ptr);
@@ -344,10 +335,8 @@ struct s_cmd	*redircmd(struct s_cmd *subcmd, char *file,
 					char *efile, t_redir_params params);
 struct s_cmd	*heredoccmd(struct s_cmd *subcmd, char *delimiter, char *content);
 struct s_cmd	*execcmd(void);
-struct s_cmd	*parse_redirs(struct s_cmd *cmd,
-					char **input_ptr, char *input_end);
-struct s_cmd	*parse_block(char **input_ptr, char *input_end);
-struct s_cmd	*parse_line(char **input_ptr, char *input_end);
+struct s_cmd	*parse_block(char **input_ptr, char *input_end, char **env_copy);
+struct s_cmd	*parse_line(char **input_ptr, char *input_end, char **env_copy);
 
 /* Parser helper functions */
 char			*init_output_buffer(size_t len);
@@ -358,7 +347,7 @@ char			*process_escaped(const char *input, size_t len);
 int				get_redir_token(char **input_ptr, char *input_end, char **q,
 					char **eq);
 void			remove_redir_quotes(char **q, char **eq);
-char			*process_filename(char *q, char *eq);
+char			*process_filename(char *q, char *eq, char **env_copy);
 struct s_cmd	*apply_input_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*apply_output_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*apply_append_redir(struct s_cmd *cmd, char *file);
@@ -372,30 +361,36 @@ char			*process_argument(char *q, char *eq);
 void			add_argument(struct s_execcmd *cmd, char *processed, int *argc);
 void			finalize_exec_cmd(struct s_execcmd *cmd, int argc);
 struct s_cmd	*process_arguments(struct s_cmd *ret,
-					t_process_args_params params);
+					t_process_args_params params, char **env_copy);
+struct s_cmd	*process_arguments_and_redirs(struct s_cmd *ret,
+					t_process_args_params params, char **env_copy);
 
 /* Built-in command handling */
 int				is_builtin(char *cmd);
-int				handle_builtin(char **argv);
-char			*expand_variables(const char *str, size_t len);
+int				handle_builtin(char **argv, char ***env_copy);
+char			*expand_variables(const char *str, size_t len, char **env_copy);
 void			set_exit_status(int status);
+int				get_exit_status(void);
 
 /* Heredoc functions */
-char			*read_heredoc_content(char *delimiter);
-char			*append_line_to_content(char *content, char *line);
 void			setup_heredoc_signals(void);
 void			heredoc_sigint_handler(int signo);
+char			*read_line_without_history(void);
+char			*read_heredoc_content(char *delimiter);
+char			*append_line_to_content(char *content, char *line);
 
 /* Builtin helper functions */
-int				cd_to_home(void);
+int				cd_to_home(char **env_copy);
 int				cd_to_path(char *path);
 int				parse_export_arg(char *arg, char **name, char **value);
 void			remove_quotes(char **value);
-int				set_environment_var(char *name, char *value);
+int				set_environment_var(char *name, char *value, char ***env_copy);
+void			print_sorted_env_vars(char **env_copy);
+void			update_pwd_variables(char *old_pwd, char *new_pwd, char ***env_copy);
 
 /* Builtin command functions */
 int				builtin_echo(char **argv);
-int				builtin_cd(char **argv);
+int				builtin_cd(char **argv, char ***env_copy);
 int				builtin_pwd(char **argv);
 int				builtin_exit(char **argv);
 
@@ -406,16 +401,12 @@ int				build_full_path(char *full_path, char *curr, size_t len,
 					const char *cmd);
 char			*search_in_paths(char *path, const char *cmd);
 void			reset_signals(void);
-void			expand_exec_args(struct s_execcmd *ex);
-void			handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd);
-void			execute_external_cmd(struct s_execcmd *ex);
+void			expand_exec_args(struct s_execcmd *ex, char **env_copy);
+void			handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd, char ***env_copy);
+void			execute_external_cmd(struct s_execcmd *ex, char **env_copy);
 int				open_redir_file_create(struct s_redircmd *rdir);
 int				open_redir_file_regular(struct s_redircmd *rdir);
 /* List command functions removed - semicolon not supported in this minishell */
-void			setup_pipe_left(int *p, struct s_pipecmd *pipecmd);
-void			setup_pipe_right(int *p, struct s_pipecmd *pipecmd);
-void			run_pipe_cmd(struct s_cmd *cmd);
-void			run_back_cmd(struct s_cmd *cmd);
 
 /* Utils3 functions - Custom implementations of forbidden functions */
 int				ft_strcmp(const char *s1, const char *s2);
@@ -426,8 +417,8 @@ char			*ft_strncpy(char *dest, const char *src, size_t n);
 char			*ft_strcpy(char *dest, const char *src);
 int				ft_fflush_stdout(void);
 int				ft_fprintf_stderr(const char *format, ...);
-int				ft_setenv(const char *name, const char *value, int overwrite);
-int				ft_unsetenv(const char *name);
+int				ft_setenv(const char *name, const char *value, int overwrite, char ***env_copy);
+int				ft_unsetenv(const char *name, char ***env_copy);
 
 /* Memory management functions */
 char			**copy_environ(char **envp);
@@ -436,5 +427,18 @@ void			clean_exit(int status);
 #ifdef DEBUG
 void			check_leaks(void);
 #endif
+
+/* Command execution functions */
+void			runcmd(struct s_cmd *cmd, char **env_copy);
+void			run_exec_cmd(struct s_cmd *cmd, char **env_copy);
+void			run_redir_cmd(struct s_cmd *cmd, char **env_copy);
+void			run_pipe_cmd(struct s_cmd *cmd, char **env_copy);
+void			run_back_cmd(struct s_cmd *cmd, char **env_copy);
+void			run_heredoc_cmd(struct s_cmd *cmd, char **env_copy);
+void			run_list_cmd(struct s_cmd *cmd);
+void			setup_pipe_left(int *p, struct s_pipecmd *pipecmd, char **env_copy);
+void			setup_pipe_right(int *p, struct s_pipecmd *pipecmd, char **env_copy);
+char			*find_command(const char *cmd, char **env_copy);
+void			execute_external_cmd(struct s_execcmd *ex, char **env_copy);
 
 #endif

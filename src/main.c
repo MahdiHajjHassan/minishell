@@ -12,22 +12,22 @@
 
 #include "minishell.h"
 
-t_sig	g_sig = {0, 0, 0, 0};
+volatile sig_atomic_t	g_signal = 0;
 
 static void	sigint_handler(int signo)
 {
 	(void)signo;
-	write(STDERR_FILENO, "\n", 1);
+	g_signal = SIGINT;
+	write(STDOUT_FILENO, "\n", 1);
 	rl_on_new_line();
 	rl_replace_line("", 0);
 	rl_redisplay();
-	g_sig.exit_status = 130;
 }
 
 static void	sigquit_handler(int signo)
 {
 	(void)signo;
-	/* Do nothing in interactive mode */
+	/* Do nothing in interactive mode as required by subject */
 }
 
 static void	setup_signals(void)
@@ -50,19 +50,22 @@ int	main(int argc, char **argv, char **envp)
 	char			*line;
 	struct s_cmd	*cmd;
 	char			**environ_copy;
-	extern char		**environ;
 
-	(void)argc;
 	(void)argv;
+	if (argc != 1)
+	{
+		ft_putstr_fd("Usage: ./minishell\n", STDERR_FILENO);
+		return (1);
+	}
 	
 	/* Copy environment */
 	environ_copy = copy_environ(envp);
 	if (!environ_copy)
 	{
 		ft_putstr_fd("Failed to copy environment\n", STDERR_FILENO);
-		clean_exit(1);
+		return (1);
 	}
-	environ = environ_copy;
+	/* Don't set global environ - we work with our local copy */
 	
 	setup_signals();
 	rl_catch_signals = 0;
@@ -72,13 +75,25 @@ int	main(int argc, char **argv, char **envp)
 		init_signals();
 		if (handle_line_input(&line))
 			continue ;
-		if (handle_tokenize(line, &cmd))
+		if (handle_tokenize(line, &cmd, environ_copy))
 			continue ;
-		if (handle_builtin_cmd(cmd, line))
-			continue ;
-		execute_cmd(cmd);
-		free_cmd(cmd);
-		free(line);
+		if (cmd)
+		{
+			if (handle_builtin_cmd(cmd, line, &environ_copy))
+			{
+				free_cmd(cmd);
+				if (line)
+					free(line);
+				continue ;
+			}
+			execute_cmd(cmd, environ_copy);
+			free_cmd(cmd);
+		}
+		if (line)
+			free(line);
 	}
-	return (g_sig.exit_status);
+	
+	/* Clean up on normal exit */
+	clean_exit(0);
+	return (0);
 }

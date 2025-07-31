@@ -45,7 +45,7 @@ char	*search_in_paths(char *path, const char *cmd)
 	return (NULL);
 }
 
-void	expand_exec_args(struct s_execcmd *ex)
+void	expand_exec_args(struct s_execcmd *ex, char **env_copy)
 {
 	int		i;
 	char	*original;
@@ -54,20 +54,39 @@ void	expand_exec_args(struct s_execcmd *ex)
 	while (ex->av[i])
 	{
 		original = ex->av[i];
-		ex->av[i] = expand_variables(original, strlen(original));
+		ex->av[i] = expand_variables(original, ft_strlen(original), env_copy);
 		free(original);
 		i++;
 	}
 }
 
-void	execute_external_cmd(struct s_execcmd *ex)
+void	execute_external_cmd(struct s_execcmd *ex, char **env_copy)
 {
 	char			*cmd_path;
+	pid_t			pid;
+	int				status;
 	extern char		**environ;
 
-	cmd_path = find_command(ex->av[0]);
-	if (cmd_path)
+	cmd_path = find_command(ex->av[0], env_copy);
+	if (!cmd_path)
 	{
+		ft_fprintf_stderr("minishell: %s: command not found\n", ex->av[0]);
+		set_exit_status(127);
+		return;
+	}
+	
+	pid = fork();
+	if (pid < 0)
+	{
+		perror("fork failed");
+		free(cmd_path);
+		set_exit_status(1);
+		return;
+	}
+	
+	if (pid == 0)
+	{
+		/* Child process */
 		reset_signals();
 		execve(cmd_path, ex->av, environ);
 		perror("execve failed");
@@ -76,26 +95,98 @@ void	execute_external_cmd(struct s_execcmd *ex)
 	}
 	else
 	{
-		ft_fprintf_stderr("command not found: %s\n", ex->av[0]);
-		clean_exit(127);
+		/* Parent process */
+		free(cmd_path);
+		waitpid(pid, &status, 0);
+		
+		if (WIFEXITED(status))
+			set_exit_status(WEXITSTATUS(status));
+		else if (WIFSIGNALED(status))
+		{
+			if (WTERMSIG(status) == SIGINT)
+				set_exit_status(130);
+			else if (WTERMSIG(status) == SIGQUIT)
+				set_exit_status(131);
+			else
+				set_exit_status(128 + WTERMSIG(status));
+		}
+		else
+			set_exit_status(1);
 	}
 }
 
-void	run_pipe_cmd(struct s_cmd *cmd)
+void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
 {
 	int					p[2];
 	struct s_pipecmd	*pipecmd;
+	pid_t				pid1;
+	pid_t				pid2;
+	int					status1;
+	int					status2;
 
 	pipecmd = (struct s_pipecmd *)cmd;
 	if (pipe(p) < 0)
 	{
 		perror("pipe failed");
-		wtf();
+		set_exit_status(1);
+		return;
 	}
-	setup_pipe_left(p, pipecmd);
-	setup_pipe_right(p, pipecmd);
+	
+	/* Fork first child for left side of pipe */
+	pid1 = fork();
+	if (pid1 < 0)
+	{
+		perror("fork failed");
+		close(p[0]);
+		close(p[1]);
+		set_exit_status(1);
+		return;
+	}
+	
+	if (pid1 == 0)
+	{
+		/* Child process - left side of pipe */
+		close(p[0]);  /* Close read end */
+		dup2(p[1], STDOUT_FILENO);  /* Redirect stdout to pipe write end */
+		close(p[1]);
+		runcmd(pipecmd->left, env_copy);
+		exit(get_exit_status());
+	}
+	
+	/* Fork second child for right side of pipe */
+	pid2 = fork();
+	if (pid2 < 0)
+	{
+		perror("fork failed");
+		close(p[0]);
+		close(p[1]);
+		kill(pid1, SIGTERM);
+		waitpid(pid1, NULL, 0);
+		set_exit_status(1);
+		return;
+	}
+	
+	if (pid2 == 0)
+	{
+		/* Child process - right side of pipe */
+		close(p[1]);  /* Close write end */
+		dup2(p[0], STDIN_FILENO);  /* Redirect stdin to pipe read end */
+		close(p[0]);
+		runcmd(pipecmd->right, env_copy);
+		exit(get_exit_status());
+	}
+	
+	/* Parent process */
 	close(p[0]);
 	close(p[1]);
-	wait(0);
-	wait(0);
+	
+	/* Wait for both children */
+	waitpid(pid1, &status1, 0);
+	waitpid(pid2, &status2, 0);
+	
+	/* Set exit status to the rightmost command's status */
+	if (WIFEXITED(status2))
+		set_exit_status(WEXITSTATUS(status2));
+	else
+		set_exit_status(1);
 }

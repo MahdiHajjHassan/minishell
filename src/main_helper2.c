@@ -12,9 +12,9 @@
 
 #include "minishell.h"
 
-int	handle_tokenize(char *line, struct s_cmd **cmd)
+int	handle_tokenize(char *line, struct s_cmd **cmd, char **env_copy)
 {
-	*cmd = tokenize(line);
+	*cmd = tokenize(line, env_copy);
 	if (!*cmd)
 	{
 		free(line);
@@ -23,16 +23,27 @@ int	handle_tokenize(char *line, struct s_cmd **cmd)
 	return (0);
 }
 
-void	execute_cmd(struct s_cmd *cmd)
+void	execute_cmd(struct s_cmd *cmd, char **env_copy)
 {
 	int	status;
+	pid_t	pid;
 
-	g_sig.pid = forkk();
-	if (g_sig.pid == 0)
+	pid = fork();
+	if (pid < 0)
 	{
-		runcmd(cmd);
-		clean_exit(0);
+		perror("fork failed");
+		set_exit_status(1);
+		return;
 	}
-	wait(&status);
+	
+	if (pid == 0)
+	{
+		/* Child process */
+		runcmd(cmd, env_copy);
+		clean_exit(get_exit_status());
+	}
+	
+	/* Parent process */
+	waitpid(pid, &status, 0);
 	handle_child_status(status);
 }

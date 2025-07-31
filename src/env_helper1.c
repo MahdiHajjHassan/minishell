@@ -3,8 +3,6 @@
 /*                                                        :::      ::::::::   */
 /*   env_helper1.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/27 00:00:00 by mahajj-h          #+#    #+#             */
 /*   Updated: 2025/07/27 00:00:00 by mahajj-h         ###   ########.fr       */
 /*                                                                            */
@@ -24,32 +22,51 @@ size_t	get_var_name_len(const char *str)
 	return (len);
 }
 
-char	*get_env_value(const char *name, size_t name_len)
+char	*get_env_value(const char *name, size_t name_len, char **env_copy)
 {
 	char	*temp;
 	char	*value;
+	int		i;
 
 	if (name_len == 1 && *name == '?')
 	{
-		char *status_str = ft_itoa(g_sig.exit_status);
+		char *status_str = ft_itoa(get_exit_status());
 		if (!status_str)
 			return (ft_strdup("0"));
 		return (status_str);
 	}
+	
 	temp = malloc(name_len + 1);
 	if (!temp)
-		return (NULL);
+		return (ft_strdup(""));
+	
 	ft_strncpy(temp, name, name_len);
 	temp[name_len] = '\0';
-	value = getenv(temp);
-	free(temp);
-	if (value)
-		return (ft_strdup(value));
-	else
+	
+	/* Search in local environment copy */
+	if (!env_copy)
+	{
+		free(temp);
 		return (ft_strdup(""));
+	}
+	
+	i = 0;
+	while (env_copy[i])
+	{
+		if (ft_strncmp(env_copy[i], temp, name_len) == 0 && env_copy[i][name_len] == '=')
+		{
+			value = ft_strdup(env_copy[i] + name_len + 1);
+			free(temp);
+			return (value);
+		}
+		i++;
+	}
+	
+	free(temp);
+	return (ft_strdup(""));
 }
 
-int	handle_env_variable(t_env_var_params params)
+int	handle_env_variable(t_env_var_params params, char **env_copy)
 {
 	size_t	var_name_len;
 	char	*env_value;
@@ -57,10 +74,11 @@ int	handle_env_variable(t_env_var_params params)
 
 	(*params.i)++;
 	var_name_len = get_var_name_len(params.str + *params.i);
-	env_value = get_env_value(params.str + *params.i, var_name_len);
+	env_value = get_env_value(params.str + *params.i, var_name_len, env_copy);
+	
 	if (env_value)
 	{
-		value_len = strlen(env_value);
+		value_len = ft_strlen(env_value);
 		*params.result = resize_for_env_value(*params.result,
 				params.alloc_size, *params.j, value_len);
 		if (!*params.result)
@@ -72,6 +90,12 @@ int	handle_env_variable(t_env_var_params params)
 		*params.j += value_len;
 		free(env_value);
 	}
+	else
+	{
+		/* Handle case where env_value allocation failed */
+		return (1);
+	}
+	
 	*params.i += var_name_len;
 	return (0);
 }
@@ -91,7 +115,7 @@ int	process_character(t_process_char_params params)
 	if (is_variable_char(params.str, *params.i, params.len))
 	{
 		if (handle_env_variable((t_env_var_params){params.str, params.i,
-				params.result, params.j, params.alloc_size}))
+				params.result, params.j, params.alloc_size, params.env_copy}, params.env_copy))
 			return (1);
 	}
 	else

@@ -29,6 +29,34 @@ void	heredoc_sigint_handler(int signo)
 	clean_exit(130);
 }
 
+/* Custom line reader that doesn't use readline to avoid history updates */
+char	*read_line_without_history(void)
+{
+	char	buffer[4096];
+	char	*line;
+	int		i;
+	int		c;
+
+	i = 0;
+	while (i < 4095)
+	{
+		c = getchar();
+		if (c == EOF)
+		{
+			if (i == 0)
+				return (NULL);
+			break;
+		}
+		if (c == '\n')
+			break;
+		buffer[i++] = (char)c;
+	}
+	buffer[i] = '\0';
+	
+	line = ft_strdup(buffer);
+	return (line);
+}
+
 char	*append_line_to_content(char *content, char *line)
 {
 	size_t	content_len;
@@ -67,7 +95,7 @@ char	*read_heredoc_content(char *delimiter)
 	while (1)
 	{
 		write(STDOUT_FILENO, "> ", 2);
-		line = readline("");
+		line = read_line_without_history();
 		
 		if (!line)
 		{

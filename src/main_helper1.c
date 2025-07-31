@@ -17,9 +17,9 @@ int	handle_eof(char *buf, size_t len)
 	if (len == 0)
 	{
 		if (isatty(STDIN_FILENO))
-			printf("exit\n");
+			ft_putstr_fd("exit\n", STDOUT_FILENO);
 		free(buf);
-		clean_exit(g_sig.exit_status);
+		clean_exit(0);
 	}
 	clearerr(stdin);
 	return (1);
@@ -27,23 +27,25 @@ int	handle_eof(char *buf, size_t len)
 
 void	init_signals(void)
 {
-	g_sig.sigint = 0;
-	g_sig.sigquit = 0;
-	g_sig.pid = 0;
+	g_signal = 0;
 }
-
-
 
 int	handle_line_input(char **line)
 {
-	g_sig.sigint = 0;
+	g_signal = 0;
 	*line = readline("minishell$ ");
 	if (!*line)
 	{
-		printf("exit\n");
+		ft_putstr_fd("exit\n", STDOUT_FILENO);
 		clean_exit(0);
 	}
-	if (**line)
+	if (g_signal == SIGINT)
+	{
+		free(*line);
+		*line = NULL;
+		return (1);
+	}
+	if (ft_strlen(*line) > 0)
 		add_history(*line);
 	return (0);
 }
