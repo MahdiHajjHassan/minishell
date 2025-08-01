@@ -38,7 +38,7 @@ char	*get_env_value(const char *name, size_t name_len, char **env_copy)
 	
 	temp = malloc(name_len + 1);
 	if (!temp)
-		return (ft_strdup(""));
+		return (NULL);
 	
 	ft_strncpy(temp, name, name_len);
 	temp[name_len] = '\0';
@@ -47,7 +47,7 @@ char	*get_env_value(const char *name, size_t name_len, char **env_copy)
 	if (!env_copy)
 	{
 		free(temp);
-		return (ft_strdup(""));
+		return (NULL);
 	}
 	
 	i = 0;
@@ -63,7 +63,7 @@ char	*get_env_value(const char *name, size_t name_len, char **env_copy)
 	}
 	
 	free(temp);
-	return (ft_strdup(""));
+	return (NULL); /* Return NULL for non-existent variables */
 }
 
 int	handle_env_variable(t_env_var_params params, char **env_copy)
@@ -92,8 +92,21 @@ int	handle_env_variable(t_env_var_params params, char **env_copy)
 	}
 	else
 	{
-		/* Handle case where env_value allocation failed */
-		return (1);
+		/* Variable doesn't exist - preserve the $ and variable name */
+		/* First add the $ */
+		*params.result = resize_for_char(*params.result,
+				params.alloc_size, *params.j);
+		if (!*params.result)
+			return (1);
+		(*params.result)[(*params.j)++] = '$';
+		
+		/* Then add the variable name */
+		*params.result = resize_for_env_value(*params.result,
+				params.alloc_size, *params.j, var_name_len);
+		if (!*params.result)
+			return (1);
+		ft_strncpy(*params.result + *params.j, params.str + *params.i, var_name_len);
+		*params.j += var_name_len;
 	}
 	
 	*params.i += var_name_len;

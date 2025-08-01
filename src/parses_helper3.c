@@ -41,18 +41,24 @@ int	get_exec_token(char **input_ptr, char *input_end, char **q, char **eq)
 	return (tok);
 }
 
-void	remove_exec_quotes(char **q, char **eq)
+int	remove_exec_quotes(char **q, char **eq)
 {
+	int	quote_type;
+
+	quote_type = 0;
 	if (**q == '"' && *(*eq - 1) == '"')
 	{
 		(*q)++;
 		(*eq)--;
+		quote_type = '"';
 	}
 	else if (**q == '\'' && *(*eq - 1) == '\'')
 	{
 		(*q)++;
 		(*eq)--;
+		quote_type = '\'';
 	}
+	return (quote_type);
 }
 
 char	*process_argument(char *q, char *eq)
@@ -67,5 +73,35 @@ char	*process_argument(char *q, char *eq)
 		ft_fprintf_stderr("minishell: malloc failed\n");
 		return (NULL);
 	}
+	return (processed);
+}
+
+char	*process_argument_with_expansion(char *q, char *eq, char **env_copy, int quote_type)
+{
+	size_t	len;
+	char	*processed;
+	char	*expanded;
+
+	len = eq - q;
+	processed = process_escaped(q, len);
+	if (!processed)
+	{
+		ft_fprintf_stderr("minishell: malloc failed\n");
+		return (NULL);
+	}
+	
+	/* Only expand variables if not in single quotes */
+	if (quote_type != '\'')
+	{
+		expanded = expand_variables(processed, ft_strlen(processed), env_copy);
+		free(processed);
+		if (!expanded)
+		{
+			ft_fprintf_stderr("minishell: malloc failed\n");
+			return (NULL);
+		}
+		return (expanded);
+	}
+	
 	return (processed);
 }

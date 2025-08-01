@@ -35,12 +35,17 @@ static void	increment_shlvl(char ***env_copy)
 			new_shlvl = ft_itoa(shlvl_num);
 			if (new_shlvl)
 			{
-				free((*env_copy)[i]);
+				char *old_value = (*env_copy)[i];
 				(*env_copy)[i] = malloc(ft_strlen("SHLVL=") + ft_strlen(new_shlvl) + 1);
 				if ((*env_copy)[i])
 				{
 					ft_strcpy((*env_copy)[i], "SHLVL=");
 					ft_strlcat((*env_copy)[i], new_shlvl, ft_strlen("SHLVL=") + ft_strlen(new_shlvl) + 1);
+					free(old_value);
+				}
+				else
+				{
+					(*env_copy)[i] = old_value; /* Restore original if allocation failed */
 				}
 				free(new_shlvl);
 			}
