@@ -55,6 +55,23 @@ void	handle_exec_case(struct s_cmd *cmd)
 	}
 }
 
+int	is_only_whitespace(const char *str)
+{
+	int	i;
+
+	if (!str)
+		return (1);
+	i = 0;
+	while (str[i])
+	{
+		if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n' && 
+			str[i] != '\r' && str[i] != '\f' && str[i] != '\v')
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
 struct s_cmd	*nulterm(struct s_cmd *cmd)
 {
 	if (cmd == 0)

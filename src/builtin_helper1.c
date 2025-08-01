@@ -79,6 +79,35 @@ void	remove_quotes(char **value)
 	}
 }
 
+void	format_export_output(char *env_var)
+{
+	char	*equals;
+	char	*name;
+	char	*value;
+
+	equals = ft_strchr(env_var, '=');
+	if (!equals)
+	{
+		/* Variable without value, just print the name */
+		ft_putstr_fd(env_var, STDOUT_FILENO);
+		return;
+	}
+
+	/* Split the variable into name and value */
+	*equals = '\0';
+	name = env_var;
+	value = equals + 1;
+
+	/* Print name=value with quotes around the value */
+	ft_putstr_fd(name, STDOUT_FILENO);
+	ft_putstr_fd("=\"", STDOUT_FILENO);
+	ft_putstr_fd(value, STDOUT_FILENO);
+	ft_putstr_fd("\"", STDOUT_FILENO);
+
+	/* Restore the original string */
+	*equals = '=';
+}
+
 int	set_environment_var(char *name, char *value, char ***env_copy)
 {
 	if (ft_setenv(name, value, 1, env_copy) != 0)
@@ -138,7 +167,7 @@ void	print_sorted_env_vars(char **env_copy)
 	while (sorted_env[i])
 	{
 		ft_putstr_fd("declare -x ", STDOUT_FILENO);
-		ft_putstr_fd(sorted_env[i], STDOUT_FILENO);
+		format_export_output(sorted_env[i]);
 		ft_putstr_fd("\n", STDOUT_FILENO);
 		i++;
 	}

@@ -198,6 +198,7 @@ typedef struct s_heredoccmd
 void			*get_cwd(char *buf, size_t size);
 void			wtf(void);
 int				forkk(void);
+int				is_only_whitespace(const char *str);
 void			runcmd(struct s_cmd *cmd, char **env_copy);
 struct s_cmd	*tokenize(const char *line, char **env_copy);
 struct s_cmd	*nulterm(struct s_cmd *cmd);
@@ -388,6 +389,7 @@ int				cd_to_home(char **env_copy);
 int				cd_to_path(char *path);
 int				parse_export_arg(char *arg, char **name, char **value);
 void			remove_quotes(char **value);
+void			format_export_output(char *env_var);
 int				set_environment_var(char *name, char *value, char ***env_copy);
 void			print_sorted_env_vars(char **env_copy);
 void			update_pwd_variables(char *old_pwd, char *new_pwd, char ***env_copy);
