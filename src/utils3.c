@@ -66,6 +66,13 @@ int	ft_vsnprintf(char *str, size_t size, const char *format, va_list args)
 				str[i++] = s[j];
 			format += 2;
 		}
+		else if (*format == '%' && *(format + 1) == 'c')
+		{
+			char c = va_arg(args, int);
+			if (i < (int)size - 1)
+				str[i++] = c;
+			format += 2;
+		}
 		else
 		{
 			str[i++] = *format++;

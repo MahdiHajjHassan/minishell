@@ -264,7 +264,7 @@ struct s_cmd	*apply_append_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*init_exec_cmd(void);
 int				get_exec_token(char **input_ptr, char *input_end, char **q,
 					char **eq);
-void			remove_exec_quotes(char **q, char **eq);
+int				remove_exec_quotes(char **q, char **eq);
 char			*process_argument(char *q, char *eq);
 
 /* Parses helper4 functions */
@@ -354,12 +354,14 @@ struct s_cmd	*apply_input_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*apply_output_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*apply_append_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*handle_redir_token(struct s_cmd *cmd, int tok, char *file);
-struct s_cmd	*handle_heredoc_token(struct s_cmd *cmd, char *delimiter);
+struct s_cmd	*handle_heredoc_token(struct s_cmd *cmd, char *delimiter, char **env_copy, int is_quoted);
 struct s_cmd	*init_exec_cmd(void);
 int				get_exec_token(char **input_ptr, char *input_end, char **q,
 					char **eq);
-void			remove_exec_quotes(char **q, char **eq);
+int				remove_exec_quotes(char **q, char **eq);
 char			*process_argument(char *q, char *eq);
+char			*process_argument_with_expansion(char *q, char *eq, char **env_copy, int quote_type);
+char			*concatenate_quoted_strings(char **input_ptr, char *input_end, char **env_copy);
 void			add_argument(struct s_execcmd *cmd, char *processed, int *argc);
 void			finalize_exec_cmd(struct s_execcmd *cmd, int argc);
 struct s_cmd	*process_arguments(struct s_cmd *ret,
@@ -378,7 +380,7 @@ int				get_exit_status(void);
 void			setup_heredoc_signals(void);
 void			heredoc_sigint_handler(int signo);
 char			*read_line_without_history(void);
-char			*read_heredoc_content(char *delimiter);
+char			*read_heredoc_content(char *delimiter, char **env_copy, int is_quoted);
 char			*append_line_to_content(char *content, char *line);
 
 /* Builtin helper functions */

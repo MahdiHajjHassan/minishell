@@ -65,6 +65,11 @@ char	*handle_default_token(char *s, char *input_end, char *input_ptr,
 		}
 		s++;
 	}
+	/* Check for unclosed quotes */
+	if (quote)
+	{
+		return (NULL);
+	}
 	return (s);
 }
 

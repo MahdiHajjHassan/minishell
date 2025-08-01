@@ -19,6 +19,7 @@ int	builtin_echo(char **argv)
 
 	i = 1;
 	print_newline = 1;
+
 	while (argv[i] && argv[i][0] == '-' && argv[i][1] == 'n')
 	{
 		int	j;

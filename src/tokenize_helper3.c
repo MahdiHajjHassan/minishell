@@ -24,13 +24,17 @@ int	process_default_case(char **s_ptr, char *input_end,
 								t_process_default_params params)
 {
 	t_token_params	token_params;
+	char			*new_s_ptr;
 
 	token_params.input_ptr = params.input_ptr;
 	token_params.symbols = params.symbols;
 	token_params.space = params.space;
 	token_params = setup_token_params(*s_ptr, input_end, token_params);
-	*s_ptr = handle_default_token(*s_ptr, input_end, params.input_ptr,
+	new_s_ptr = handle_default_token(*s_ptr, input_end, params.input_ptr,
 			token_params);
+	if (!new_s_ptr)
+		return (0); /* Return 0 to indicate error */
+	*s_ptr = new_s_ptr;
 	return ('a');
 }
 

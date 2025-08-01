@@ -27,6 +27,8 @@ int	gettoken(char **input_ptr, char *input_end,
 		;
 	else
 		ret = handle_token_cases(&s, *input_ptr, input_end);
+	if (ret == 0)
+		return (0); /* Propagate syntax error */
 	if (token_end)
 		*token_end = s;
 	s = skip_whitespace(s, input_end, space);

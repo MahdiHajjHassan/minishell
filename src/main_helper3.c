@@ -38,7 +38,7 @@ int	handle_builtin_cmd(struct s_cmd *cmd, char *line, char ***env_copy)
 		ecmd = (struct s_execcmd *)cmd;
 		if (ecmd->av[0] && is_builtin(ecmd->av[0]))
 		{
-			expand_builtin_args(ecmd, *env_copy);
+			/* Variable expansion happens during parsing with quote context awareness */
 			status = handle_builtin(ecmd->av, env_copy);
 			set_exit_status(status);
 			/* Don't free cmd and line here - let the main loop handle it */

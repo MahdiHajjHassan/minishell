@@ -108,7 +108,7 @@ int	main(int argc, char **argv, char **envp)
 			continue ;
 		if (cmd)
 		{
-			if (handle_builtin_cmd(cmd, line, &environ_copy))
+					if (handle_builtin_cmd(cmd, line, &environ_copy))
 			{
 				free_cmd(cmd);
 				if (line)

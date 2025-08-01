@@ -38,7 +38,7 @@ void	run_exec_cmd(struct s_cmd *cmd, char **env_copy)
 	ex = (struct s_execcmd *)cmd;
 	if (ex->av[0] == 0)
 		clean_exit(0);
-	expand_exec_args(ex, env_copy);
+	/* Variable expansion now happens during parsing with quote context awareness */
 	if (is_builtin(ex->av[0]))
 	{
 		handle_exec_builtin(ex, cmd, &env_copy);
