@@ -22,7 +22,6 @@ char	*init_output_buffer(size_t len)
 	return (output);
 }
 
-/* Backslash processing removed - not supported in this minishell */
 char	*process_escaped(const char *input, size_t len)
 {
 	char	*output;

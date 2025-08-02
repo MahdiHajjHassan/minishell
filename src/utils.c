@@ -12,49 +12,6 @@
 
 #include "minishell.h"
 
-void	*get_cwd(char *buf, size_t size)
-{
-	if (getcwd(buf, size) == NULL)
-	{
-		perror("getcwd is dead");
-		return (NULL);
-	}
-	return (buf);
-}
-
-int	forkk(void)
-{
-	int	pid;
-
-	pid = fork();
-	if (pid == -1)
-	{
-		perror("fork failed");
-		return (-1);
-	}
-	return (pid);
-}
-
-void	wtf(void)
-{
-	ft_putstr_fd("minishell: internal error\n", STDERR_FILENO);
-	clean_exit(1);
-}
-
-void	handle_exec_case(struct s_cmd *cmd)
-{
-	int					i;
-	struct s_execcmd	*ecmd;
-
-	ecmd = (struct s_execcmd *)cmd;
-	i = 0;
-	while (ecmd->av[i])
-	{
-		*ecmd->eav[i] = 0;
-		i++;
-	}
-}
-
 int	is_only_whitespace(const char *str)
 {
 	int	i;
