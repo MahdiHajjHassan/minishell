@@ -1,7 +1,0 @@
-minishell$ "echo" "$HOME $USER"
-/home/couch-wajdi couch-wajdi
-process_quoted_token: 'echo'
-add_argument: 'echo' (argc=0)
-process_quoted_token: '$HOME $USER'
-add_argument: '/home/couch-wajdi couch-wajdi' (argc=1)
-minishell$ exit
