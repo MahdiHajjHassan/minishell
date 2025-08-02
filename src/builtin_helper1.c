@@ -17,7 +17,6 @@ int	cd_to_home(char **env_copy)
 	char	*home;
 	int		i;
 
-	/* Search for HOME in local environment copy */
 	i = 0;
 	while (env_copy && env_copy[i])
 	{
@@ -26,14 +25,14 @@ int	cd_to_home(char **env_copy)
 			home = env_copy[i] + 5;
 			if (chdir(home) != 0)
 			{
-				ft_fprintf_stderr("minishell: cd: %s: %s\n", home, strerror(errno));
+				ft_fprintf_stderr("minishell: cd: %s: %s\n", home,
+					strerror(errno));
 				return (1);
 			}
 			return (0);
 		}
 		i++;
 	}
-	
 	ft_fprintf_stderr("minishell: cd: HOME not set\n");
 	return (1);
 }
@@ -42,8 +41,7 @@ int	cd_to_path(char *path)
 {
 	if (chdir(path) != 0)
 	{
-		ft_fprintf_stderr("minishell: cd: %s: %s\n",
-			path, strerror(errno));
+		ft_fprintf_stderr("minishell: cd: %s: %s\n", path, strerror(errno));
 		return (1);
 	}
 	return (0);
@@ -54,9 +52,10 @@ int	parse_export_arg(char *arg, char **name, char **value)
 	char	*equals;
 
 	equals = ft_strchr(arg, '=');
-	if (!equals)
+	if (! equals)
 	{
-		ft_fprintf_stderr("minishell: export: `%s': not a valid identifier\n", arg);
+		ft_fprintf_stderr("minishell: export: `%s': not a valid identifier\n",
+			arg);
 		return (1);
 	}
 	*name = arg;
@@ -86,25 +85,18 @@ void	format_export_output(char *env_var)
 	char	*value;
 
 	equals = ft_strchr(env_var, '=');
-	if (!equals)
+	if (! equals)
 	{
-		/* Variable without value, just print the name */
 		ft_putstr_fd(env_var, STDOUT_FILENO);
-		return;
+		return ;
 	}
-
-	/* Split the variable into name and value */
 	*equals = '\0';
 	name = env_var;
 	value = equals + 1;
-
-	/* Print name=value with quotes around the value */
 	ft_putstr_fd(name, STDOUT_FILENO);
 	ft_putstr_fd("=\"", STDOUT_FILENO);
 	ft_putstr_fd(value, STDOUT_FILENO);
 	ft_putstr_fd("\"", STDOUT_FILENO);
-
-	/* Restore the original string */
 	*equals = '=';
 }
 
@@ -124,18 +116,14 @@ void	print_sorted_env_vars(char **env_copy)
 	int		j;
 	char	*temp;
 	int		count;
+	char	**sorted_env;
 
-	/* Count environment variables */
 	count = 0;
 	while (env_copy && env_copy[count])
 		count++;
-
-	/* Create a copy for sorting */
-	char **sorted_env = malloc((count + 1) * sizeof(char *));
-	if (!sorted_env)
-		return;
-
-	/* Copy environment variables */
+	sorted_env = malloc((count + 1) * sizeof(char *));
+	if (! sorted_env)
+		return ;
 	i = 0;
 	while (env_copy && env_copy[i])
 	{
@@ -143,8 +131,6 @@ void	print_sorted_env_vars(char **env_copy)
 		i++;
 	}
 	sorted_env[i] = NULL;
-
-	/* Sort environment variables */
 	i = 0;
 	while (sorted_env[i])
 	{
@@ -161,8 +147,6 @@ void	print_sorted_env_vars(char **env_copy)
 		}
 		i++;
 	}
-
-	/* Print sorted environment variables */
 	i = 0;
 	while (sorted_env[i])
 	{
@@ -171,8 +155,6 @@ void	print_sorted_env_vars(char **env_copy)
 		ft_putstr_fd("\n", STDOUT_FILENO);
 		i++;
 	}
-
-	/* Free sorted environment copy */
 	i = 0;
 	while (sorted_env[i])
 	{
@@ -190,36 +172,30 @@ void	update_pwd_variables(char *old_pwd, char *new_pwd, char ***env_copy)
 	char	*old_pwd_var;
 	char	*new_pwd_var;
 
-	/* Create the variable strings */
 	old_pwd_var = malloc(ft_strlen("OLDPWD") + ft_strlen(old_pwd) + 2);
 	new_pwd_var = malloc(ft_strlen("PWD") + ft_strlen(new_pwd) + 2);
-	if (!old_pwd_var || !new_pwd_var)
+	if (! old_pwd_var || ! new_pwd_var)
 	{
 		free(old_pwd_var);
 		free(new_pwd_var);
-		return;
+		return ;
 	}
-
 	ft_strcpy(old_pwd_var, "OLDPWD=");
-	ft_strlcat(old_pwd_var, old_pwd, ft_strlen("OLDPWD") + ft_strlen(old_pwd) + 2);
+	ft_strlcat(old_pwd_var, old_pwd,
+		ft_strlen("OLDPWD") + ft_strlen(old_pwd) + 2);
 	ft_strcpy(new_pwd_var, "PWD=");
-	ft_strlcat(new_pwd_var, new_pwd, ft_strlen("PWD") + ft_strlen(new_pwd) + 2);
-
-	/* Count existing variables */
+	ft_strlcat(new_pwd_var, new_pwd,
+		ft_strlen("PWD") + ft_strlen(new_pwd) + 2);
 	count = 0;
 	while ((*env_copy)[count])
 		count++;
-
-	/* Allocate new array with space for both variables */
 	new_environ = malloc((count + 3) * sizeof(char *));
-	if (!new_environ)
+	if (! new_environ)
 	{
 		free(old_pwd_var);
 		free(new_pwd_var);
-		return;
+		return ;
 	}
-
-	/* Copy existing variables, updating PWD and OLDPWD if they exist */
 	i = 0;
 	while ((*env_copy)[i])
 	{
@@ -239,9 +215,7 @@ void	update_pwd_variables(char *old_pwd, char *new_pwd, char ***env_copy)
 		}
 		i++;
 	}
-
-	/* Add new variables if they didn't exist */
-	if (i == count) /* No existing PWD or OLDPWD found */
+	if (i == count)
 	{
 		new_environ[i] = old_pwd_var;
 		new_environ[i + 1] = new_pwd_var;
@@ -251,8 +225,6 @@ void	update_pwd_variables(char *old_pwd, char *new_pwd, char ***env_copy)
 	{
 		new_environ[i] = NULL;
 	}
-
-	/* Update environment pointer */
 	free(*env_copy);
 	*env_copy = new_environ;
 }

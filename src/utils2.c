@@ -16,9 +16,8 @@ void	free_exec_cmd(struct s_execcmd *ecmd)
 {
 	int	i;
 
-	if (!ecmd)
+	if (! ecmd)
 		return ;
-	
 	i = 0;
 	while (ecmd->av[i])
 	{
@@ -34,42 +33,34 @@ void	free_exec_cmd(struct s_execcmd *ecmd)
 
 void	free_redir_cmd(struct s_redircmd *rcmd)
 {
-	if (!rcmd)
+	if (! rcmd)
 		return ;
-	
 	if (rcmd->cmd)
 		free_cmd(rcmd->cmd);
-	
 	if (rcmd->file)
 	{
 		free(rcmd->file);
 		rcmd->file = NULL;
 	}
-	
 	if (rcmd->efile)
 	{
 		free(rcmd->efile);
 		rcmd->efile = NULL;
 	}
-	
 	free(rcmd);
 }
 
 void	free_pipe_cmd(struct s_pipecmd *pcmd)
 {
-	if (!pcmd)
+	if (! pcmd)
 		return ;
-	
 	if (pcmd->left)
 		free_cmd(pcmd->left);
-	
 	if (pcmd->right)
 		free_cmd(pcmd->right);
-	
 	free(pcmd);
 }
 
-/* List command freeing removed - semicolon not supported in this minishell */
 void	free_list_cmd(struct s_listcmd *lcmd)
 {
 	(void)lcmd;
@@ -77,34 +68,28 @@ void	free_list_cmd(struct s_listcmd *lcmd)
 
 void	free_back_cmd(struct s_backcmd *bcmd)
 {
-	if (!bcmd)
+	if (! bcmd)
 		return ;
-	
 	if (bcmd->cmd)
 		free_cmd(bcmd->cmd);
-	
 	free(bcmd);
 }
 
 void	free_heredoc_cmd(struct s_heredoccmd *hcmd)
 {
-	if (!hcmd)
+	if (! hcmd)
 		return ;
-	
 	if (hcmd->cmd)
 		free_cmd(hcmd->cmd);
-	
 	if (hcmd->delimiter)
 	{
 		free(hcmd->delimiter);
 		hcmd->delimiter = NULL;
 	}
-	
 	if (hcmd->content)
 	{
 		free(hcmd->content);
 		hcmd->content = NULL;
 	}
-	
 	free(hcmd);
 }

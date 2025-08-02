@@ -59,13 +59,13 @@ int	is_only_whitespace(const char *str)
 {
 	int	i;
 
-	if (!str)
+	if (! str)
 		return (1);
 	i = 0;
 	while (str[i])
 	{
-		if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n' && 
-			str[i] != '\r' && str[i] != '\f' && str[i] != '\v')
+		if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n'
+			&& str[i] != '\r' && str[i] != '\f' && str[i] != '\v')
 			return (0);
 		i++;
 	}
@@ -84,7 +84,6 @@ struct s_cmd	*nulterm(struct s_cmd *cmd)
 		handle_heredoc_case(cmd);
 	else if (cmd->type == PIPE)
 		handle_pipe_case(cmd);
-	/* List command handling removed - semicolon not supported in this minishell */
 	else if (cmd->type == BACK)
 		handle_back_case(cmd);
 	return (cmd);

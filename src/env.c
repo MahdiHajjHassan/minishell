@@ -12,16 +12,16 @@
 
 #include "minishell.h"
 
-static int	exit_status = 0;
+static int	g_exit_status = 0;
 
 void	set_exit_status(int status)
 {
-	exit_status = status;
+	g_exit_status = status;
 }
 
 int	get_exit_status(void)
 {
-	return (exit_status);
+	return (g_exit_status);
 }
 
 static char	*finalize_result(char *result, size_t j)
@@ -43,13 +43,12 @@ char	*expand_variables(const char *str, size_t len, char **env_copy)
 	size_t	j;
 	size_t	alloc_size;
 
-	if (!str)
+	if (! str)
 		return (ft_strdup(""));
-	
 	i = 0;
 	j = 0;
 	result = init_result_buffer(len, &alloc_size);
-	if (!result)
+	if (! result)
 		return (NULL);
 	while (i < len)
 	{

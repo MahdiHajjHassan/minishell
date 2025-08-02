@@ -12,7 +12,8 @@
 
 #include "minishell.h"
 
-static int	process_export_arg(char *arg_copy, char **name, char **value, char ***env_copy)
+static int	process_export_arg(char *arg_copy, char **name, char **value,
+		char ***env_copy)
 {
 	if (parse_export_arg(arg_copy, name, value))
 	{
@@ -37,30 +38,24 @@ static int	builtin_export(char **argv, char ***env_copy)
 	char		*arg_copy;
 	char		*equals;
 
-	/* If no arguments, print all environment variables in sorted order */
-	if (!argv[1])
+	if (! argv[1])
 	{
 		print_sorted_env_vars(*env_copy);
 		return (0);
 	}
-	
 	i = 1;
 	while (argv[i])
 	{
 		arg_copy = ft_strdup(argv[i]);
-		if (!arg_copy)
+		if (! arg_copy)
 			return (1);
-		
 		equals = ft_strchr(arg_copy, '=');
-		if (!equals)
+		if (! equals)
 		{
-			/* Variable without value - just check if it exists, don't add it */
-			/* This is valid behavior for export */
 			free(arg_copy);
 			i++;
-			continue;
+			continue ;
 		}
-		
 		if (process_export_arg(arg_copy, &name, &value, env_copy))
 			return (1);
 		i++;
@@ -102,21 +97,21 @@ static int	builtin_env(char **argv, char ***env_copy)
 
 int	handle_builtin(char **argv, char ***env_copy)
 {
-	if (!argv[0])
+	if (! argv[0])
 		return (1);
-	if (!ft_strcmp(argv[0], "echo"))
+	if (! ft_strcmp(argv[0], "echo"))
 		return (builtin_echo(argv));
-	if (!ft_strcmp(argv[0], "cd"))
+	if (! ft_strcmp(argv[0], "cd"))
 		return (builtin_cd(argv, env_copy));
-	if (!ft_strcmp(argv[0], "pwd"))
+	if (! ft_strcmp(argv[0], "pwd"))
 		return (builtin_pwd(argv));
-	if (!ft_strcmp(argv[0], "export"))
+	if (! ft_strcmp(argv[0], "export"))
 		return (builtin_export(argv, env_copy));
-	if (!ft_strcmp(argv[0], "unset"))
+	if (! ft_strcmp(argv[0], "unset"))
 		return (builtin_unset(argv, env_copy));
-	if (!ft_strcmp(argv[0], "env"))
+	if (! ft_strcmp(argv[0], "env"))
 		return (builtin_env(argv, env_copy));
-	if (!ft_strcmp(argv[0], "exit"))
+	if (! ft_strcmp(argv[0], "exit"))
 		return (builtin_exit(argv));
 	return (1);
 }

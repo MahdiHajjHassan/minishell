@@ -3,6 +3,8 @@
 /*                                                        :::      ::::::::   */
 /*   env_helper1.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
+/*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/27 00:00:00 by mahajj-h          #+#    #+#             */
 /*   Updated: 2025/07/27 00:00:00 by mahajj-h         ###   ########.fr       */
 /*                                                                            */
@@ -27,33 +29,30 @@ char	*get_env_value(const char *name, size_t name_len, char **env_copy)
 	char	*temp;
 	char	*value;
 	int		i;
+	char	*status_str;
 
 	if (name_len == 1 && *name == '?')
 	{
-		char *status_str = ft_itoa(get_exit_status());
-		if (!status_str)
+		status_str = ft_itoa(get_exit_status());
+		if (! status_str)
 			return (ft_strdup("0"));
 		return (status_str);
 	}
-	
 	temp = malloc(name_len + 1);
-	if (!temp)
+	if (! temp)
 		return (NULL);
-	
 	ft_strncpy(temp, name, name_len);
 	temp[name_len] = '\0';
-	
-	/* Search in local environment copy */
-	if (!env_copy)
+	if (! env_copy)
 	{
 		free(temp);
 		return (NULL);
 	}
-	
 	i = 0;
 	while (env_copy[i])
 	{
-		if (ft_strncmp(env_copy[i], temp, name_len) == 0 && env_copy[i][name_len] == '=')
+		if (ft_strncmp(env_copy[i], temp, name_len) == 0 &&
+			env_copy[i][name_len] == '=')
 		{
 			value = ft_strdup(env_copy[i] + name_len + 1);
 			free(temp);
@@ -61,9 +60,8 @@ char	*get_env_value(const char *name, size_t name_len, char **env_copy)
 		}
 		i++;
 	}
-	
 	free(temp);
-	return (NULL); /* Return NULL for non-existent variables */
+	return (NULL);
 }
 
 int	handle_env_variable(t_env_var_params params, char **env_copy)
@@ -75,13 +73,12 @@ int	handle_env_variable(t_env_var_params params, char **env_copy)
 	(*params.i)++;
 	var_name_len = get_var_name_len(params.str + *params.i);
 	env_value = get_env_value(params.str + *params.i, var_name_len, env_copy);
-	
 	if (env_value)
 	{
 		value_len = ft_strlen(env_value);
 		*params.result = resize_for_env_value(*params.result,
 				params.alloc_size, *params.j, value_len);
-		if (!*params.result)
+		if (! *params.result)
 		{
 			free(env_value);
 			return (1);
@@ -92,23 +89,19 @@ int	handle_env_variable(t_env_var_params params, char **env_copy)
 	}
 	else
 	{
-		/* Variable doesn't exist - preserve the $ and variable name */
-		/* First add the $ */
 		*params.result = resize_for_char(*params.result,
 				params.alloc_size, *params.j);
-		if (!*params.result)
+		if (! *params.result)
 			return (1);
 		(*params.result)[(*params.j)++] = '$';
-		
-		/* Then add the variable name */
 		*params.result = resize_for_env_value(*params.result,
 				params.alloc_size, *params.j, var_name_len);
-		if (!*params.result)
+		if (! *params.result)
 			return (1);
-		ft_strncpy(*params.result + *params.j, params.str + *params.i, var_name_len);
+		ft_strncpy(*params.result + *params.j, params.str + *params.i,
+			var_name_len);
 		*params.j += var_name_len;
 	}
-	
 	*params.i += var_name_len;
 	return (0);
 }
@@ -117,7 +110,7 @@ int	handle_regular_char(t_regular_char_params params)
 {
 	*params.result = resize_for_char(*params.result,
 			params.alloc_size, *params.j);
-	if (!*params.result)
+	if (! *params.result)
 		return (1);
 	(*params.result)[(*params.j)++] = params.str[(*params.i)++];
 	return (0);
@@ -128,7 +121,8 @@ int	process_character(t_process_char_params params)
 	if (is_variable_char(params.str, *params.i, params.len))
 	{
 		if (handle_env_variable((t_env_var_params){params.str, params.i,
-				params.result, params.j, params.alloc_size, params.env_copy}, params.env_copy))
+				params.result, params.j, params.alloc_size, params.env_copy},
+			params.env_copy))
 			return (1);
 	}
 	else

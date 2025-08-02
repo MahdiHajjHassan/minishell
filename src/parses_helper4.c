@@ -18,7 +18,7 @@ void	add_argument(struct s_execcmd *cmd, char *processed, int *argc)
 	{
 		ft_fprintf_stderr("minishell: too many arguments\n");
 		free(processed);
-		return;
+		return ;
 	}
 	cmd->av[*argc] = processed;
 	cmd->eav[*argc] = cmd->av[*argc] + ft_strlen(processed);
@@ -31,7 +31,8 @@ void	finalize_exec_cmd(struct s_execcmd *cmd, int argc)
 	cmd->eav[argc] = 0;
 }
 
-char	*concatenate_quoted_strings(char **input_ptr, char *input_end, char **env_copy)
+char	*concatenate_quoted_strings(char **input_ptr, char *input_end,
+		char **env_copy)
 {
 	char	*q;
 	char	*eq;
@@ -40,51 +41,41 @@ char	*concatenate_quoted_strings(char **input_ptr, char *input_end, char **env_c
 	int		quote_type;
 	size_t	total_len;
 	char	*current_pos;
+	char	*new_result;
 
 	result = ft_strdup("");
-	if (!result)
+	if (! result)
 		return (NULL);
 	current_pos = *input_ptr;
-	
 	while (current_pos < input_end)
 	{
-		/* Skip whitespace */
-		while (current_pos < input_end && (*current_pos == ' ' || *current_pos == '\t'))
+		while (current_pos < input_end
+			&& (*current_pos == ' ' || *current_pos == '\t'))
 			current_pos++;
-		
 		if (current_pos >= input_end)
-			break;
-		
-		/* Check if this is a quoted string */
+			break ;
 		if (*current_pos == '"' || *current_pos == '\'')
 		{
 			quote_type = *current_pos;
-			q = current_pos + 1; /* Skip opening quote */
-			
-			/* Find closing quote */
+			q = current_pos + 1;
 			eq = q;
 			while (eq < input_end && *eq != quote_type)
 				eq++;
-			
 			if (eq >= input_end)
 			{
-				/* Unclosed quote */
 				free(result);
 				return (NULL);
 			}
-			
-			/* Process the quoted content */
-			temp = process_argument_with_expansion(q, eq, env_copy, quote_type);
-			if (!temp)
+			temp = process_argument_with_expansion(q, eq, env_copy,
+					quote_type);
+			if (! temp)
 			{
 				free(result);
 				return (NULL);
 			}
-			
-			/* Concatenate with result */
 			total_len = ft_strlen(result) + ft_strlen(temp);
-			char *new_result = malloc(total_len + 1);
-			if (!new_result)
+			new_result = malloc(total_len + 1);
+			if (! new_result)
 			{
 				free(result);
 				free(temp);
@@ -95,22 +86,19 @@ char	*concatenate_quoted_strings(char **input_ptr, char *input_end, char **env_c
 			free(result);
 			free(temp);
 			result = new_result;
-			
-			current_pos = eq + 1; /* Skip closing quote */
+			current_pos = eq + 1;
 		}
 		else
 		{
-			/* Not a quoted string, stop concatenation */
-			break;
+			break ;
 		}
 	}
-	
 	*input_ptr = current_pos;
 	return (result);
 }
 
 struct s_cmd	*process_arguments(struct s_cmd *ret,
-			t_process_args_params params, char **env_copy)
+		t_process_args_params params, char **env_copy)
 {
 	char	*q;
 	char	*eq;
@@ -118,14 +106,15 @@ struct s_cmd	*process_arguments(struct s_cmd *ret,
 	char	*processed;
 	int		quote_type;
 
-	while (!peek(params.input_ptr, params.input_end, "|)&;"))
+	while (! peek(params.input_ptr, params.input_end, "|)&;"))
 	{
 		tok = get_exec_token(params.input_ptr, params.input_end, &q, &eq);
 		if (tok == 0)
 			break ;
 		quote_type = remove_exec_quotes(&q, &eq);
-		processed = process_argument_with_expansion(q, eq, env_copy, quote_type);
-		if (!processed)
+		processed = process_argument_with_expansion(q, eq, env_copy,
+				quote_type);
+		if (! processed)
 		{
 			free_cmd(ret);
 			return (NULL);
@@ -135,22 +124,22 @@ struct s_cmd	*process_arguments(struct s_cmd *ret,
 	return (ret);
 }
 
-struct s_cmd	*handle_heredoc_token(struct s_cmd *cmd, char *delimiter, char **env_copy, int is_quoted)
+struct s_cmd	*handle_heredoc_token(struct s_cmd *cmd, char *delimiter,
+		char **env_copy, int is_quoted)
 {
 	char	*content;
-	
+
 	content = read_heredoc_content(delimiter, env_copy, is_quoted);
-	if (!content)
+	if (! content)
 	{
 		free(delimiter);
 		return (NULL);
 	}
-	
 	return (heredoccmd(cmd, delimiter, content));
 }
 
 struct s_cmd	*process_arguments_and_redirs(struct s_cmd *ret,
-			t_process_args_params params, char **env_copy)
+		t_process_args_params params, char **env_copy)
 {
 	char	*q;
 	char	*eq;
@@ -159,8 +148,14 @@ struct s_cmd	*process_arguments_and_redirs(struct s_cmd *ret,
 	char	*file_or_delimiter;
 	int		quote_type;
 	char	*concatenated;
+	int		filename_tok;
+	int		was_quoted;
+	char	*temp_ptr;
+	char	*temp_end;
+	int		consecutive_quotes;
+	char	quote_char;
 
-	while (!peek(params.input_ptr, params.input_end, "|)&;"))
+	while (! peek(params.input_ptr, params.input_end, "|)&;"))
 	{
 		tok = gettoken(params.input_ptr, params.input_end, &q, &eq);
 		if (tok == 0)
@@ -170,19 +165,18 @@ struct s_cmd	*process_arguments_and_redirs(struct s_cmd *ret,
 			free_cmd(ret);
 			return (NULL);
 		}
-		
-		/* Check if this is a redirection token */
 		if (tok == '<' || tok == '>' || tok == '+' || tok == 'H')
 		{
-			/* Get the filename/delimiter for the redirection */
-			int filename_tok = gettoken(params.input_ptr, params.input_end, &q, &eq);
+			filename_tok = gettoken(params.input_ptr, params.input_end, &q,
+					&eq);
 			if (filename_tok != 'a')
 			{
-				/* Check if we got another redirection operator instead of a filename */
-				if (filename_tok == '<' || filename_tok == '>' || filename_tok == '+' || filename_tok == 'H')
+				if (filename_tok == '<' || filename_tok == '>'
+					|| filename_tok == '+' || filename_tok == 'H')
 				{
-					*params.input_ptr = params.input_end; /* Prevent second error */
-					ft_fprintf_stderr("minishell: syntax error near unexpected token `%c'\n", filename_tok);
+					*params.input_ptr = params.input_end;
+					ft_fprintf_stderr("minishell: syntax error near unexpected token `%c'\n",
+						filename_tok);
 					free_cmd(ret);
 					return (NULL);
 				}
@@ -190,65 +184,57 @@ struct s_cmd	*process_arguments_and_redirs(struct s_cmd *ret,
 				free_cmd(ret);
 				return (NULL);
 			}
-			
-			/* Process the redirection */
-			int was_quoted = 0;
+			was_quoted = 0;
 			if (*q == '"' && *(eq - 1) == '"')
 				was_quoted = 1;
 			else if (*q == '\'' && *(eq - 1) == '\'')
 				was_quoted = 1;
-			
 			remove_redir_quotes(&q, &eq);
 			file_or_delimiter = process_filename(q, eq, env_copy);
-			if (!file_or_delimiter)
+			if (! file_or_delimiter)
 			{
 				free_cmd(ret);
 				return (NULL);
 			}
-			
 			if (tok == 'H')
 			{
-				ret = handle_heredoc_token(ret, file_or_delimiter, env_copy, was_quoted);
+				ret = handle_heredoc_token(ret, file_or_delimiter,
+						env_copy, was_quoted);
 			}
 			else
 			{
 				ret = handle_redir_token(ret, tok, file_or_delimiter);
 			}
-			
-			if (!ret)
+			if (! ret)
 				return (NULL);
 		}
 		else if (tok == 'a')
 		{
-			/* Check if this token contains consecutive quoted strings */
-			char *temp_ptr = q;
-			char *temp_end = eq;
-			int consecutive_quotes = 0;
-			
-			/* Count consecutive quoted strings */
+			temp_ptr = q;
+			temp_end = eq;
+			consecutive_quotes = 0;
 			while (temp_ptr < temp_end)
 			{
 				if (*temp_ptr == '"' || *temp_ptr == '\'')
 				{
-					char quote_char = *temp_ptr;
+					quote_char = *temp_ptr;
 					temp_ptr++;
 					while (temp_ptr < temp_end && *temp_ptr != quote_char)
 						temp_ptr++;
 					if (temp_ptr < temp_end)
 					{
-						temp_ptr++; /* Skip closing quote */
+						temp_ptr++;
 						consecutive_quotes++;
 					}
 				}
 				else
-					break;
+					break ;
 			}
-			
 			if (consecutive_quotes > 1)
 			{
-				/* Handle consecutive quoted strings */
-				concatenated = concatenate_quoted_strings(&q, eq, env_copy);
-				if (!concatenated)
+				concatenated = concatenate_quoted_strings(&q, eq,
+						env_copy);
+				if (! concatenated)
 				{
 					free_cmd(ret);
 					return (NULL);
@@ -257,10 +243,10 @@ struct s_cmd	*process_arguments_and_redirs(struct s_cmd *ret,
 			}
 			else
 			{
-				/* This is a regular argument */
 				quote_type = remove_exec_quotes(&q, &eq);
-				processed = process_argument_with_expansion(q, eq, env_copy, quote_type);
-				if (!processed)
+				processed = process_argument_with_expansion(q, eq,
+						env_copy, quote_type);
+				if (! processed)
 				{
 					free_cmd(ret);
 					return (NULL);
@@ -270,7 +256,6 @@ struct s_cmd	*process_arguments_and_redirs(struct s_cmd *ret,
 		}
 		else
 		{
-			/* Unexpected token */
 			break ;
 		}
 	}

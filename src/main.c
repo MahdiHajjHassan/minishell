@@ -12,7 +12,6 @@
 
 #include "minishell.h"
 
-/* Interactive signal handlers - used when reading input */
 static void	sigint_handler_interactive(int signo)
 {
 	(void)signo;
@@ -26,21 +25,17 @@ static void	sigint_handler_interactive(int signo)
 static void	sigquit_handler_interactive(int signo)
 {
 	(void)signo;
-	/* Do nothing in interactive mode as required by subject */
 }
 
-/* Non-interactive signal handlers - used when commands are running */
 static void	sigint_handler_noninteractive(int signo)
 {
 	(void)signo;
-	/* Just print newline, don't interfere with running command */
 	write(STDOUT_FILENO, "\n", 1);
 }
 
 static void	sigquit_handler_noninteractive(int signo)
 {
 	(void)signo;
-	/* Do nothing in non-interactive mode */
 }
 
 static void	setup_signals_interactive(void)
@@ -52,7 +47,6 @@ static void	setup_signals_interactive(void)
 	sigemptyset(&sa_int.sa_mask);
 	sa_int.sa_flags = SA_RESTART;
 	sigaction(SIGINT, &sa_int, NULL);
-	
 	sa_quit.sa_handler = sigquit_handler_interactive;
 	sigemptyset(&sa_quit.sa_mask);
 	sa_quit.sa_flags = SA_RESTART;
@@ -68,7 +62,6 @@ static void	setup_signals_noninteractive(void)
 	sigemptyset(&sa_int.sa_mask);
 	sa_int.sa_flags = SA_RESTART;
 	sigaction(SIGINT, &sa_int, NULL);
-	
 	sa_quit.sa_handler = sigquit_handler_noninteractive;
 	sigemptyset(&sa_quit.sa_mask);
 	sa_quit.sa_flags = SA_RESTART;
@@ -87,50 +80,40 @@ int	main(int argc, char **argv, char **envp)
 		ft_putstr_fd("Usage: ./minishell\n", STDERR_FILENO);
 		return (1);
 	}
-	
-	/* Copy environment */
 	environ_copy = copy_environ(envp);
-	if (!environ_copy)
+	if (! environ_copy)
 	{
 		ft_putstr_fd("Failed to copy environment\n", STDERR_FILENO);
 		return (1);
 	}
-	/* Don't set global environ - we work with our local copy */
-	
 	setup_signals_interactive();
 	rl_catch_signals = 0;
-	
 	while (1)
 	{
 		init_signals();
 		if (handle_line_input(&line))
 			continue ;
-		/* Skip empty lines or lines with only whitespace */
-		if (!line || ft_strlen(line) == 0 || is_only_whitespace(line))
+		if (! line || ft_strlen(line) == 0 || is_only_whitespace(line))
 			continue ;
 		if (handle_tokenize(line, &cmd, environ_copy))
 			continue ;
 		if (cmd)
 		{
-					if (handle_builtin_cmd(cmd, line, &environ_copy))
+			if (handle_builtin_cmd(cmd, line, &environ_copy))
 			{
 				free_cmd(cmd);
 				if (line)
 					free(line);
 				continue ;
 			}
-			/* Set non-interactive signals before executing command */
 			setup_signals_noninteractive();
 			execute_cmd(cmd, environ_copy);
-			/* Restore interactive signals after command execution */
 			setup_signals_interactive();
 			free_cmd(cmd);
 		}
 		if (line)
 			free(line);
 	}
-	
-	/* Clean up on normal exit */
 	clean_exit(0);
 	return (0);
 }
