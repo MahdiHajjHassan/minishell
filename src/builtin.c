@@ -87,21 +87,6 @@ static int	builtin_unset(char **argv, char ***env_copy)
 	return (0);
 }
 
-static int	builtin_env(char **argv, char ***env_copy)
-{
-	int			i;
-
-	(void)argv;
-	i = 0;
-	while ((*env_copy)[i])
-	{
-		ft_putstr_fd((*env_copy)[i], STDOUT_FILENO);
-		ft_putstr_fd("\n", STDOUT_FILENO);
-		i++;
-	}
-	return (0);
-}
-
 int	handle_builtin(char **argv, char ***env_copy)
 {
 	if (! argv[0])
