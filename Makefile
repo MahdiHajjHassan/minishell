@@ -74,7 +74,10 @@ SRCS = src/builtin.c \
        src/utils3_helper2.c \
        src/utils3_helper3.c \
        src/utils3_helper4.c \
-       src/utils3_helper5.c
+       src/utils3_helper5.c \
+       src/utils3_helper6.c \
+       src/utils3_helper7.c \
+       src/utils3_helper8.c
 
 OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 

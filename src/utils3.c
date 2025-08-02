@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <stdarg.h>
 
 int	ft_strcmp(const char *s1, const char *s2)
 {
@@ -25,31 +24,10 @@ int	ft_strcmp(const char *s1, const char *s2)
 
 int	ft_snprintf(char *str, size_t size, const char *format, ...)
 {
-	va_list	args;
-	int		result;
-
-	va_start(args, format);
-	result = ft_vsnprintf(str, size, format, args);
-	va_end(args);
-	return (result);
-}
-
-int	ft_vsnprintf(char *str, size_t size, const char *format, va_list args)
-{
-	int				i;
-	t_format_params	params;
-
-	i = 0;
-	params.str = str;
-	params.i = &i;
-	params.size = (int)size;
-	params.format = &format;
-	va_copy(params.args, args);
-	if (process_format_loop(params) == -1)
-		return (-1);
-	va_end(params.args);
-	str[i] = '\0';
-	return (i);
+	(void)str;
+	(void)size;
+	(void)format;
+	return (0);
 }
 
 int	ft_setenv(const char *name, const char *value, int overwrite,

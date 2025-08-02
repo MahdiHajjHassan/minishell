@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils3_helper1.c                                  :+:      :+:    :+:   */
+/*   utils3_helper1.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -11,92 +11,65 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <stdarg.h>
 
-int	handle_d_format(char *str, int *i, int size, va_list args)
+void	print_too_many_args(void)
 {
-	int		num;
-	char	*num_str;
-	int		j;
-
-	num = va_arg(args, int);
-	num_str = ft_itoa(num);
-	if (! num_str)
-		return (-1);
-	j = 0;
-	while (num_str[j] && *i < size - 1)
-	{
-		str[*i] = num_str[j];
-		(*i)++;
-		j++;
-	}
-	free(num_str);
-	return (0);
+	ft_putstr_fd("minishell: too many arguments\n", STDERR_FILENO);
 }
 
-int	handle_s_format(char *str, int *i, int size, va_list args)
+void	print_missing_paren(const char *paren)
 {
-	char	*s;
-	int		j;
-
-	s = va_arg(args, char *);
-	j = 0;
-	while (s && s[j] && *i < size - 1)
-	{
-		str[*i] = s[j];
-		(*i)++;
-		j++;
-	}
-	return (0);
+	ft_putstr_fd("minishell: missing ", STDERR_FILENO);
+	ft_putstr_fd((char *)paren, STDERR_FILENO);
+	ft_putstr_fd("\n", STDERR_FILENO);
 }
 
-int	handle_c_format(char *str, int *i, int size, va_list args)
+void	print_unknown_command_type(int type)
 {
-	char	c;
+	char	*type_str;
 
-	c = va_arg(args, int);
-	if (*i < size - 1)
+	type_str = ft_itoa(type);
+	ft_putstr_fd("unknown command type: ", STDERR_FILENO);
+	if (type_str)
 	{
-		str[*i] = c;
-		(*i)++;
+		ft_putstr_fd(type_str, STDERR_FILENO);
+		free(type_str);
 	}
-	return (0);
+	ft_putstr_fd("\n", STDERR_FILENO);
 }
 
-int	handle_format_specifier(t_format_params params)
+void	print_heredoc_eof_warning(const char *delimiter)
 {
-	if (**params.format == '%' && *(*params.format + 1) == 'd')
-	{
-		if (handle_d_format(params.str, params.i, params.size,
-				params.args) == -1)
-			return (-1);
-		*params.format += 2;
-	}
-	else if (**params.format == '%' && *(*params.format + 1) == 's')
-	{
-		handle_s_format(params.str, params.i, params.size, params.args);
-		*params.format += 2;
-	}
-	else if (**params.format == '%' && *(*params.format + 1) == 'c')
-	{
-		handle_c_format(params.str, params.i, params.size, params.args);
-		*params.format += 2;
-	}
+	ft_putstr_fd(
+		"minishell: warning: here-document delimited by end-of-file (wanted `",
+		STDERR_FILENO);
+	ft_putstr_fd((char *)delimiter, STDERR_FILENO);
+	ft_putstr_fd("')\n", STDERR_FILENO);
+}
+
+int	ft_fprintf_stderr(const char *format, ...)
+{
+	if (ft_strcmp(format, "minishell: cd: HOME not set\n") == 0)
+		print_cd_home_not_set();
+	else if (ft_strcmp(format, "minishell: cd: getcwd failed\n") == 0)
+		print_cd_getcwd_failed();
+	else if (ft_strcmp(format, "minishell: cd: too many arguments\n") == 0)
+		print_cd_too_many_args();
+	else if (ft_strcmp(format, "minishell: syntax error\n") == 0)
+		print_syntax_error();
+	else if (ft_strcmp(format, "minishell: missing file name\n") == 0)
+		print_missing_file_name();
+	else if (ft_strcmp(format, "minishell: malloc failed\n") == 0)
+		print_malloc_failed();
+	else if (ft_strcmp(format, "minishell: too many arguments\n") == 0)
+		print_too_many_args();
+	else if (ft_strcmp(format, "minishell: missing (\n") == 0)
+		print_missing_paren("(");
+	else if (ft_strcmp(format, "minishell: missing )\n") == 0)
+		print_missing_paren(")");
+	else if (ft_strcmp(format, "minishell: exit: too many arguments\n") == 0)
+		print_exit_too_many_args();
 	else
-	{
-		params.str[*params.i] = **params.format;
-		(*params.i)++;
-		(*params.format)++;
-	}
-	return (0);
-}
-
-int	process_format_loop(t_format_params params)
-{
-	while (**params.format && *params.i < params.size - 1)
-	{
-		if (handle_format_specifier(params) == -1)
-			return (-1);
-	}
+		printf("%s", format);
 	return (0);
 }

@@ -23,9 +23,7 @@ int	validate_numeric_arg(char *arg)
 	{
 		if (! ft_isdigit(arg[i]))
 		{
-			ft_fprintf_stderr("minishell: exit: ", STDERR_FILENO);
-			ft_fprintf_stderr(arg, STDERR_FILENO);
-			ft_fprintf_stderr(": numeric argument required\n", STDERR_FILENO);
+			print_exit_numeric_arg(arg);
 			return (0);
 		}
 		i++;
@@ -37,8 +35,7 @@ int	check_too_many_args(char **argv)
 {
 	if (argv[2])
 	{
-		ft_fprintf_stderr("minishell: exit: too many arguments\n",
-			STDERR_FILENO);
+		print_exit_too_many_args();
 		return (1);
 	}
 	return (0);

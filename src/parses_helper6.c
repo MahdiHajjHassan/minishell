@@ -21,7 +21,7 @@ int	get_exec_token(char **input_ptr, char *input_end, char **q, char **eq)
 		return (0);
 	if (tok != 'a')
 	{
-		ft_fprintf_stderr("minishell: missing file name\n");
+		print_missing_file_name();
 		return (0);
 	}
 	return (tok);
@@ -44,6 +44,7 @@ int	remove_exec_quotes(char **q, char **eq)
 		(*eq)--;
 		quote_type = '\'';
 	}
+
 	return (quote_type);
 }
 
@@ -56,7 +57,7 @@ char	*process_argument(char *q, char *eq)
 	processed = process_escaped(q, len);
 	if (! processed)
 	{
-		ft_fprintf_stderr("minishell: malloc failed\n");
+		print_malloc_failed();
 		return (NULL);
 	}
 	return (processed);
@@ -73,19 +74,37 @@ char	*process_argument_with_expansion(char *q, char *eq, char **env_copy,
 	processed = process_escaped(q, len);
 	if (! processed)
 	{
-		ft_fprintf_stderr("minishell: malloc failed\n");
+		print_malloc_failed();
 		return (NULL);
 	}
 	if (quote_type != '\'')
 	{
-		expanded = expand_variables(processed, ft_strlen(processed), env_copy);
-		free(processed);
-		if (! expanded)
+		// Check if the string contains any variables before expanding
+		int has_variables = 0;
+		for (size_t i = 0; processed[i]; i++)
 		{
-			ft_fprintf_stderr("minishell: malloc failed\n");
-			return (NULL);
+			if (processed[i] == '$' && processed[i + 1] && 
+				(isalnum(processed[i + 1]) || processed[i + 1] == '_' || processed[i + 1] == '?'))
+			{
+				has_variables = 1;
+				break;
+			}
 		}
-		return (expanded);
+		if (has_variables)
+		{
+			expanded = expand_variables(processed, ft_strlen(processed), env_copy);
+			free(processed);
+			if (! expanded)
+			{
+				print_malloc_failed();
+				return (NULL);
+			}
+			return (expanded);
+		}
+		else
+		{
+			return (processed);
+		}
 	}
 	return (processed);
 }

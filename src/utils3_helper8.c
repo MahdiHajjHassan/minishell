@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   runner_helper3.c                                   :+:      :+:    :+:   */
+/*   utils3_helper8.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,49 +12,33 @@
 
 #include "minishell.h"
 
-int	open_redir_file_regular(struct s_redircmd *rdir)
+void	print_cd_error(const char *path, const char *error)
 {
-	int	fd;
-	int	save_errno;
-
-	fd = open(rdir->file, rdir->mode);
-	if (fd < 0)
-	{
-		save_errno = errno;
-		print_open_failed(rdir->file, strerror(save_errno));
-		return (1);
-	}
-	if (fd != rdir->fd)
-	{
-		if (dup2(fd, rdir->fd) < 0)
-		{
-			save_errno = errno;
-			print_dup2_failed(strerror(save_errno));
-			close(fd);
-			return (1);
-		}
-		close(fd);
-	}
-	return (0);
+	ft_putstr_fd("minishell: cd: ", STDERR_FILENO);
+	ft_putstr_fd((char *)path, STDERR_FILENO);
+	ft_putstr_fd(": ", STDERR_FILENO);
+	ft_putstr_fd((char *)error, STDERR_FILENO);
+	ft_putstr_fd("\n", STDERR_FILENO);
 }
 
-/* List command functions removed - semicolon not supported in this minishell */
-void	handle_list_builtin(struct s_execcmd *ex)
+void	print_cd_home_not_set(void)
 {
-	(void)ex;
+	ft_putstr_fd("minishell: cd: HOME not set\n", STDERR_FILENO);
 }
 
-void	handle_list_external(struct s_cmd *cmd)
+void	print_cd_getcwd_failed(void)
 {
-	(void)cmd;
+	ft_putstr_fd("minishell: cd: getcwd failed\n", STDERR_FILENO);
 }
 
-void	process_list_left(struct s_listcmd *list)
+void	print_cd_too_many_args(void)
 {
-	(void)list;
+	ft_putstr_fd("minishell: cd: too many arguments\n", STDERR_FILENO);
 }
 
-void	process_list_right(struct s_listcmd *list)
+void	print_export_invalid_identifier(const char *arg)
 {
-	(void)list;
+	ft_putstr_fd("minishell: export: `", STDERR_FILENO);
+	ft_putstr_fd((char *)arg, STDERR_FILENO);
+	ft_putstr_fd("': not a valid identifier\n", STDERR_FILENO);
 }

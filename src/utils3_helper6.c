@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   runner_helper3.c                                   :+:      :+:    :+:   */
+/*   utils3_helper6.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,49 +12,29 @@
 
 #include "minishell.h"
 
-int	open_redir_file_regular(struct s_redircmd *rdir)
+void	print_exit_too_many_args(void)
 {
-	int	fd;
-	int	save_errno;
-
-	fd = open(rdir->file, rdir->mode);
-	if (fd < 0)
-	{
-		save_errno = errno;
-		print_open_failed(rdir->file, strerror(save_errno));
-		return (1);
-	}
-	if (fd != rdir->fd)
-	{
-		if (dup2(fd, rdir->fd) < 0)
-		{
-			save_errno = errno;
-			print_dup2_failed(strerror(save_errno));
-			close(fd);
-			return (1);
-		}
-		close(fd);
-	}
-	return (0);
+	ft_putstr_fd("minishell: exit: too many arguments\n", STDERR_FILENO);
 }
 
-/* List command functions removed - semicolon not supported in this minishell */
-void	handle_list_builtin(struct s_execcmd *ex)
+void	print_command_not_found(const char *cmd)
 {
-	(void)ex;
+	ft_putstr_fd("minishell: ", STDERR_FILENO);
+	ft_putstr_fd((char *)cmd, STDERR_FILENO);
+	ft_putstr_fd(": command not found\n", STDERR_FILENO);
 }
 
-void	handle_list_external(struct s_cmd *cmd)
+void	print_syntax_error(void)
 {
-	(void)cmd;
+	ft_putstr_fd("minishell: syntax error\n", STDERR_FILENO);
 }
 
-void	process_list_left(struct s_listcmd *list)
+void	print_missing_file_name(void)
 {
-	(void)list;
+	ft_putstr_fd("minishell: missing file name\n", STDERR_FILENO);
 }
 
-void	process_list_right(struct s_listcmd *list)
+void	print_malloc_failed(void)
 {
-	(void)list;
+	ft_putstr_fd("minishell: malloc failed\n", STDERR_FILENO);
 }

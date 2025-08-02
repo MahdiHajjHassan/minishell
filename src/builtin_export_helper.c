@@ -19,8 +19,7 @@ int	parse_export_arg(char *arg, char **name, char **value)
 	equals = ft_strchr(arg, '=');
 	if (! equals)
 	{
-		ft_fprintf_stderr("minishell: export: `%s': not a valid identifier\n",
-			arg);
+		print_export_invalid_identifier(arg);
 		return (1);
 	}
 	*name = arg;
@@ -69,7 +68,7 @@ int	set_environment_var(char *name, char *value, char ***env_copy)
 {
 	if (ft_setenv(name, value, 1, env_copy) != 0)
 	{
-		ft_fprintf_stderr("minishell: export: %s\n", strerror(errno));
+		print_export_error(strerror(errno));
 		return (1);
 	}
 	return (0);

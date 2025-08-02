@@ -16,7 +16,7 @@ void	add_argument(struct s_execcmd *cmd, char *processed, int *argc)
 {
 	if (*argc >= MAXARGS)
 	{
-		ft_fprintf_stderr("minishell: too many arguments\n");
+		print_too_many_args();
 		free(processed);
 		return ;
 	}
