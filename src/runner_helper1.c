@@ -60,6 +60,38 @@ void	expand_exec_args(struct s_execcmd *ex, char **env_copy)
 	}
 }
 
+static void	handle_child_process(char *cmd_path, char **av, char **env_copy)
+{
+	reset_signals();
+	execve(cmd_path, av, env_copy);
+	perror("execve failed");
+	free(cmd_path);
+	clean_exit(1);
+}
+
+static void	handle_parent_process(pid_t pid, char *cmd_path, int *status)
+{
+	free(cmd_path);
+	waitpid(pid, status, 0);
+}
+
+static void	handle_exit_status(int status)
+{
+	if (WIFEXITED(status))
+		set_exit_status(WEXITSTATUS(status));
+	else if (WIFSIGNALED(status))
+	{
+		if (WTERMSIG(status) == SIGINT)
+			set_exit_status(130);
+		else if (WTERMSIG(status) == SIGQUIT)
+			set_exit_status(131);
+		else
+			set_exit_status(128 + WTERMSIG(status));
+	}
+	else
+		set_exit_status(1);
+}
+
 void	execute_external_cmd(struct s_execcmd *ex, char **env_copy)
 {
 	char	*cmd_path;
@@ -82,49 +114,28 @@ void	execute_external_cmd(struct s_execcmd *ex, char **env_copy)
 		return ;
 	}
 	if (pid == 0)
-	{
-		reset_signals();
-		execve(cmd_path, ex->av, env_copy);
-		perror("execve failed");
-		free(cmd_path);
-		clean_exit(1);
-	}
+		handle_child_process(cmd_path, ex->av, env_copy);
 	else
-	{
-		free(cmd_path);
-		waitpid(pid, &status, 0);
-		if (WIFEXITED(status))
-			set_exit_status(WEXITSTATUS(status));
-		else if (WIFSIGNALED(status))
-		{
-			if (WTERMSIG(status) == SIGINT)
-				set_exit_status(130);
-			else if (WTERMSIG(status) == SIGQUIT)
-				set_exit_status(131);
-			else
-				set_exit_status(128 + WTERMSIG(status));
-		}
-		else
-			set_exit_status(1);
-	}
+		handle_parent_process(pid, cmd_path, &status);
+	handle_exit_status(status);
 }
 
-void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
+static int	setup_pipe(int *p)
 {
-	int					p[2];
-	struct s_pipecmd	*pipecmd;
-	pid_t				pid1;
-	pid_t				pid2;
-	int					status1;
-	int					status2;
-
-	pipecmd = (struct s_pipecmd *)cmd;
 	if (pipe(p) < 0)
 	{
 		perror("pipe failed");
 		set_exit_status(1);
-		return ;
+		return (0);
 	}
+	return (1);
+}
+
+static int	create_first_child(int *p, struct s_pipecmd *pipecmd,
+	char **env_copy)
+{
+	pid_t	pid1;
+
 	pid1 = fork();
 	if (pid1 < 0)
 	{
@@ -132,7 +143,7 @@ void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
 		close(p[0]);
 		close(p[1]);
 		set_exit_status(1);
-		return ;
+		return (-1);
 	}
 	if (pid1 == 0)
 	{
@@ -142,6 +153,15 @@ void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
 		runcmd(pipecmd->left, env_copy);
 		exit(get_exit_status());
 	}
+	return (pid1);
+}
+
+static int	create_second_child(int *p, struct s_pipecmd *pipecmd,
+	char **env_copy,
+		pid_t pid1)
+{
+	pid_t	pid2;
+
 	pid2 = fork();
 	if (pid2 < 0)
 	{
@@ -151,7 +171,7 @@ void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
 		kill(pid1, SIGTERM);
 		waitpid(pid1, NULL, 0);
 		set_exit_status(1);
-		return ;
+		return (-1);
 	}
 	if (pid2 == 0)
 	{
@@ -161,10 +181,18 @@ void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
 		runcmd(pipecmd->right, env_copy);
 		exit(get_exit_status());
 	}
-	close(p[0]);
-	close(p[1]);
-	waitpid(pid1, &status1, 0);
-	waitpid(pid2, &status2, 0);
+	return (pid2);
+}
+
+static void	wait_for_children(pid_t pid1, pid_t pid2,
+	int *status1, int *status2)
+{
+	waitpid(pid1, status1, 0);
+	waitpid(pid2, status2, 0);
+}
+
+static void	handle_pipe_status(int status2)
+{
 	if (WIFEXITED(status2))
 		set_exit_status(WEXITSTATUS(status2));
 	else if (WIFSIGNALED(status2))
@@ -180,26 +208,38 @@ void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
 		set_exit_status(1);
 }
 
-void	run_back_cmd(struct s_cmd *cmd, char **env_copy)
+void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
 {
-	struct s_backcmd	*backcmd;
-	pid_t			pid;
-	int				status;
+	int					p[2];
+	struct s_pipecmd	*pipecmd;
+	pid_t				pid1;
+	pid_t				pid2;
+	int					status1;
+	int					status2;
 
-	backcmd = (struct s_backcmd *)cmd;
-	pid = fork();
-	if (pid < 0)
-	{
-		perror("fork failed");
-		set_exit_status(1);
+	pipecmd = (struct s_pipecmd *)cmd;
+	if (! setup_pipe(p))
 		return ;
-	}
-	if (pid == 0)
-	{
-		runcmd(backcmd->cmd, env_copy);
-		exit(get_exit_status());
-	}
-	waitpid(pid, &status, 0);
+	pid1 = create_first_child(p, pipecmd, env_copy);
+	if (pid1 == -1)
+		return ;
+	pid2 = create_second_child(p, pipecmd, env_copy, pid1);
+	if (pid2 == -1)
+		return ;
+	close(p[0]);
+	close(p[1]);
+	wait_for_children(pid1, pid2, &status1, &status2);
+	handle_pipe_status(status2);
+}
+
+static void	handle_background_child(struct s_backcmd *backcmd, char **env_copy)
+{
+	runcmd(backcmd->cmd, env_copy);
+	exit(get_exit_status());
+}
+
+static void	handle_background_status(int status)
+{
 	if (WIFEXITED(status))
 		set_exit_status(WEXITSTATUS(status));
 	else if (WIFSIGNALED(status))
@@ -213,4 +253,24 @@ void	run_back_cmd(struct s_cmd *cmd, char **env_copy)
 	}
 	else
 		set_exit_status(1);
+}
+
+void	run_back_cmd(struct s_cmd *cmd, char **env_copy)
+{
+	struct s_backcmd	*backcmd;
+	pid_t				pid;
+	int					status;
+
+	backcmd = (struct s_backcmd *)cmd;
+	pid = fork();
+	if (pid < 0)
+	{
+		perror("fork failed");
+		set_exit_status(1);
+		return ;
+	}
+	if (pid == 0)
+		handle_background_child(backcmd, env_copy);
+	waitpid(pid, &status, 0);
+	handle_background_status(status);
 }

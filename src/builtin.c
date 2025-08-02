@@ -30,13 +30,30 @@ static int	process_export_arg(char *arg_copy, char **name, char **value,
 	return (0);
 }
 
+static int	process_single_export_arg(char **argv, int i, char ***env_copy)
+{
+	char	*arg_copy;
+	char	*equals;
+	char	*name;
+	char	*value;
+
+	arg_copy = ft_strdup(argv[i]);
+	if (! arg_copy)
+		return (1);
+	equals = ft_strchr(arg_copy, '=');
+	if (! equals)
+	{
+		free(arg_copy);
+		return (0);
+	}
+	if (process_export_arg(arg_copy, &name, &value, env_copy))
+		return (1);
+	return (0);
+}
+
 static int	builtin_export(char **argv, char ***env_copy)
 {
-	int			i;
-	char		*name;
-	char		*value;
-	char		*arg_copy;
-	char		*equals;
+	int	i;
 
 	if (! argv[1])
 	{
@@ -46,17 +63,7 @@ static int	builtin_export(char **argv, char ***env_copy)
 	i = 1;
 	while (argv[i])
 	{
-		arg_copy = ft_strdup(argv[i]);
-		if (! arg_copy)
-			return (1);
-		equals = ft_strchr(arg_copy, '=');
-		if (! equals)
-		{
-			free(arg_copy);
-			i++;
-			continue ;
-		}
-		if (process_export_arg(arg_copy, &name, &value, env_copy))
+		if (process_single_export_arg(argv, i, env_copy))
 			return (1);
 		i++;
 	}

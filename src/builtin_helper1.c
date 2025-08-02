@@ -110,20 +110,14 @@ int	set_environment_var(char *name, char *value, char ***env_copy)
 	return (0);
 }
 
-void	print_sorted_env_vars(char **env_copy)
+static char	**copy_env_to_sorted_array(char **env_copy, int count)
 {
-	int		i;
-	int		j;
-	char	*temp;
-	int		count;
 	char	**sorted_env;
+	int		i;
 
-	count = 0;
-	while (env_copy && env_copy[count])
-		count++;
 	sorted_env = malloc((count + 1) * sizeof(char *));
 	if (! sorted_env)
-		return ;
+		return (NULL);
 	i = 0;
 	while (env_copy && env_copy[i])
 	{
@@ -131,6 +125,15 @@ void	print_sorted_env_vars(char **env_copy)
 		i++;
 	}
 	sorted_env[i] = NULL;
+	return (sorted_env);
+}
+
+static void	sort_env_array(char **sorted_env)
+{
+	int		i;
+	int		j;
+	char	*temp;
+
 	i = 0;
 	while (sorted_env[i])
 	{
@@ -147,6 +150,12 @@ void	print_sorted_env_vars(char **env_copy)
 		}
 		i++;
 	}
+}
+
+static void	print_sorted_array(char **sorted_env)
+{
+	int		i;
+
 	i = 0;
 	while (sorted_env[i])
 	{
@@ -155,6 +164,12 @@ void	print_sorted_env_vars(char **env_copy)
 		ft_putstr_fd("\n", STDOUT_FILENO);
 		i++;
 	}
+}
+
+static void	free_sorted_array(char **sorted_env)
+{
+	int		i;
+
 	i = 0;
 	while (sorted_env[i])
 	{
@@ -164,38 +179,64 @@ void	print_sorted_env_vars(char **env_copy)
 	free(sorted_env);
 }
 
-void	update_pwd_variables(char *old_pwd, char *new_pwd, char ***env_copy)
+void	print_sorted_env_vars(char **env_copy)
 {
-	int		i;
 	int		count;
-	char	**new_environ;
+	char	**sorted_env;
+
+	count = 0;
+	while (env_copy && env_copy[count])
+		count++;
+	sorted_env = copy_env_to_sorted_array(env_copy, count);
+	if (! sorted_env)
+		return ;
+	sort_env_array(sorted_env);
+	print_sorted_array(sorted_env);
+	free_sorted_array(sorted_env);
+}
+
+static char	*create_old_pwd_var(char *old_pwd)
+{
 	char	*old_pwd_var;
-	char	*new_pwd_var;
 
 	old_pwd_var = malloc(ft_strlen("OLDPWD") + ft_strlen(old_pwd) + 2);
-	new_pwd_var = malloc(ft_strlen("PWD") + ft_strlen(new_pwd) + 2);
-	if (! old_pwd_var || ! new_pwd_var)
-	{
-		free(old_pwd_var);
-		free(new_pwd_var);
-		return ;
-	}
+	if (! old_pwd_var)
+		return (NULL);
 	ft_strcpy(old_pwd_var, "OLDPWD=");
 	ft_strlcat(old_pwd_var, old_pwd,
 		ft_strlen("OLDPWD") + ft_strlen(old_pwd) + 2);
+	return (old_pwd_var);
+}
+
+static char	*create_new_pwd_var(char *new_pwd)
+{
+	char	*new_pwd_var;
+
+	new_pwd_var = malloc(ft_strlen("PWD") + ft_strlen(new_pwd) + 2);
+	if (! new_pwd_var)
+		return (NULL);
 	ft_strcpy(new_pwd_var, "PWD=");
 	ft_strlcat(new_pwd_var, new_pwd,
 		ft_strlen("PWD") + ft_strlen(new_pwd) + 2);
-	count = 0;
-	while ((*env_copy)[count])
-		count++;
+	return (new_pwd_var);
+}
+
+static char	**allocate_new_environ(char ***env_copy, int count)
+{
+	char	**new_environ;
+
+	(void)env_copy;
 	new_environ = malloc((count + 3) * sizeof(char *));
 	if (! new_environ)
-	{
-		free(old_pwd_var);
-		free(new_pwd_var);
-		return ;
-	}
+		return (NULL);
+	return (new_environ);
+}
+
+static void	copy_and_update_env_vars(char ***env_copy, char **new_environ,
+		char *old_pwd_var, char *new_pwd_var)
+{
+	int		i;
+
 	i = 0;
 	while ((*env_copy)[i])
 	{
@@ -215,16 +256,69 @@ void	update_pwd_variables(char *old_pwd, char *new_pwd, char ***env_copy)
 		}
 		i++;
 	}
-	if (i == count)
+}
+
+static void	finalize_new_environ(char **new_environ, int count,
+		char *old_pwd_var, char *new_pwd_var)
+{
+	if (count == 0)
 	{
-		new_environ[i] = old_pwd_var;
-		new_environ[i + 1] = new_pwd_var;
-		new_environ[i + 2] = NULL;
+		new_environ[0] = old_pwd_var;
+		new_environ[1] = new_pwd_var;
+		new_environ[2] = NULL;
 	}
 	else
 	{
-		new_environ[i] = NULL;
+		new_environ[count] = NULL;
 	}
+}
+
+static int	count_env_vars(char ***env_copy)
+{
+	int		count;
+
+	count = 0;
+	while ((*env_copy)[count])
+		count++;
+	return (count);
+}
+
+static int	prepare_pwd_variables(t_pwd_prep_params params)
+{
+	int		count;
+
+	*params.old_pwd_var = create_old_pwd_var(params.old_pwd);
+	*params.new_pwd_var = create_new_pwd_var(params.new_pwd);
+	if (! *params.old_pwd_var || ! *params.new_pwd_var)
+	{
+		free(*params.old_pwd_var);
+		free(*params.new_pwd_var);
+		return (0);
+	}
+	count = count_env_vars(params.env_copy);
+	*params.new_environ = allocate_new_environ(params.env_copy, count);
+	if (! *params.new_environ)
+	{
+		free(*params.old_pwd_var);
+		free(*params.new_pwd_var);
+		return (0);
+	}
+	return (count);
+}
+
+void	update_pwd_variables(char *old_pwd, char *new_pwd, char ***env_copy)
+{
+	char	**new_environ;
+	char	*old_pwd_var;
+	char	*new_pwd_var;
+	int		count;
+
+	count = prepare_pwd_variables((t_pwd_prep_params){old_pwd, new_pwd,
+			env_copy, &old_pwd_var, &new_pwd_var, &new_environ});
+	if (count == 0)
+		return ;
+	copy_and_update_env_vars(env_copy, new_environ, old_pwd_var, new_pwd_var);
+	finalize_new_environ(new_environ, count, old_pwd_var, new_pwd_var);
 	free(*env_copy);
 	*env_copy = new_environ;
 }

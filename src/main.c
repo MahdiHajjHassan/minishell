@@ -68,24 +68,73 @@ static void	setup_signals_noninteractive(void)
 	sigaction(SIGQUIT, &sa_quit, NULL);
 }
 
-int	main(int argc, char **argv, char **envp)
+static int	validate_arguments(int argc, char **argv)
 {
-	char			*line;
-	struct s_cmd	*cmd;
-	char			**environ_copy;
-
 	(void)argv;
 	if (argc != 1)
 	{
 		ft_putstr_fd("Usage: ./minishell\n", STDERR_FILENO);
 		return (1);
 	}
-	environ_copy = copy_environ(envp);
-	if (! environ_copy)
+	return (0);
+}
+
+static int	initialize_environment(char **envp, char ***environ_copy)
+{
+	*environ_copy = copy_environ(envp);
+	if (! *environ_copy)
 	{
 		ft_putstr_fd("Failed to copy environment\n", STDERR_FILENO);
 		return (1);
 	}
+	return (0);
+}
+
+static int	process_builtin_command(struct s_cmd *cmd, char *line,
+		char ***environ_copy)
+{
+	if (handle_builtin_cmd(cmd, line, environ_copy))
+	{
+		free_cmd(cmd);
+		if (line)
+			free(line);
+		return (1);
+	}
+	return (0);
+}
+
+static void	execute_external_command(struct s_cmd *cmd, char **environ_copy)
+{
+	setup_signals_noninteractive();
+	execute_cmd(cmd, environ_copy);
+	setup_signals_interactive();
+	free_cmd(cmd);
+}
+
+static int	process_command_line(char *line, struct s_cmd **cmd,
+		char ***environ_copy)
+{
+	if (handle_tokenize(line, cmd, *environ_copy))
+		return (1);
+	if (*cmd)
+	{
+		if (process_builtin_command(*cmd, line, environ_copy))
+			return (1);
+		execute_external_command(*cmd, *environ_copy);
+	}
+	return (0);
+}
+
+int	main(int argc, char **argv, char **envp)
+{
+	char			*line;
+	struct s_cmd	*cmd;
+	char			**environ_copy;
+
+	if (validate_arguments(argc, argv))
+		return (1);
+	if (initialize_environment(envp, &environ_copy))
+		return (1);
 	setup_signals_interactive();
 	rl_catch_signals = 0;
 	while (1)
@@ -95,22 +144,8 @@ int	main(int argc, char **argv, char **envp)
 			continue ;
 		if (! line || ft_strlen(line) == 0 || is_only_whitespace(line))
 			continue ;
-		if (handle_tokenize(line, &cmd, environ_copy))
+		if (process_command_line(line, &cmd, &environ_copy))
 			continue ;
-		if (cmd)
-		{
-			if (handle_builtin_cmd(cmd, line, &environ_copy))
-			{
-				free_cmd(cmd);
-				if (line)
-					free(line);
-				continue ;
-			}
-			setup_signals_noninteractive();
-			execute_cmd(cmd, environ_copy);
-			setup_signals_interactive();
-			free_cmd(cmd);
-		}
 		if (line)
 			free(line);
 	}
