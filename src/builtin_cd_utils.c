@@ -25,15 +25,14 @@ int	cd_to_home(char **env_copy)
 			home = env_copy[i] + 5;
 			if (chdir(home) != 0)
 			{
-				ft_fprintf_stderr("minishell: cd: %s: %s\n", home,
-					strerror(errno));
+				print_cd_error(home, strerror(errno));
 				return (1);
 			}
 			return (0);
 		}
 		i++;
 	}
-	ft_fprintf_stderr("minishell: cd: HOME not set\n");
+	print_cd_home_not_set();
 	return (1);
 }
 
@@ -41,7 +40,7 @@ int	cd_to_path(char *path)
 {
 	if (chdir(path) != 0)
 	{
-		ft_fprintf_stderr("minishell: cd: %s: %s\n", path, strerror(errno));
+		print_cd_error(path, strerror(errno));
 		return (1);
 	}
 	return (0);

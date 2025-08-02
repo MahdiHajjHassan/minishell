@@ -53,7 +53,7 @@ void	execute_external_cmd(struct s_execcmd *ex, char **env_copy)
 	cmd_path = find_command(ex->av[0], env_copy);
 	if (! cmd_path)
 	{
-		ft_fprintf_stderr("minishell: %s: command not found\n", ex->av[0]);
+		print_command_not_found(ex->av[0]);
 		set_exit_status(127);
 		return ;
 	}

@@ -48,7 +48,7 @@ int	get_redir_token(char **input_ptr, char *input_end,
 	tok = gettoken(input_ptr, input_end, NULL, NULL);
 	if (gettoken(input_ptr, input_end, q, eq) != 'a')
 	{
-		ft_fprintf_stderr("minishell: missing file name\n");
+		print_missing_file_name();
 		return (0);
 	}
 	return (tok);
@@ -64,14 +64,14 @@ char	*process_filename(char *q, char *eq, char **env_copy)
 	processed = process_escaped(q, len);
 	if (!processed)
 	{
-		ft_fprintf_stderr("minishell: malloc failed\n");
+		print_malloc_failed();
 		return (NULL);
 	}
 	expanded = expand_variables(processed, ft_strlen(processed), env_copy);
 	free(processed);
 	if (!expanded)
 	{
-		ft_fprintf_stderr("minishell: malloc failed\n");
+		print_malloc_failed();
 		return (NULL);
 	}
 	return (expanded);

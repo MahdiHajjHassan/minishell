@@ -628,6 +628,25 @@ int				ft_fprintf_stderr(const char *format, ...);
 int				ft_setenv(const char *name, const char *value, int overwrite,
 					char ***env_copy);
 int				ft_unsetenv(const char *name, char ***env_copy);
+void			print_missing_paren(const char *paren);
+void			print_missing_file_name(void);
+void			print_malloc_failed(void);
+void			print_syntax_error(void);
+void			print_exit_too_many_args(void);
+void			print_command_not_found(const char *cmd);
+void			print_too_many_args(void);
+void			print_unknown_command_type(int type);
+void			print_heredoc_eof_warning(const char *delimiter);
+void			print_cd_home_not_set(void);
+void			print_cd_getcwd_failed(void);
+void			print_cd_too_many_args(void);
+void			print_cd_error(const char *path, const char *error);
+void			print_export_invalid_identifier(const char *arg);
+void			print_export_error(const char *error);
+void			print_path_too_long(const char *curr, const char *cmd);
+void			print_open_failed(const char *file, const char *error);
+void			print_dup2_failed(const char *error);
+void			print_exit_numeric_arg(const char *arg);
 
 /* Memory management functions */
 void			update_shlvl_value(char ***env_copy, int i, int shlvl_num);

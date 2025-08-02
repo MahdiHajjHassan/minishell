@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <stdarg.h>
 
 int	add_new_var(char ***env_copy, const char *name,
 	const char *value)
@@ -32,18 +31,4 @@ int	add_new_var(char ***env_copy, const char *name,
 	copy_existing_env_vars(env_copy, new_environ, count);
 	finalize_new_environ(new_environ, count, new_var, env_copy);
 	return (0);
-}
-
-int	ft_fprintf_stderr(const char *format, ...)
-{
-	va_list	args;
-	char	buffer[1024];
-	int		len;
-
-	va_start(args, format);
-	len = ft_vsnprintf(buffer, sizeof(buffer), format, args);
-	va_end(args);
-	if (len > 0)
-		write(STDERR_FILENO, buffer, len);
-	return (len);
 }

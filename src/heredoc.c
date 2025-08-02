@@ -58,9 +58,7 @@ static char	*process_heredoc_loop(char *content, char *stripped_delimiter,
 		line = read_line_without_history();
 		if (! line)
 		{
-			ft_fprintf_stderr(
-				"minishell: warning: here-document delimited by end-of-file "
-				"(wanted `%s')\n", stripped_delimiter);
+			print_heredoc_eof_warning(stripped_delimiter);
 			break ;
 		}
 		if (check_delimiter_match(line, stripped_delimiter))

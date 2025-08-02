@@ -63,7 +63,7 @@ struct s_cmd	*parse_block(char **input_ptr, char *input_end, char **env_copy)
 
 	if (! peek(input_ptr, input_end, "("))
 	{
-		ft_fprintf_stderr("minishell: missing (\n");
+		print_missing_paren("(");
 		return (NULL);
 	}
 	gettoken(input_ptr, input_end, NULL, NULL);
@@ -72,7 +72,7 @@ struct s_cmd	*parse_block(char **input_ptr, char *input_end, char **env_copy)
 		return (NULL);
 	if (! peek(input_ptr, input_end, ")"))
 	{
-		ft_fprintf_stderr("minishell: missing )\n");
+		print_missing_paren(")");
 		free_cmd(cmd);
 		return (NULL);
 	}

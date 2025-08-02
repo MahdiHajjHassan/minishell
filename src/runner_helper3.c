@@ -21,8 +21,7 @@ int	open_redir_file_regular(struct s_redircmd *rdir)
 	if (fd < 0)
 	{
 		save_errno = errno;
-		ft_fprintf_stderr("open failed: %s: %s\n", rdir->file,
-			strerror(save_errno));
+		print_open_failed(rdir->file, strerror(save_errno));
 		return (1);
 	}
 	if (fd != rdir->fd)
@@ -30,7 +29,7 @@ int	open_redir_file_regular(struct s_redircmd *rdir)
 		if (dup2(fd, rdir->fd) < 0)
 		{
 			save_errno = errno;
-			ft_fprintf_stderr("dup2 failed: %s\n", strerror(save_errno));
+			print_dup2_failed(strerror(save_errno));
 			close(fd);
 			return (1);
 		}

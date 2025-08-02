@@ -18,7 +18,7 @@ char	*get_current_directory(void)
 
 	if (! getcwd(cwd, sizeof(cwd)))
 	{
-		ft_fprintf_stderr("minishell: cd: getcwd failed\n");
+		print_cd_getcwd_failed();
 		return (NULL);
 	}
 	return (ft_strdup(cwd));
@@ -38,7 +38,7 @@ int	handle_cd_with_args(char **argv, char *old_pwd)
 {
 	if (argv[2])
 	{
-		ft_fprintf_stderr("minishell: cd: too many arguments\n");
+		print_cd_too_many_args();
 		free(old_pwd);
 		return (1);
 	}

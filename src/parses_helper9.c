@@ -18,7 +18,7 @@ int	validate_filename_token(int filename_tok, struct s_cmd **ret,
 	(void)params;
 	if (filename_tok != 'a')
 	{
-		ft_fprintf_stderr("minishell: missing file name\n");
+		print_missing_file_name();
 		free_cmd(*ret);
 		return (1);
 	}
@@ -74,10 +74,6 @@ int	process_redirection_file(t_redir_file_params params)
 		free_cmd(*params.ret);
 		return (1);
 	}
-	if (validate_filename_token(gettoken(params.params.input_ptr,
-				params.params.input_end, params.q, params.eq), params.ret,
-			params.params))
-		return (1);
 	cmd_params.ret = params.ret;
 	cmd_params.file_or_delimiter = file_or_delimiter;
 	cmd_params.env_copy = params.env_copy;

@@ -64,7 +64,7 @@ struct s_cmd	*tokenize(const char *line, char **env_copy)
 	peek(&input_ptr, input_end, "\0");
 	if (input_ptr != input_end)
 	{
-		ft_fprintf_stderr("minishell: syntax error\n");
+		print_syntax_error();
 		free_cmd(cmd);
 		free(input);
 		return (NULL);
