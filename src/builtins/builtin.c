@@ -12,7 +12,8 @@
 
 #include "minishell.h"
 
-static int	process_export_arg(char *arg_copy, char **name, char **value, char ***env_copy)
+static int	process_export_arg(char *arg_copy, char **name,
+	char **value, char ***env_copy)
 {
 	if (parse_export_arg(arg_copy, name, value))
 	{
@@ -29,38 +30,27 @@ static int	process_export_arg(char *arg_copy, char **name, char **value, char **
 	return (0);
 }
 
-static int	builtin_export(char **argv, char ***env_copy)
+static int	process_export_args(char **argv, char ***env_copy)
 {
-	int			i;
-	char		*name;
-	char		*value;
-	char		*arg_copy;
-	char		*equals;
+	char	*name;
+	char	*value;
+	char	*arg_copy;
+	char	*equals;
+	int		i;
 
-	/* If no arguments, print all environment variables in sorted order */
-	if (!argv[1])
-	{
-		print_sorted_env_vars(*env_copy);
-		return (0);
-	}
-	
 	i = 1;
 	while (argv[i])
 	{
 		arg_copy = ft_strdup(argv[i]);
 		if (!arg_copy)
 			return (1);
-		
 		equals = ft_strchr(arg_copy, '=');
 		if (!equals)
 		{
-			/* Variable without value - just check if it exists, don't add it */
-			/* This is valid behavior for export */
 			free(arg_copy);
 			i++;
-			continue;
+			continue ;
 		}
-		
 		if (process_export_arg(arg_copy, &name, &value, env_copy))
 			return (1);
 		i++;
