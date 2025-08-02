@@ -99,6 +99,17 @@ typedef struct s_regular_char_params
 	size_t		*alloc_size;
 }	t_regular_char_params;
 
+/* Structure to hold PWD preparation parameters */
+typedef struct s_pwd_prep_params
+{
+	char		*old_pwd;
+	char		*new_pwd;
+	char		***env_copy;
+	char		**old_pwd_var;
+	char		**new_pwd_var;
+	char		***new_environ;
+}	t_pwd_prep_params;
+
 /* Structure to hold process character parameters */
 typedef struct s_process_char_params
 {

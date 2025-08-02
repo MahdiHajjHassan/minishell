@@ -88,7 +88,8 @@ struct s_cmd	*backcmd(struct s_cmd *subcmd)
 	return ((struct s_cmd *)cmd);
 }
 
-struct s_cmd	*heredoccmd(struct s_cmd *subcmd, char *delimiter, char *content)
+struct s_cmd	*heredoccmd(struct s_cmd *subcmd, char *delimiter,
+	char *content)
 {
 	struct s_heredoccmd	*cmd;
 

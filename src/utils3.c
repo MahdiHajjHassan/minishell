@@ -36,57 +36,102 @@ int	ft_snprintf(char *str, size_t size, const char *format, ...)
 	return (result);
 }
 
-/* Custom vsnprintf implementation for simple cases */
+static int	handle_d_format(char *str, int *i, int size, va_list args)
+{
+	int		num;
+	char	*num_str;
+	int		j;
+
+	num = va_arg(args, int);
+	num_str = ft_itoa(num);
+	if (! num_str)
+		return (-1);
+	j = 0;
+	while (num_str[j] && *i < size - 1)
+	{
+		str[*i] = num_str[j];
+		(*i)++;
+		j++;
+	}
+	free(num_str);
+	return (0);
+}
+
+static int	handle_s_format(char *str, int *i, int size, va_list args)
+{
+	char	*s;
+	int		j;
+
+	s = va_arg(args, char *);
+	j = 0;
+	while (s && s[j] && *i < size - 1)
+	{
+		str[*i] = s[j];
+		(*i)++;
+		j++;
+	}
+	return (0);
+}
+
+static int	handle_c_format(char *str, int *i, int size, va_list args)
+{
+	char	c;
+
+	c = va_arg(args, int);
+	if (*i < size - 1)
+	{
+		str[*i] = c;
+		(*i)++;
+	}
+	return (0);
+}
+
+static int	handle_format_specifier(char *str, int *i, int size,
+	const char **format, va_list args)
+{
+	if (**format == '%' && *(*format + 1) == 'd')
+	{
+		if (handle_d_format(str, i, size, args) == -1)
+			return (-1);
+		*format += 2;
+	}
+	else if (**format == '%' && *(*format + 1) == 's')
+	{
+		handle_s_format(str, i, size, args);
+		*format += 2;
+	}
+	else if (**format == '%' && *(*format + 1) == 'c')
+	{
+		handle_c_format(str, i, size, args);
+		*format += 2;
+	}
+	else
+	{
+		str[*i] = **format;
+		(*i)++;
+		(*format)++;
+	}
+	return (0);
+}
+
+static int	process_format_loop(char *str, int *i, int size,
+	const char **format, va_list args)
+{
+	while (**format && *i < size - 1)
+	{
+		if (handle_format_specifier(str, i, size, format, args) == -1)
+			return (-1);
+	}
+	return (0);
+}
+
 int	ft_vsnprintf(char *str, size_t size, const char *format, va_list args)
 {
 	int		i;
-	int		num;
-	char	*num_str;
 
 	i = 0;
-	while (*format && i < (int)size - 1)
-	{
-		if (*format == '%' && *(format + 1) == 'd')
-		{
-			num = va_arg(args, int);
-			num_str = ft_itoa(num);
-			if (!num_str)
-				return (-1);
-			while (*num_str && i < (int)size - 1)
-			{
-				str[i++] = *num_str++;
-			}
-			free(num_str);
-			format += 2;
-		}
-		else if (*format == '%' && *(format + 1) == 's')
-		{
-			char	*s;
-			int		j;
-
-			s = va_arg(args, char *);
-			j = 0;
-			while (s && s[j] && i < (int)size - 1)
-			{
-				str[i++] = s[j];
-				j++;
-			}
-			format += 2;
-		}
-		else if (*format == '%' && *(format + 1) == 'c')
-		{
-			char	c;
-
-			c = va_arg(args, int);
-			if (i < (int)size - 1)
-				str[i++] = c;
-			format += 2;
-		}
-		else
-		{
-			str[i++] = *format++;
-		}
-	}
+	if (process_format_loop(str, &i, (int)size, &format, args) == -1)
+		return (-1);
 	str[i] = '\0';
 	return (i);
 }
@@ -162,99 +207,107 @@ int	ft_fprintf_stderr(const char *format, ...)
 	return (len);
 }
 
-/* Custom setenv implementation */
-int	ft_setenv(const char *name, const char *value, int overwrite, char ***env_copy)
+static int	update_existing_var(char ***env_copy, int i, const char *name,
+		const char *value)
 {
-	int			i;
-	int			name_len;
-	char		*new_var;
-	char		**new_environ;
-	char		**old_environ;
+	char	*new_var;
 
-	if (!name || !*name || ft_strchr(name, '=') || !env_copy || !*env_copy)
-		return (-1);
-	name_len = ft_strlen(name);
-	i = 0;
-	while ((*env_copy)[i])
-	{
-		if (ft_strncmp((*env_copy)[i], name, name_len) == 0
-			&& (*env_copy)[i][name_len] == '=')
-		{
-			if (! overwrite)
-				return (0);
-			new_var = malloc(ft_strlen(name) + ft_strlen(value) + 2);
-			if (! new_var)
-				return (-1);
-			ft_strcpy(new_var, name);
-			ft_strlcat(new_var, "=", ft_strlen(name) + 2);
-			ft_strlcat(new_var, value, ft_strlen(name) + ft_strlen(value) + 2);
-			free((*env_copy)[i]);
-			(*env_copy)[i] = new_var;
-			return (0);
-		}
-		i++;
-	}
 	new_var = malloc(ft_strlen(name) + ft_strlen(value) + 2);
 	if (! new_var)
 		return (-1);
 	ft_strcpy(new_var, name);
 	ft_strlcat(new_var, "=", ft_strlen(name) + 2);
 	ft_strlcat(new_var, value, ft_strlen(name) + ft_strlen(value) + 2);
+	free((*env_copy)[i]);
+	(*env_copy)[i] = new_var;
+	return (0);
+}
+
+static int	count_env_vars(char ***env_copy)
+{
+	int	i;
+
 	i = 0;
 	while ((*env_copy)[i])
 		i++;
-	new_environ = malloc((i + 2) * sizeof(char *));
-	if (! new_environ)
+	return (i);
+}
+
+static int	allocate_new_environ(char ***env_copy, char **new_var,
+		char ***new_environ)
+{
+	int	count;
+
+	count = count_env_vars(env_copy);
+	*new_environ = malloc((count + 2) * sizeof(char *));
+	if (! *new_environ)
 	{
-		free(new_var);
+		free(*new_var);
 		return (-1);
 	}
+	return (count);
+}
+
+static void	copy_existing_env_vars(char ***env_copy, char **new_environ,
+		int count)
+{
+	int	i;
+
 	i = 0;
-	while ((*env_copy)[i])
+	while (i < count)
 	{
 		new_environ[i] = (*env_copy)[i];
 		i++;
 	}
-	new_environ[i] = new_var;
-	new_environ[i + 1] = NULL;
-	old_environ = *env_copy;
+}
+
+static void	finalize_new_environ(char **new_environ, int count,
+	char *new_var,
+		char ***env_copy)
+{
+	new_environ[count] = new_var;
+	new_environ[count + 1] = NULL;
+	free(*env_copy);
 	*env_copy = new_environ;
-	free(old_environ);
+}
+
+static int	add_new_var(char ***env_copy, const char *name,
+	const char *value)
+{
+	char	*new_var;
+	char	**new_environ;
+	int		count;
+
+	new_var = malloc(ft_strlen(name) + ft_strlen(value) + 2);
+	if (! new_var)
+		return (-1);
+	ft_strcpy(new_var, name);
+	ft_strlcat(new_var, "=", ft_strlen(name) + 2);
+	ft_strlcat(new_var, value, ft_strlen(name) + ft_strlen(value) + 2);
+	count = allocate_new_environ(env_copy, &new_var, &new_environ);
+	if (count == -1)
+		return (-1);
+	copy_existing_env_vars(env_copy, new_environ, count);
+	finalize_new_environ(new_environ, count, new_var, env_copy);
 	return (0);
 }
 
-int	ft_unsetenv(const char *name, char ***env_copy)
+static int	count_total_vars(char ***env_copy)
 {
-	int			i;
-	int			name_len;
-	char		**new_environ;
-	int			j;
-	int			total_vars;
-	int			var_index;
+	int	total_vars;
 
-	if (! name || ! *name || ft_strchr(name, '=') || ! env_copy || ! *env_copy)
-		return (-1);
-	name_len = ft_strlen(name);
-	i = 0;
-	while ((*env_copy)[i])
-	{
-		if (ft_strncmp((*env_copy)[i], name, name_len) == 0
-			&& (*env_copy)[i][name_len] == '=')
-		{
-			var_index = i;
-			break ;
-		}
-		i++;
-	}
-	if (! (*env_copy)[i])
-		return (0);
 	total_vars = 0;
 	while ((*env_copy)[total_vars])
 		total_vars++;
-	free((*env_copy)[var_index]);
-	new_environ = malloc((total_vars) * sizeof(char *));
-	if (! new_environ)
-		return (-1);
+	return (total_vars);
+}
+
+static void	copy_vars_except_index(char ***env_copy, char **new_environ,
+		int var_index)
+{
+	int	i;
+	int	j;
+
 	i = 0;
 	j = 0;
 	while ((*env_copy)[i])
@@ -267,7 +320,75 @@ int	ft_unsetenv(const char *name, char ***env_copy)
 		i++;
 	}
 	new_environ[j] = NULL;
+}
+
+static int	remove_var_from_env(char ***env_copy, int var_index)
+{
+	char	**new_environ;
+	int		total_vars;
+
+	total_vars = count_total_vars(env_copy);
+	free((*env_copy)[var_index]);
+	new_environ = malloc((total_vars) * sizeof(char *));
+	if (! new_environ)
+		return (-1);
+	copy_vars_except_index(env_copy, new_environ, var_index);
 	free(*env_copy);
 	*env_copy = new_environ;
 	return (0);
-} 
+}
+
+int	ft_setenv(const char *name, const char *value, int overwrite,
+		char ***env_copy)
+{
+	int		i;
+	int		name_len;
+
+	if (! name || ! *name || ft_strchr(name, '=') || ! env_copy || ! *env_copy)
+		return (-1);
+	name_len = ft_strlen(name);
+	i = 0;
+	while ((*env_copy)[i])
+	{
+		if (ft_strncmp((*env_copy)[i], name, name_len) == 0
+			&& (*env_copy)[i][name_len] == '=')
+		{
+			if (! overwrite)
+				return (0);
+			return (update_existing_var(env_copy, i, name, value));
+		}
+		i++;
+	}
+	return (add_new_var(env_copy, name, value));
+}
+
+static int	find_var_index(char ***env_copy, const char *name, int name_len)
+{
+	int		i;
+
+	i = 0;
+	while ((*env_copy)[i])
+	{
+		if (ft_strncmp((*env_copy)[i], name, name_len) == 0
+			&& (*env_copy)[i][name_len] == '=')
+		{
+			return (i);
+		}
+		i++;
+	}
+	return (-1);
+}
+
+int	ft_unsetenv(const char *name, char ***env_copy)
+{
+	int		name_len;
+	int		var_index;
+
+	if (! name || ! *name || ft_strchr(name, '=') || ! env_copy || ! *env_copy)
+		return (-1);
+	name_len = ft_strlen(name);
+	var_index = find_var_index(env_copy, name, name_len);
+	if (var_index == -1)
+		return (0);
+	return (remove_var_from_env(env_copy, var_index));
+}
