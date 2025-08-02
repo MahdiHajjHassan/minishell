@@ -25,7 +25,7 @@ size_t	get_path_segment_len(char *curr, char **next)
 }
 
 int	build_full_path(char *full_path, char *curr,
-					size_t len, const char *cmd)
+		size_t len, const char *cmd)
 {
 	if (len + ft_strlen(cmd) + 2 > 1024)
 	{
@@ -42,7 +42,6 @@ void	reset_signals(void)
 {
 	struct sigaction	sa;
 
-	/* Set default signal handlers for child processes */
 	sa.sa_handler = SIG_DFL;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_RESTART;
@@ -50,14 +49,14 @@ void	reset_signals(void)
 	sigaction(SIGQUIT, &sa, NULL);
 }
 
-void	handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd, char ***env_copy)
+void	handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd,
+		char ***env_copy)
 {
 	int	status;
 
 	(void)cmd;
 	status = handle_builtin(ex->av, env_copy);
 	set_exit_status(status);
-	/* Don't call clean_exit - let the calling function handle the flow */
 }
 
 int	open_redir_file_create(struct s_redircmd *rdir)

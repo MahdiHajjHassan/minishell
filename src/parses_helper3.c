@@ -68,7 +68,7 @@ char	*process_argument(char *q, char *eq)
 
 	len = eq - q;
 	processed = process_escaped(q, len);
-	if (!processed)
+	if (! processed)
 	{
 		ft_fprintf_stderr("minishell: malloc failed\n");
 		return (NULL);
@@ -76,7 +76,8 @@ char	*process_argument(char *q, char *eq)
 	return (processed);
 }
 
-char	*process_argument_with_expansion(char *q, char *eq, char **env_copy, int quote_type)
+char	*process_argument_with_expansion(char *q, char *eq, char **env_copy,
+		int quote_type)
 {
 	size_t	len;
 	char	*processed;
@@ -84,24 +85,21 @@ char	*process_argument_with_expansion(char *q, char *eq, char **env_copy, int qu
 
 	len = eq - q;
 	processed = process_escaped(q, len);
-	if (!processed)
+	if (! processed)
 	{
 		ft_fprintf_stderr("minishell: malloc failed\n");
 		return (NULL);
 	}
-	
-	/* Only expand variables if not in single quotes */
 	if (quote_type != '\'')
 	{
 		expanded = expand_variables(processed, ft_strlen(processed), env_copy);
 		free(processed);
-		if (!expanded)
+		if (! expanded)
 		{
 			ft_fprintf_stderr("minishell: malloc failed\n");
 			return (NULL);
 		}
 		return (expanded);
 	}
-	
 	return (processed);
 }

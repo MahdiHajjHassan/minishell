@@ -17,7 +17,7 @@ struct s_cmd	*execcmd(void)
 	struct s_execcmd	*cmd;
 
 	cmd = malloc(sizeof(*cmd));
-	if (!cmd)
+	if (! cmd)
 		return (NULL);
 	ft_memset(cmd, 0, sizeof(*cmd));
 	cmd->type = EXEC;
@@ -25,12 +25,12 @@ struct s_cmd	*execcmd(void)
 }
 
 struct s_cmd	*redircmd(struct s_cmd *subcmd, char *file,
-							char *efile, t_redir_params params)
+		char *efile, t_redir_params params)
 {
 	struct s_redircmd	*cmd;
 
 	cmd = malloc(sizeof(*cmd));
-	if (!cmd)
+	if (! cmd)
 	{
 		free_cmd(subcmd);
 		free(file);
@@ -52,7 +52,7 @@ struct s_cmd	*pipecmd(struct s_cmd *left, struct s_cmd *right)
 	struct s_pipecmd	*cmd;
 
 	cmd = malloc(sizeof(*cmd));
-	if (!cmd)
+	if (! cmd)
 	{
 		free_cmd(left);
 		free_cmd(right);
@@ -65,7 +65,6 @@ struct s_cmd	*pipecmd(struct s_cmd *left, struct s_cmd *right)
 	return ((struct s_cmd *)cmd);
 }
 
-/* List command constructor removed - semicolon not supported in this minishell */
 struct s_cmd	*listcmd(struct s_cmd *left, struct s_cmd *right)
 {
 	(void)left;
@@ -78,7 +77,7 @@ struct s_cmd	*backcmd(struct s_cmd *subcmd)
 	struct s_backcmd	*cmd;
 
 	cmd = malloc(sizeof(*cmd));
-	if (!cmd)
+	if (! cmd)
 	{
 		free_cmd(subcmd);
 		return (NULL);
@@ -94,19 +93,17 @@ struct s_cmd	*heredoccmd(struct s_cmd *subcmd, char *delimiter, char *content)
 	struct s_heredoccmd	*cmd;
 
 	cmd = malloc(sizeof(*cmd));
-	if (!cmd)
+	if (! cmd)
 	{
 		free(delimiter);
 		free(content);
 		return (NULL);
 	}
-	
 	ft_memset(cmd, 0, sizeof(*cmd));
 	cmd->type = HEREDOC;
 	cmd->cmd = subcmd;
 	cmd->delimiter = delimiter;
 	cmd->content = content;
 	cmd->fd = 0;
-	
 	return ((struct s_cmd *)cmd);
 }

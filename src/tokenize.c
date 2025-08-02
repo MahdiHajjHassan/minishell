@@ -13,7 +13,7 @@
 #include "minishell.h"
 
 int	gettoken(char **input_ptr, char *input_end,
-			char **token_start, char **token_end)
+		char **token_start, char **token_end)
 {
 	char	*s;
 	int		ret;
@@ -28,7 +28,7 @@ int	gettoken(char **input_ptr, char *input_end,
 	else
 		ret = handle_token_cases(&s, *input_ptr, input_end);
 	if (ret == 0)
-		return (0); /* Propagate syntax error */
+		return (0);
 	if (token_end)
 		*token_end = s;
 	s = skip_whitespace(s, input_end, space);
@@ -56,7 +56,7 @@ struct s_cmd	*tokenize(const char *line, char **env_copy)
 	struct s_cmd	*cmd;
 
 	input = ft_strdup(line);
-	if (!input)
+	if (! input)
 		return (NULL);
 	input_ptr = input;
 	input_end = input + ft_strlen(input);

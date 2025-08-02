@@ -13,7 +13,7 @@
 #include "minishell.h"
 
 t_token_params	setup_token_params(char *s, char *input_end,
-								t_token_params params)
+		t_token_params params)
 {
 	params.s = s;
 	params.input_end = input_end;
@@ -21,7 +21,7 @@ t_token_params	setup_token_params(char *s, char *input_end,
 }
 
 int	process_default_case(char **s_ptr, char *input_end,
-								t_process_default_params params)
+		t_process_default_params params)
 {
 	t_token_params	token_params;
 	char			*new_s_ptr;
@@ -32,14 +32,14 @@ int	process_default_case(char **s_ptr, char *input_end,
 	token_params = setup_token_params(*s_ptr, input_end, token_params);
 	new_s_ptr = handle_default_token(*s_ptr, input_end, params.input_ptr,
 			token_params);
-	if (!new_s_ptr)
-		return (0); /* Return 0 to indicate error */
+	if (! new_s_ptr)
+		return (0);
 	*s_ptr = new_s_ptr;
 	return ('a');
 }
 
 void	setup_token_processing(char **input_ptr, char *input_end,
-								char **token_start, char **s_ptr)
+		char **token_start, char **s_ptr)
 {
 	char	space[6];
 	char	symbols[8];

@@ -62,30 +62,27 @@ void	expand_exec_args(struct s_execcmd *ex, char **env_copy)
 
 void	execute_external_cmd(struct s_execcmd *ex, char **env_copy)
 {
-	char			*cmd_path;
-	pid_t			pid;
-	int				status;
+	char	*cmd_path;
+	pid_t	pid;
+	int		status;
 
 	cmd_path = find_command(ex->av[0], env_copy);
-	if (!cmd_path)
+	if (! cmd_path)
 	{
 		ft_fprintf_stderr("minishell: %s: command not found\n", ex->av[0]);
 		set_exit_status(127);
-		return;
+		return ;
 	}
-	
 	pid = fork();
 	if (pid < 0)
 	{
 		perror("fork failed");
 		free(cmd_path);
 		set_exit_status(1);
-		return;
+		return ;
 	}
-	
 	if (pid == 0)
 	{
-		/* Child process */
 		reset_signals();
 		execve(cmd_path, ex->av, env_copy);
 		perror("execve failed");
@@ -94,10 +91,8 @@ void	execute_external_cmd(struct s_execcmd *ex, char **env_copy)
 	}
 	else
 	{
-		/* Parent process */
 		free(cmd_path);
 		waitpid(pid, &status, 0);
-		
 		if (WIFEXITED(status))
 			set_exit_status(WEXITSTATUS(status));
 		else if (WIFSIGNALED(status))
@@ -128,10 +123,8 @@ void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
 	{
 		perror("pipe failed");
 		set_exit_status(1);
-		return;
+		return ;
 	}
-	
-	/* Fork first child for left side of pipe */
 	pid1 = fork();
 	if (pid1 < 0)
 	{
@@ -139,20 +132,16 @@ void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
 		close(p[0]);
 		close(p[1]);
 		set_exit_status(1);
-		return;
+		return ;
 	}
-	
 	if (pid1 == 0)
 	{
-		/* Child process - left side of pipe */
-		close(p[0]);  /* Close read end */
-		dup2(p[1], STDOUT_FILENO);  /* Redirect stdout to pipe write end */
+		close(p[0]);
+		dup2(p[1], STDOUT_FILENO);
 		close(p[1]);
 		runcmd(pipecmd->left, env_copy);
 		exit(get_exit_status());
 	}
-	
-	/* Fork second child for right side of pipe */
 	pid2 = fork();
 	if (pid2 < 0)
 	{
@@ -162,28 +151,20 @@ void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
 		kill(pid1, SIGTERM);
 		waitpid(pid1, NULL, 0);
 		set_exit_status(1);
-		return;
+		return ;
 	}
-	
 	if (pid2 == 0)
 	{
-		/* Child process - right side of pipe */
-		close(p[1]);  /* Close write end */
-		dup2(p[0], STDIN_FILENO);  /* Redirect stdin to pipe read end */
+		close(p[1]);
+		dup2(p[0], STDIN_FILENO);
 		close(p[0]);
 		runcmd(pipecmd->right, env_copy);
 		exit(get_exit_status());
 	}
-	
-	/* Parent process */
 	close(p[0]);
 	close(p[1]);
-	
-	/* Wait for both children with proper signal handling */
 	waitpid(pid1, &status1, 0);
 	waitpid(pid2, &status2, 0);
-	
-	/* Set exit status to the rightmost command's status */
 	if (WIFEXITED(status2))
 		set_exit_status(WEXITSTATUS(status2));
 	else if (WIFSIGNALED(status2))
@@ -194,6 +175,41 @@ void	run_pipe_cmd(struct s_cmd *cmd, char **env_copy)
 			set_exit_status(131);
 		else
 			set_exit_status(128 + WTERMSIG(status2));
+	}
+	else
+		set_exit_status(1);
+}
+
+void	run_back_cmd(struct s_cmd *cmd, char **env_copy)
+{
+	struct s_backcmd	*backcmd;
+	pid_t			pid;
+	int				status;
+
+	backcmd = (struct s_backcmd *)cmd;
+	pid = fork();
+	if (pid < 0)
+	{
+		perror("fork failed");
+		set_exit_status(1);
+		return ;
+	}
+	if (pid == 0)
+	{
+		runcmd(backcmd->cmd, env_copy);
+		exit(get_exit_status());
+	}
+	waitpid(pid, &status, 0);
+	if (WIFEXITED(status))
+		set_exit_status(WEXITSTATUS(status));
+	else if (WIFSIGNALED(status))
+	{
+		if (WTERMSIG(status) == SIGINT)
+			set_exit_status(130);
+		else if (WTERMSIG(status) == SIGQUIT)
+			set_exit_status(131);
+		else
+			set_exit_status(128 + WTERMSIG(status));
 	}
 	else
 		set_exit_status(1);

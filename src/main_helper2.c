@@ -15,7 +15,7 @@
 int	handle_tokenize(char *line, struct s_cmd **cmd, char **env_copy)
 {
 	*cmd = tokenize(line, env_copy);
-	if (!*cmd)
+	if (! *cmd)
 	{
 		free(line);
 		return (1);
@@ -25,7 +25,7 @@ int	handle_tokenize(char *line, struct s_cmd **cmd, char **env_copy)
 
 void	execute_cmd(struct s_cmd *cmd, char **env_copy)
 {
-	int	status;
+	int		status;
 	pid_t	pid;
 
 	pid = fork();
@@ -33,17 +33,13 @@ void	execute_cmd(struct s_cmd *cmd, char **env_copy)
 	{
 		perror("fork failed");
 		set_exit_status(1);
-		return;
+		return ;
 	}
-	
 	if (pid == 0)
 	{
-		/* Child process */
 		runcmd(cmd, env_copy);
 		clean_exit(get_exit_status());
 	}
-	
-	/* Parent process */
 	waitpid(pid, &status, 0);
 	handle_child_status(status);
 }

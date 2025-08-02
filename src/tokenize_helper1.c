@@ -12,7 +12,6 @@
 
 #include "minishell.h"
 
-/* Backslash handling removed - not supported in this minishell */
 int	is_escaped(const char *s, const char *start)
 {
 	(void)s;
@@ -44,7 +43,7 @@ int	handle_special_chars(char **s_ptr, char *input_ptr)
 }
 
 char	*handle_default_token(char *s, char *input_end, char *input_ptr,
-								t_token_params params)
+		t_token_params params)
 {
 	char	quote;
 
@@ -52,7 +51,7 @@ char	*handle_default_token(char *s, char *input_end, char *input_ptr,
 	quote = 0;
 	while (s < input_end)
 	{
-		if (!quote)
+		if (! quote)
 		{
 			if (ft_strchr(params.symbols, *s) || ft_strchr(params.space, *s))
 				break ;
@@ -65,7 +64,6 @@ char	*handle_default_token(char *s, char *input_end, char *input_ptr,
 		}
 		s++;
 	}
-	/* Check for unclosed quotes */
 	if (quote)
 	{
 		return (NULL);
@@ -74,7 +72,7 @@ char	*handle_default_token(char *s, char *input_end, char *input_ptr,
 }
 
 int	handle_token_cases(char **s_ptr, char *input_ptr,
-								char *input_end)
+		char *input_end)
 {
 	int							ret;
 	t_process_default_params	params;
