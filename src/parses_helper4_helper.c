@@ -16,10 +16,15 @@ static int	process_single_argument(t_arg_process_params arg_params)
 {
 	char	*processed;
 	int		quote_type;
+	char	*q_copy;
+	char	*eq_copy;
 
-	quote_type = remove_exec_quotes(arg_params.q, arg_params.eq);
-	processed = process_argument_with_expansion(*arg_params.q,
-			*arg_params.eq, arg_params.env_copy, quote_type);
+	// Make copies of the pointers since remove_exec_quotes modifies them
+	q_copy = *arg_params.q;
+	eq_copy = *arg_params.eq;
+	quote_type = remove_exec_quotes(&q_copy, &eq_copy);
+	processed = process_argument_with_expansion(q_copy,
+			eq_copy, arg_params.env_copy, quote_type);
 	if (! processed)
 	{
 		free_cmd(*arg_params.ret);
