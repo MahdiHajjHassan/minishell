@@ -12,82 +12,47 @@
 
 #include "libft.h"
 
-static int	nbr_len(int nbr)
+static int	ft_nbrlen(long n)
 {
 	int	len;
 
-	len = 1;
-	if (nbr < 0)
+	len = 0;
+	if (n <= 0)
 	{
+		n = -n;
 		len++;
-		if (nbr != -2147483648)
-			nbr = -nbr;
-		else
-			nbr = -(nbr + 1);
 	}
-	while (nbr > 9)
+	while (n > 0)
 	{
-		nbr /= 10;
+		n /= 10;
 		len++;
 	}
 	return (len);
 }
 
-static void	handle_negative(int *nbr, int *is_negative)
+char	*ft_itoa(int n)
 {
-	if (*nbr < 0)
-	{
-		*is_negative = 1;
-		if (*nbr != -2147483648)
-			*nbr = -*nbr;
-	}
-}
+	long	nbr;
+	int		len;
+	char	*str;
 
-static char	*convert_to_string(int nbr, int is_negative, int len)
-{
-	char	*res;
-	int		i;
-
-	res = (char *)malloc((len + 1) * sizeof(char));
-	if (res == NULL)
+	nbr = n;
+	len = ft_nbrlen(nbr);
+	str = (char *)malloc(sizeof(char) * (len + 1));
+	if (!str)
 		return (NULL);
-	i = len - 1;
+	str[len] = '\0';
+	if (nbr == 0)
+		str[0] = '0';
+	if (nbr < 0)
+	{
+		str[0] = '-';
+		nbr = -nbr;
+	}
 	while (nbr > 0)
 	{
-		res[i--] = (nbr % 10) + '0';
+		str[--len] = (nbr % 10) + '0';
 		nbr /= 10;
 	}
-	if (is_negative)
-		res[0] = '-';
-	res[len] = '\0';
-	return (res);
-}
-
-char	*ft_itoa(int nbr)
-{
-	int		len;
-	int		is_negative;
-	char	*res;
-
-	is_negative = 0;
-	len = nbr_len(nbr);
-	res = (char *)malloc((len + 1) * sizeof(char));
-	if (res == NULL)
-		return (NULL);
-	if (nbr == 0)
-	{
-		res[0] = '0';
-		res[1] = '\0';
-		return (res);
-	}
-	if (nbr == -2147483648)
-		return (ft_strdup("-2147483648"));
-	handle_negative(&nbr, &is_negative);
-	if (nbr == 0)
-	{
-		res[0] = '0';
-		res[1] = '\0';
-		return (res);
-	}
-	return (convert_to_string(nbr, is_negative, len));
+	return (str);
 }

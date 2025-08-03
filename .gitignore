@@ -1,0 +1,30 @@
+# Compiled files
+minishell
+*.o
+*.a
+
+# Object files
+obj/
+inc/libft/*.o
+inc/libft/libft.a
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Valgrind output files
+valgrind_*.txt
+
+# Test files
+test_*
+*_test.*
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db 
