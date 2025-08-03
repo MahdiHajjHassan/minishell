@@ -19,7 +19,6 @@ static int	process_single_argument(t_arg_process_params arg_params)
 	char	*q_copy;
 	char	*eq_copy;
 
-	// Make copies of the pointers since remove_exec_quotes modifies them
 	q_copy = *arg_params.q;
 	eq_copy = *arg_params.eq;
 	quote_type = remove_exec_quotes(&q_copy, &eq_copy);
@@ -40,17 +39,11 @@ static int	handle_argument_token(t_arg_process_params arg_params)
 	t_consecutive_quotes_params	quote_params;
 
 	consecutive_quotes = count_consecutive_quotes(arg_params.q, arg_params.eq);
-
-	// Fix: Force single argument processing for single quoted strings
-	// Check if the token starts and ends with the same quote character
-	if ((**arg_params.q == '"' && *(*arg_params.eq - 1) == '"') ||
-		(**arg_params.q == '\'' && *(*arg_params.eq - 1) == '\''))
+	if ((**arg_params.q == '"' && *(*arg_params.eq - 1) == '"')
+		|| (**arg_params.q == '\'' && *(*arg_params.eq - 1) == '\''))
 	{
 		return (process_single_argument(arg_params));
 	}
-
-	// Only treat as consecutive quotes if there are multiple quote pairs
-	// The consecutive quotes processing is only for cases like "hello" "world"
 	if (consecutive_quotes > 1)
 	{
 		quote_params.ret = arg_params.ret;
@@ -96,9 +89,9 @@ int	handle_token_type(t_token_type_params token_params)
 	if (token_params.tok == '<' || token_params.tok == '>'
 		|| token_params.tok == '+' || token_params.tok == 'H')
 		return (handle_redirection_token_type(token_params));
-	else if (token_params.tok == 'a' || token_params.tok == '"' || token_params.tok == '\'')
+	else if (token_params.tok == 'a' || token_params.tok == '"'
+		|| token_params.tok == '\'')
 		return (handle_argument_token_type(token_params));
 	else
 		return (1);
-	return (0);
 }

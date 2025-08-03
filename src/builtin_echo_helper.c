@@ -56,8 +56,6 @@ int	builtin_echo(char **argv)
 	int	i;
 	int	print_newline;
 
-
-	
 	i = 1;
 	print_newline = process_n_flags(argv, &i);
 	print_arguments(argv, i);

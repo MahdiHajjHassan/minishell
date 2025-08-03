@@ -44,6 +44,7 @@ SRCS = src/builtin.c \
        src/parses_helper4_helper.c \
        src/parses_helper5.c \
        src/parses_helper6.c \
+       src/parses_helper6_helper.c \
        src/parses_helper7.c \
        src/parses_helper8.c \
        src/parses_helper9.c \

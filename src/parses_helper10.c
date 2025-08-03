@@ -53,17 +53,14 @@ int	count_consecutive_quotes(char **q, char **eq)
 		{
 			skip_to_quote_end(&temp_ptr, temp_end, *temp_ptr);
 			count++;
-			// After skip_to_quote_end, temp_ptr points to the character after the closing quote
-			// If we've reached the end, break to avoid counting again
 			if (temp_ptr >= temp_end)
-				break;
+				break ;
 		}
 		else
 		{
 			temp_ptr++;
 		}
 	}
-
 	return (count);
 }
 
@@ -73,7 +70,7 @@ int	process_consecutive_quotes(t_consecutive_quotes_params params)
 
 	concatenated = concatenate_quoted_strings(params.params.input_ptr,
 			params.params.input_end, params.env_copy);
-	if (! concatenated)
+	if (!concatenated)
 	{
 		free_cmd(*params.ret);
 		return (1);
