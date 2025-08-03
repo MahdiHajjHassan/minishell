@@ -55,6 +55,17 @@ static int	builtin_export(char **argv, char ***env_copy)
 {
 	int	i;
 
+	// DEBUG: Uncomment to see what export receives
+	// printf("DEBUG: export argc = ");
+	// i = 0;
+	// while (argv[i]) i++;
+	// printf("%d\n", i);
+	// i = 0;
+	// while (argv[i]) {
+	//     printf("  argv[%d] = '%s'\n", i, argv[i]);
+	//     i++;
+	// }
+	
 	if (! argv[1])
 	{
 		print_sorted_env_vars(*env_copy);
