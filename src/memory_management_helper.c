@@ -62,7 +62,7 @@ void	increment_shlvl(char ***env_copy)
 		if (ft_strncmp((*env_copy)[i], "SHLVL=", 6) == 0)
 		{
 			shlvl_value = (*env_copy)[i] + 6;
-			shlvl_num = ft_atoi(shlvl_value);
+			shlvl_num = atoi(shlvl_value);
 			if (shlvl_num < 0 || shlvl_num >= 1000)
 				shlvl_num = 0;
 			shlvl_num++;

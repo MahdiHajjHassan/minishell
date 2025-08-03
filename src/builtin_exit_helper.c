@@ -49,7 +49,7 @@ int	process_exit_arg(char **argv)
 		clean_exit(255);
 	if (check_too_many_args(argv))
 		return (1);
-	return (ft_atoi(argv[1]));
+	return (atoi(argv[1]));
 }
 
 int	builtin_exit(char **argv)
