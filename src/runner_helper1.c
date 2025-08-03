@@ -16,8 +16,23 @@ char	*check_absolute_path(const char *cmd)
 {
 	if (cmd[0] == '/' || cmd[0] == '.')
 	{
+		// First check if file exists
+		if (access(cmd, F_OK) != 0)
+		{
+			// File doesn't exist - this will be handled as "command not found"
+			return (NULL);
+		}
+		// Check if it's a directory
+		struct stat st;
+		if (stat(cmd, &st) == 0 && S_ISDIR(st.st_mode))
+		{
+			// It's a directory - this will be handled as "Is a directory"
+			return (NULL);
+		}
+		// File exists and is not a directory, now check if it's executable
 		if (access(cmd, X_OK) == 0)
 			return (ft_strdup(cmd));
+		// File exists but not executable - this will be handled as "permission denied"
 		return (NULL);
 	}
 	return ((char *)1);

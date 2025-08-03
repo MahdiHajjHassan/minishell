@@ -69,17 +69,8 @@ int	handle_env_value_found(t_env_var_params params, char *env_value,
 int	handle_env_value_not_found(t_env_var_params params,
 		size_t var_name_len)
 {
-	*params.result = resize_for_char(*params.result,
-			params.alloc_size, *params.j);
-	if (! *params.result)
-		return (1);
-	(*params.result)[(*params.j)++] = '$';
-	*params.result = resize_for_env_value(*params.result,
-			params.alloc_size, *params.j, var_name_len);
-	if (! *params.result)
-		return (1);
-	ft_strncpy(*params.result + *params.j, params.str + *params.i,
-		var_name_len);
-	*params.j += var_name_len;
+	// When variable is not found, just skip it (don't add anything to result)
+	(void)params;
+	(void)var_name_len;
 	return (0);
 }

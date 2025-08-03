@@ -119,7 +119,47 @@ static struct s_cmd	*replace_output_redir(struct s_cmd *cmd, char *file)
 
 static struct s_cmd	*replace_append_redir(struct s_cmd *cmd, char *file)
 {
-	// Always create a new redirection command that wraps the existing command
+	// For append redirections, we want the last redirection to be innermost
+	// So we need to find the innermost command and wrap it
+	if (cmd && cmd->type == REDIR)
+	{
+		struct s_redircmd *rdir = (struct s_redircmd *)cmd;
+		if (rdir->fd == STDOUT_FILENO)
+		{
+			// Find the innermost command (the one that's not a redirection)
+			struct s_cmd *innermost = cmd;
+			while (innermost && innermost->type == REDIR)
+			{
+				struct s_redircmd *inner_rdir = (struct s_redircmd *)innermost;
+				if (inner_rdir->fd != STDOUT_FILENO)
+					break;
+				innermost = inner_rdir->cmd;
+			}
+			
+			// Create new append redirection that wraps the innermost command
+			struct s_redircmd *new_rdir = (struct s_redircmd *)redircmd(innermost, file, NULL, (t_redir_params){O_WRONLY | O_CREAT | O_APPEND, STDOUT_FILENO});
+			
+			// If this was the only redirection, return the new one
+			if (cmd == innermost)
+				return ((struct s_cmd *)new_rdir);
+			
+			// Otherwise, update the chain to point to the new innermost
+			struct s_cmd *current = cmd;
+			while (current && current->type == REDIR)
+			{
+				struct s_redircmd *current_rdir = (struct s_redircmd *)current;
+				if (current_rdir->fd != STDOUT_FILENO)
+					break;
+				if (current_rdir->cmd == innermost)
+				{
+					current_rdir->cmd = (struct s_cmd *)new_rdir;
+					break;
+				}
+				current = current_rdir->cmd;
+			}
+			return (cmd);
+		}
+	}
 	return (apply_append_redir(cmd, file));
 }
 
