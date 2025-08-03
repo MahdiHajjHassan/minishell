@@ -46,7 +46,7 @@ int	process_exit_arg(char **argv)
 	if (! argv[1])
 		return (0);
 	if (! validate_numeric_arg(argv[1]))
-		clean_exit(255);
+		clean_exit(2);
 	if (check_too_many_args(argv))
 		return (1);
 	return (atoi(argv[1]));

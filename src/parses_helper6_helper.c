@@ -15,6 +15,9 @@
 static char	*process_quoted_string(char *q, size_t len, int quote_type)
 {
 	char	*processed;
+	char	*result;
+	size_t	i;
+	size_t	j;
 
 	if (quote_type == '"')
 	{
@@ -36,6 +39,35 @@ static char	*process_quoted_string(char *q, size_t len, int quote_type)
 		ft_memcpy(processed, q, len);
 		processed[len] = '\0';
 	}
+	
+	// If quote_type is 0 (no outer quotes), remove embedded quotes
+	// If quote_type is not 0 (already quoted), preserve inner quotes
+	if (quote_type == 0)
+	{
+		result = malloc(len + 1);
+		if (!result)
+		{
+			free(processed);
+			print_malloc_failed();
+			return (NULL);
+		}
+		
+		i = 0;
+		j = 0;
+		while (i < len)
+		{
+			if (processed[i] != '"' && processed[i] != '\'')
+			{
+				result[j] = processed[i];
+				j++;
+			}
+			i++;
+		}
+		result[j] = '\0';
+		free(processed);
+		return (result);
+	}
+	
 	return (processed);
 }
 

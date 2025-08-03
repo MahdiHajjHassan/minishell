@@ -46,16 +46,56 @@ void	run_exec_cmd(struct s_cmd *cmd, char **env_copy)
 	execute_external_cmd(ex, env_copy);
 }
 
+static int	validate_redirection_chain(struct s_cmd *cmd)
+{
+	struct s_redircmd	*rdir;
+	
+	if (!cmd || cmd->type != REDIR)
+		return (0);
+	
+	rdir = (struct s_redircmd *)cmd;
+	
+	// For input redirections, check if file exists
+	if (rdir->fd == STDIN_FILENO)
+	{
+		if (access(rdir->file, F_OK) != 0)
+		{
+			print_open_failed(rdir->file, strerror(errno));
+			return (1);
+		}
+	}
+	
+	// Recursively validate the inner command
+	return (validate_redirection_chain(rdir->cmd));
+}
+
 void	run_redir_cmd(struct s_cmd *cmd, char **env_copy)
 {
 	struct s_redircmd	*rdir;
 	int					saved_stdin;
 	int					saved_stdout;
+	int					redir_failed;
 
 	rdir = (struct s_redircmd *)cmd;
+	
+	// First, validate all redirections in the chain
+	if (validate_redirection_chain(cmd) != 0)
+	{
+		set_exit_status(1);
+		return;
+	}
+	
+	// If validation passes, proceed with normal redirection handling
 	setup_redirection(rdir, &saved_stdin, &saved_stdout);
-	if (open_redirection_file(rdir, saved_stdin, saved_stdout) != 0)
+	redir_failed = open_redirection_file(rdir, saved_stdin, saved_stdout);
+	
+	// For any redirection failures, don't execute the command
+	if (redir_failed != 0)
+	{
+		restore_redirection(rdir, saved_stdin, saved_stdout);
 		return ;
+	}
+	
 	runcmd(rdir->cmd, env_copy);
 	restore_redirection(rdir, saved_stdin, saved_stdout);
 }

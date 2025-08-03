@@ -30,7 +30,7 @@ void	print_path_too_long(const char *curr, const char *cmd)
 
 void	print_open_failed(const char *file, const char *error)
 {
-	ft_putstr_fd("open failed: ", STDERR_FILENO);
+	ft_putstr_fd("minishell: line 1: ", STDERR_FILENO);
 	ft_putstr_fd((char *)file, STDERR_FILENO);
 	ft_putstr_fd(": ", STDERR_FILENO);
 	ft_putstr_fd((char *)error, STDERR_FILENO);
