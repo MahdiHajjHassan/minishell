@@ -38,6 +38,12 @@ void	run_exec_cmd(struct s_cmd *cmd, char **env_copy)
 	ex = (struct s_execcmd *)cmd;
 	if (ex->av[0] == 0)
 		clean_exit(0);
+	if (ex->av[0] && ft_strlen(ex->av[0]) == 0)
+	{
+		// Empty command (like $EMPTY) - do nothing, exit with 0
+		set_exit_status(0);
+		return ;
+	}
 	if (is_builtin(ex->av[0]))
 	{
 		handle_exec_builtin(ex, cmd, &env_copy);

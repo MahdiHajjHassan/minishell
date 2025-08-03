@@ -20,6 +20,12 @@ void	add_argument(struct s_execcmd *cmd, char *processed, int *argc)
 		free(processed);
 		return ;
 	}
+	// Skip empty arguments (like $EMPTY that expands to empty string)
+	if (ft_strlen(processed) == 0)
+	{
+		free(processed);
+		return ;
+	}
 	cmd->av[*argc] = processed;
 	cmd->eav[*argc] = cmd->av[*argc] + ft_strlen(processed);
 	(*argc)++;
