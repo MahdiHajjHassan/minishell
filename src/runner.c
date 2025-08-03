@@ -51,8 +51,35 @@ void	run_redir_cmd(struct s_cmd *cmd, char **env_copy)
 	struct s_redircmd	*rdir;
 	int					saved_stdin;
 	int					saved_stdout;
+	int					fd;
 
 	rdir = (struct s_redircmd *)cmd;
+	saved_stdin = -1;
+	saved_stdout = -1;
+	
+	// For output redirections, create/truncate the file but don't redirect yet
+	// if the inner command is also an output redirection
+	if (rdir->fd == STDOUT_FILENO && rdir->cmd && rdir->cmd->type == REDIR)
+	{
+		struct s_redircmd *inner_rdir = (struct s_redircmd *)rdir->cmd;
+		if (inner_rdir->fd == STDOUT_FILENO)
+		{
+			// Just create/truncate the file without redirecting
+			fd = open(rdir->file, rdir->mode, 0644);
+			if (fd < 0)
+			{
+				print_open_failed(rdir->file, strerror(errno));
+				set_exit_status(1);
+				return;
+			}
+			close(fd);
+			// Continue with the inner command
+			runcmd(rdir->cmd, env_copy);
+			return;
+		}
+	}
+	
+	// Normal redirection handling
 	setup_redirection(rdir, &saved_stdin, &saved_stdout);
 	if (open_redirection_file(rdir, saved_stdin, saved_stdout) != 0)
 		return ;
