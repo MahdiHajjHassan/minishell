@@ -14,6 +14,9 @@
 
 void	add_argument(struct s_execcmd *cmd, char *processed, int *argc)
 {
+	// DEBUG
+	// printf("DEBUG add_argument: argc=%d, adding '%s'\n", *argc, processed);
+	
 	if (*argc >= MAXARGS)
 	{
 		print_too_many_args();
