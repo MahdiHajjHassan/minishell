@@ -44,7 +44,8 @@ static int	handle_argument_token(t_arg_process_params arg_params)
 	{
 		return (process_single_argument(arg_params));
 	}
-	if (consecutive_quotes > 1)
+	if (consecutive_quotes > 1 && (**arg_params.q == '"'
+			||**arg_params.q == '\''))
 	{
 		quote_params.ret = arg_params.ret;
 		quote_params.params = arg_params.params;

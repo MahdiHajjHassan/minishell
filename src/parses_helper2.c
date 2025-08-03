@@ -34,7 +34,7 @@ char	get_escape_char(char c)
 		return (c);
 }
 
-void	handle_escape_sequence(const char *input, size_t *i,
+void	handle_escape_char_sequence(const char *input, size_t *i,
 				char *output, size_t *j)
 {
 	output[(*j)++] = get_escape_char(input[*i + 1]);

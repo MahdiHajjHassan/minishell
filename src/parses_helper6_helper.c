@@ -60,14 +60,23 @@ static int	check_for_variables(char *processed)
 static char	*expand_if_needed(char *processed, char **env_copy)
 {
 	char	*expanded;
+	char	*original_copy;
 
+	original_copy = ft_strdup(processed);
 	expanded = expand_variables(processed, ft_strlen(processed), env_copy);
 	free(processed);
 	if (! expanded)
 	{
 		print_malloc_failed();
+		free(original_copy);
 		return (NULL);
 	}
+	if (ft_strlen(expanded) == 0)
+	{
+		free(expanded);
+		return (original_copy);
+	}
+	free(original_copy);
 	return (expanded);
 }
 

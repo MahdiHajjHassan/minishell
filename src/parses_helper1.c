@@ -23,7 +23,7 @@ char	*init_output_buffer(size_t len)
 }
 
 void	handle_escape_sequence(const char *input,
-		char *output, size_t *i, size_t *j)
+		size_t *i, char *output, size_t *j)
 {
 	if (input[*i + 1] == '\\')
 	{
@@ -65,7 +65,7 @@ char	*process_escaped(const char *input, size_t len)
 	while (i < len)
 	{
 		if (input[i] == '\\' && i + 1 < len)
-			handle_escape_sequence(input, output, &i, &j);
+			handle_escape_sequence(input, &i, output, &j);
 		else
 			handle_regular_character(input, output, &i, &j);
 		j++;
