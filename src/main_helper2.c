@@ -17,7 +17,7 @@ int	handle_tokenize(char *line, struct s_cmd **cmd, char **env_copy)
 	*cmd = tokenize(line, env_copy);
 	if (! *cmd)
 	{
-		free(line);
+		// Don't free line here - let main handle it
 		return (1);
 	}
 	return (0);
