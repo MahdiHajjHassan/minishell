@@ -1,0 +1,47 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   utils.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/27 00:00:00 by mahajj-h          #+#    #+#             */
+/*   Updated: 2025/07/27 00:00:00 by mahajj-h         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "minishell.h"
+
+int	is_only_whitespace(const char *str)
+{
+	int	i;
+
+	if (! str)
+		return (1);
+	i = 0;
+	while (str[i])
+	{
+		if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n'
+			&& str[i] != '\r' && str[i] != '\f' && str[i] != '\v')
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
+struct s_cmd	*nulterm(struct s_cmd *cmd)
+{
+	if (cmd == 0)
+		return (0);
+	if (cmd->type == EXEC)
+		handle_exec_case(cmd);
+	else if (cmd->type == REDIR)
+		handle_redir_case(cmd);
+	else if (cmd->type == HEREDOC)
+		handle_heredoc_case(cmd);
+	else if (cmd->type == PIPE)
+		handle_pipe_case(cmd);
+	else if (cmd->type == BACK)
+		handle_back_case(cmd);
+	return (cmd);
+}

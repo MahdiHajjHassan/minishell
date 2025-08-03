@@ -1,0 +1,30 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_bzero.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/06/16 14:00:49 by mahajj-h          #+#    #+#             */
+/*   Updated: 2024/06/17 11:27:53 by mahajj-h         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include <unistd.h>
+
+void	*ft_memset(void *s, int c, size_t n)
+{
+	unsigned char	*p;
+
+	p = s;
+	while (n-- > 0)
+	{
+		*p++ = (unsigned char)c;
+	}
+	return (s);
+}
+
+void	ft_bzero(void *s, size_t n)
+{
+	ft_memset(s, 0, n);
+}
