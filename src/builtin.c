@@ -30,6 +30,31 @@ static int	process_export_arg(char *arg_copy, char **name, char **value,
 	return (0);
 }
 
+static int	is_valid_identifier(const char *name)
+{
+	size_t	i;
+
+	if (!name || !*name)
+		return (0);
+	
+	// First character must be a letter or underscore
+	if ((*name < 'A' || *name > 'Z') && (*name < 'a' || *name > 'z') && *name != '_')
+		return (0);
+	
+	// Remaining characters must be letters, digits, or underscores
+	i = 1;
+	while (name[i])
+	{
+		if ((name[i] < 'A' || name[i] > 'Z') && 
+			(name[i] < 'a' || name[i] > 'z') && 
+			(name[i] < '0' || name[i] > '9') && 
+			name[i] != '_')
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
 static int	process_single_export_arg(char **argv, int i, char ***env_copy)
 {
 	char	*arg_copy;
@@ -43,6 +68,13 @@ static int	process_single_export_arg(char **argv, int i, char ***env_copy)
 	equals = ft_strchr(arg_copy, '=');
 	if (! equals)
 	{
+		// No equals sign, but we still need to validate the identifier
+		if (!is_valid_identifier(arg_copy))
+		{
+			print_export_invalid_identifier(arg_copy);
+			free(arg_copy);
+			return (1);
+		}
 		free(arg_copy);
 		return (0);
 	}

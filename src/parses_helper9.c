@@ -46,14 +46,96 @@ int	check_quoted_status(char **q, char **eq)
 	return (0);
 }
 
+
+
+static struct s_cmd	*replace_input_redir(struct s_cmd *cmd, char *file)
+{
+	struct s_redircmd	*rdir;
+
+	if (!cmd || cmd->type != REDIR)
+		return (apply_input_redir(cmd, file));
+	
+	rdir = (struct s_redircmd *)cmd;
+	if (rdir->fd == 0)  // This is an input redirection
+	{
+		// Replace the file and keep the same structure
+		free(rdir->file);
+		rdir->file = file;
+		return (cmd);
+	}
+	else
+	{
+		// This is not an input redirection, so apply the new input redirection
+		rdir->cmd = replace_input_redir(rdir->cmd, file);
+		return (cmd);
+	}
+}
+
+static struct s_cmd	*replace_output_redir(struct s_cmd *cmd, char *file)
+{
+	// For output redirections, we want the last redirection to be innermost
+	// So we need to find the innermost command and wrap it
+	if (cmd && cmd->type == REDIR)
+	{
+		struct s_redircmd *rdir = (struct s_redircmd *)cmd;
+		if (rdir->fd == STDOUT_FILENO)
+		{
+			// Find the innermost command (the one that's not a redirection)
+			struct s_cmd *innermost = cmd;
+			while (innermost && innermost->type == REDIR)
+			{
+				struct s_redircmd *inner_rdir = (struct s_redircmd *)innermost;
+				if (inner_rdir->fd != STDOUT_FILENO)
+					break;
+				innermost = inner_rdir->cmd;
+			}
+			
+			// Create new redirection that wraps the innermost command
+			struct s_redircmd *new_rdir = (struct s_redircmd *)redircmd(innermost, file, NULL, (t_redir_params){O_WRONLY | O_CREAT | O_TRUNC, STDOUT_FILENO});
+			
+			// If this was the only redirection, return the new one
+			if (cmd == innermost)
+				return ((struct s_cmd *)new_rdir);
+			
+			// Otherwise, update the chain to point to the new innermost
+			struct s_cmd *current = cmd;
+			while (current && current->type == REDIR)
+			{
+				struct s_redircmd *current_rdir = (struct s_redircmd *)current;
+				if (current_rdir->fd != STDOUT_FILENO)
+					break;
+				if (current_rdir->cmd == innermost)
+				{
+					current_rdir->cmd = (struct s_cmd *)new_rdir;
+					break;
+				}
+				current = current_rdir->cmd;
+			}
+			return (cmd);
+		}
+	}
+	return (apply_output_redir(cmd, file));
+}
+
+static struct s_cmd	*replace_append_redir(struct s_cmd *cmd, char *file)
+{
+	// Always create a new redirection command that wraps the existing command
+	return (apply_append_redir(cmd, file));
+}
+
 int	create_redirection_cmd(t_redir_cmd_params params)
 {
+	struct s_cmd	*result;
+
 	if (params.tok == '<')
-		*params.ret = apply_input_redir(*params.ret, params.file_or_delimiter);
+	{
+		result = replace_input_redir(*params.ret, params.file_or_delimiter);
+		*params.ret = result;
+	}
 	else if (params.tok == '>')
-		*params.ret = apply_output_redir(*params.ret, params.file_or_delimiter);
+		*params.ret = replace_output_redir(*params.ret, params.file_or_delimiter);
 	else if (params.tok == '+')
-		*params.ret = apply_append_redir(*params.ret, params.file_or_delimiter);
+		*params.ret = replace_append_redir(*params.ret, params.file_or_delimiter);
 	else if (params.tok == 'H')
 		*params.ret = handle_heredoc_token(*params.ret,
 				params.file_or_delimiter, params.env_copy, params.was_quoted);

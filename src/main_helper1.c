@@ -34,8 +34,9 @@ int	handle_line_input(char **line)
 	*line = readline("minishell$ ");
 	if (! *line)
 	{
-		ft_putstr_fd("exit\n", STDOUT_FILENO);
-		clean_exit(0);
+		if (isatty(STDIN_FILENO))
+			ft_putstr_fd("exit\n", STDOUT_FILENO);
+		clean_exit(get_exit_status());
 	}
 	if (ft_strlen(*line) > 0)
 		add_history(*line);
