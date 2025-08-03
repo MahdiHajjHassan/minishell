@@ -37,6 +37,7 @@ char	*process_filename(char *q, char *eq, char **env_copy)
 
 struct s_cmd	*handle_redir_token(struct s_cmd *cmd, int tok, char *file)
 {
+	// printf("DEBUG: handle_redir_token called with tok=%c, file='%s'\n", tok, file);
 	if (tok == '<')
 		return (apply_input_redir(cmd, file));
 	else if (tok == '>')

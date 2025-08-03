@@ -36,6 +36,8 @@ void	skip_to_quote_end(char **temp_ptr, char *temp_end, char quote_char)
 	(*temp_ptr)++;
 	while (*temp_ptr < temp_end && **temp_ptr != quote_char)
 		(*temp_ptr)++;
+	if (*temp_ptr < temp_end && **temp_ptr == quote_char)
+		(*temp_ptr)++;  // Skip past the closing quote
 }
 
 int	count_consecutive_quotes(char **q, char **eq)
@@ -47,12 +49,24 @@ int	count_consecutive_quotes(char **q, char **eq)
 	temp_ptr = *q;
 	temp_end = *eq;
 	count = 0;
+	
+	// DEBUG
+	// printf("DEBUG count_consecutive_quotes: input='%.*s'\n", (int)(temp_end - temp_ptr), temp_ptr);
+	
 	while (temp_ptr < temp_end)
 	{
 		if (*temp_ptr == '"' || *temp_ptr == '\'')
 		{
+			// DEBUG
+			// char quote = *temp_ptr;
+			// printf("  Found %c at offset %ld\n", quote, temp_ptr - *q);
+			
 			skip_to_quote_end(&temp_ptr, temp_end, *temp_ptr);
 			count++;
+			
+			// DEBUG
+			// printf("  After skip, at offset %ld\n", temp_ptr - *q);
+			
 			if (temp_ptr >= temp_end)
 				break ;
 		}
@@ -61,6 +75,10 @@ int	count_consecutive_quotes(char **q, char **eq)
 			temp_ptr++;
 		}
 	}
+	
+	// DEBUG
+	// printf("  Total quotes: %d\n", count);
+	
 	return (count);
 }
 

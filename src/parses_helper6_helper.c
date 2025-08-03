@@ -60,14 +60,27 @@ static int	check_for_variables(char *processed)
 static char	*expand_if_needed(char *processed, char **env_copy)
 {
 	char	*expanded;
+	size_t	original_len;
 
-	expanded = expand_variables(processed, ft_strlen(processed), env_copy);
-	free(processed);
+	original_len = ft_strlen(processed);
+	expanded = expand_variables(processed, original_len, env_copy);
+	
 	if (! expanded)
 	{
+		free(processed);
 		print_malloc_failed();
 		return (NULL);
 	}
+	
+	// Check if expansion resulted in an empty string when it shouldn't
+	if (ft_strlen(expanded) == 0 && original_len > 0)
+	{
+		// This is likely a bug - return the original string instead
+		free(expanded);
+		return (processed);
+	}
+	
+	free(processed);
 	return (expanded);
 }
 
@@ -78,13 +91,24 @@ char	*process_argument_with_expansion(char *q, char *eq, char **env_copy,
 	char	*processed;
 
 	len = eq - q;
+	
+	// DEBUG
+	// printf("DEBUG process_argument_with_expansion: len=%zu, quote_type=%c, content='%.*s'\n", 
+	//        len, quote_type ? quote_type : '0', (int)len, q);
+	
 	processed = process_quoted_string(q, len, quote_type);
 	if (! processed)
 		return (NULL);
+		
+	// DEBUG
+	// printf("DEBUG after process_quoted_string: processed='%s'\n", processed);
+	
 	if (quote_type != '\'')
 	{
 		if (check_for_variables(processed))
 		{
+			// DEBUG
+			// printf("DEBUG: Variables found, expanding...\n");
 			return (expand_if_needed(processed, env_copy));
 		}
 	}
