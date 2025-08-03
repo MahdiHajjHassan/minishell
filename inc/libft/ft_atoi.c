@@ -15,46 +15,59 @@
 
 static int	ft_isspace(int c)
 {
-	return (c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r');
+	return (c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f'
+		|| c == '\r');
 }
 
-int	ft_atoi(const char *str)
+static int	skip_whitespace(const char *str, int *i)
+{
+	while (ft_isspace(str[*i]))
+		(*i)++;
+	return (*i);
+}
+
+static int	handle_sign(const char *str, int *i)
+{
+	int	sign;
+
+	sign = 1;
+	if (str[*i] == '-' || str[*i] == '+')
+	{
+		if (str[*i] == '-')
+			sign = -1;
+		(*i)++;
+	}
+	return (sign);
+}
+
+static long	convert_digits(const char *str, int *i, int sign)
 {
 	long	result;
-	int		sign;
-	int		i;
 
-	if (!str)
-		return (0);
-	
-	/* Skip leading whitespace */
-	i = 0;
-	while (ft_isspace(str[i]))
-		i++;
-	
-	/* Handle sign */
-	sign = 1;
-	if (str[i] == '-' || str[i] == '+')
-	{
-		if (str[i] == '-')
-			sign = -1;
-		i++;
-	}
-	
-	/* Convert digits */
 	result = 0;
-	while (ft_isdigit(str[i]))
+	while (ft_isdigit(str[*i]))
 	{
-		result = result * 10 + (str[i] - '0');
-		
-		/* Check for overflow/underflow */
+		result = result * 10 + (str[*i] - '0');
 		if (sign == 1 && result > INT_MAX)
 			return (INT_MAX);
 		if (sign == -1 && result > (long)INT_MAX + 1)
 			return (INT_MIN);
-		
-		i++;
+		(*i)++;
 	}
-	
+	return (result);
+}
+
+int	ft_atoi(const char *str)
+{
+	int		sign;
+	long	result;
+	int		i;
+
+	if (!str)
+		return (0);
+	i = 0;
+	skip_whitespace(str, &i);
+	sign = handle_sign(str, &i);
+	result = convert_digits(str, &i, sign);
 	return ((int)(result * sign));
 }

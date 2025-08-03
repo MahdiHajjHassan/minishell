@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parses_helper6.c                                   :+:      :+:    :+:   */
+/*   parses_helper1_helper.c                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,52 +12,38 @@
 
 #include "minishell.h"
 
-int	get_exec_token(char **input_ptr, char *input_end, char **q, char **eq)
-{
-	int	tok;
-
-	tok = gettoken(input_ptr, input_end, q, eq);
-	if (tok == 0)
-		return (0);
-	if (tok != 'a')
-	{
-		print_missing_file_name();
-		return (0);
-	}
-	return (tok);
-}
-
-int	remove_exec_quotes(char **q, char **eq)
-{
-	int	quote_type;
-
-	quote_type = 0;
-	if (**q == '"' && *(*eq - 1) == '"')
-	{
-		(*q)++;
-		(*eq)--;
-		quote_type = '"';
-	}
-	else if (**q == '\'' && *(*eq - 1) == '\'')
-	{
-		(*q)++;
-		(*eq)--;
-		quote_type = '\'';
-	}
-	return (quote_type);
-}
-
-char	*process_argument(char *q, char *eq)
+char	*process_filename(char *q, char *eq, char **env_copy)
 {
 	size_t	len;
 	char	*processed;
+	char	*expanded;
 
 	len = eq - q;
 	processed = process_escaped(q, len);
-	if (! processed)
+	if (!processed)
 	{
 		print_malloc_failed();
 		return (NULL);
 	}
-	return (processed);
+	expanded = expand_variables(processed, ft_strlen(processed), env_copy);
+	free(processed);
+	if (!expanded)
+	{
+		print_malloc_failed();
+		return (NULL);
+	}
+	return (expanded);
+}
+
+struct s_cmd	*handle_redir_token(struct s_cmd *cmd, int tok, char *file)
+{
+	if (tok == '<')
+		return (apply_input_redir(cmd, file));
+	else if (tok == '>')
+		return (apply_output_redir(cmd, file));
+	else if (tok == '+')
+		return (apply_append_redir(cmd, file));
+	else if (tok == 'H')
+		return (handle_heredoc_token(cmd, file, NULL, 0));
+	return (cmd);
 }
