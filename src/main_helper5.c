@@ -52,12 +52,15 @@ int	initialize_environment(char **envp, char ***environ_copy)
 int	process_builtin_command(struct s_cmd *cmd, char *line,
 		char ***environ_copy)
 {
-	if (handle_builtin_cmd(cmd, line, environ_copy))
+	int	result;
+
+	result = handle_builtin_cmd(cmd, line, environ_copy);
+	if (result)
 	{
 		free_cmd(cmd);
 		if (line)
 			free(line);
-		return (1);
+		return (result);
 	}
 	return (0);
 }
