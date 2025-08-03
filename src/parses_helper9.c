@@ -54,7 +54,7 @@ int	create_redirection_cmd(t_redir_cmd_params params)
 		*params.ret = apply_output_redir(*params.ret, params.file_or_delimiter);
 	else if (params.tok == '+')
 		*params.ret = apply_append_redir(*params.ret, params.file_or_delimiter);
-	else if (params.tok == 'h')
+	else if (params.tok == 'H')
 		*params.ret = handle_heredoc_token(*params.ret,
 				params.file_or_delimiter, params.env_copy, params.was_quoted);
 	return (0);

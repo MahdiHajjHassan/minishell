@@ -30,15 +30,22 @@ int	parse_export_arg(char *arg, char **name, char **value)
 
 void	remove_quotes(char **value)
 {
-	if (**value == '"' && (*value)[ft_strlen(*value) - 1] == '"')
+	size_t	len;
+
+	if (!*value || !**value)
+		return ;
+	len = ft_strlen(*value);
+	if (len < 2)
+		return ;
+	if (**value == '"' && (*value)[len - 1] == '"')
 	{
 		(*value)++;
-		(*value)[ft_strlen(*value) - 1] = '\0';
+		(*value)[len - 2] = '\0';
 	}
-	else if (**value == '\'' && (*value)[ft_strlen(*value) - 1] == '\'')
+	else if (**value == '\'' && (*value)[len - 1] == '\'')
 	{
 		(*value)++;
-		(*value)[ft_strlen(*value) - 1] = '\0';
+		(*value)[len - 2] = '\0';
 	}
 }
 

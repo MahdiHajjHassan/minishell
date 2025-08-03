@@ -359,7 +359,7 @@ int				process_character(t_process_char_params params);
 
 /* Parses helper2 functions */
 char			get_escape_char(char c);
-void			handle_escape_sequence(const char *input, size_t *i,
+void			handle_escape_char_sequence(const char *input, size_t *i,
 					char *output, size_t *j);
 void			remove_redir_quotes(char **q, char **eq);
 struct s_cmd	*apply_input_redir(struct s_cmd *cmd, char *file);

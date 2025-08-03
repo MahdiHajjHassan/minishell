@@ -37,6 +37,7 @@ SRCS = src/builtin.c \
        src/memory_management_helper2.c \
        src/parses.c \
        src/parses_helper1.c \
+       src/parses_helper1_helper.c \
        src/parses_helper10.c \
        src/parses_helper2.c \
        src/parses_helper3.c \
