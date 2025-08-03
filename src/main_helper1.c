@@ -36,7 +36,7 @@ int	handle_line_input(char **line)
 	{
 		if (isatty(STDIN_FILENO))
 			ft_putstr_fd("exit\n", STDOUT_FILENO);
-		clean_exit(get_exit_status());
+		return (1);
 	}
 	if (ft_strlen(*line) > 0)
 		add_history(*line);

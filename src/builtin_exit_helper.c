@@ -43,13 +43,16 @@ int	check_too_many_args(char **argv)
 
 int	process_exit_arg(char **argv)
 {
+	long	value;
+
 	if (! argv[1])
 		return (0);
 	if (! validate_numeric_arg(argv[1]))
-		clean_exit(2);
+		return (2);
 	if (check_too_many_args(argv))
 		return (1);
-	return (atoi(argv[1]));
+	value = atol(argv[1]);
+	return ((int)(value & 0xFF));
 }
 
 int	builtin_exit(char **argv)
@@ -58,6 +61,5 @@ int	builtin_exit(char **argv)
 
 	ft_putstr_fd("exit\n", STDOUT_FILENO);
 	status = process_exit_arg(argv);
-	clean_exit(status);
-	return (0);
+	return (status);
 }

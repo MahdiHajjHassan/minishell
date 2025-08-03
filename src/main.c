@@ -42,14 +42,31 @@ int	main(int argc, char **argv, char **envp)
 	{
 		init_signals();
 		if (handle_line_input(&line))
-			continue ;
+		{
+			if (environ_copy)
+				free_environ_copy(environ_copy);
+			clean_exit(get_exit_status());
+		}
 		if (! line || ft_strlen(line) == 0 || is_only_whitespace(line))
+		{
+			if (line)
+				free(line);
 			continue ;
-		if (process_command_line(line, &cmd, &environ_copy))
+		}
+		int result = process_command_line(line, &cmd, &environ_copy);
+		if (result == 2)
+		{
+			if (environ_copy)
+				free_environ_copy(environ_copy);
+			clean_exit(get_exit_status());
+		}
+		else if (result == 1)
 			continue ;
-		if (line)
+		else if (line)
 			free(line);
 	}
+	if (environ_copy)
+		free_environ_copy(environ_copy);
 	clean_exit(0);
 	return (0);
 }

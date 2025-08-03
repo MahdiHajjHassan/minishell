@@ -64,13 +64,18 @@ void	expand_exec_args(struct s_execcmd *ex, char **env_copy)
 {
 	int		i;
 	char	*original;
+	char	*expanded;
 
 	i = 0;
 	while (ex->av[i])
 	{
 		original = ex->av[i];
-		ex->av[i] = expand_variables(original, ft_strlen(original), env_copy);
-		free(original);
+		expanded = expand_variables(original, ft_strlen(original), env_copy);
+		if (expanded)
+		{
+			ex->av[i] = expanded;
+			free(original);
+		}
 		i++;
 	}
 }

@@ -16,14 +16,19 @@ void	expand_builtin_args(struct s_execcmd *ecmd, char **env_copy)
 {
 	int		i;
 	char	*original;
+	char	*expanded;
 
 	i = 0;
 	while (ecmd->av[i])
 	{
 		original = ecmd->av[i];
-		ecmd->av[i] = expand_variables(original, ft_strlen(original),
+		expanded = expand_variables(original, ft_strlen(original),
 				env_copy);
-		free(original);
+		if (expanded)
+		{
+			ecmd->av[i] = expanded;
+			free(original);
+		}
 		i++;
 	}
 }
@@ -40,6 +45,11 @@ int	handle_builtin_cmd(struct s_cmd *cmd, char *line, char ***env_copy)
 		if (ecmd->av[0] && is_builtin(ecmd->av[0]))
 		{
 			status = handle_builtin(ecmd->av, env_copy);
+			if (ecmd->av[0] && !ft_strcmp(ecmd->av[0], "exit"))
+			{
+				set_exit_status(status);
+				return (2);
+			}
 			set_exit_status(status);
 			return (1);
 		}
