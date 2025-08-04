@@ -8,7 +8,8 @@ INC_DIR = inc
 LIBFT_DIR = inc/libft
 OBJ_DIR = obj
 
-SRCS = src/builtin.c \
+SRCS =        src/builtin.c \
+       src/builtin_helper.c \
        src/builtin_cd_helper.c \
        src/builtin_cd_utils.c \
        src/builtin_echo_helper.c \
@@ -38,6 +39,7 @@ SRCS = src/builtin.c \
        src/parses.c \
        src/parses_helper1.c \
        src/parses_helper1_helper.c \
+       src/runner_helper.c \
        src/parses_helper10.c \
        src/parses_helper2.c \
        src/parses_helper3.c \
@@ -49,6 +51,7 @@ SRCS = src/builtin.c \
        src/parses_helper7.c \
        src/parses_helper8.c \
        src/parses_helper9.c \
+       src/parses_helper9_helper.c \
        src/runner.c \
        src/runner_helper1.c \
        src/runner_helper10.c \

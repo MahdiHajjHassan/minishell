@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main_helper2.c                                    :+:      :+:    :+:   */
+/*   runner_helper.c                                     :+:      :+:    :+:  */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,33 +12,39 @@
 
 #include "minishell.h"
 
-int	handle_tokenize(char *line, struct s_cmd **cmd, char **env_copy)
+char	*handle_processing_error(char *processed)
 {
-	*cmd = tokenize(line, env_copy);
-	if (! *cmd)
-	{
-		return (1);
-	}
-	return (0);
+	if (processed)
+		free(processed);
+	print_malloc_failed();
+	return (NULL);
 }
 
-void	execute_cmd(struct s_cmd *cmd, char **env_copy)
+void	print_command_error(const char *cmd, const char *error_msg,
+		int exit_code)
 {
-	int		status;
-	pid_t	pid;
+	ft_putstr_fd("minishell: ", STDERR_FILENO);
+	ft_putstr_fd((char *)cmd, STDERR_FILENO);
+	ft_putstr_fd((char *)error_msg, STDERR_FILENO);
+	set_exit_status(exit_code);
+}
 
-	pid = fork();
-	if (pid < 0)
+void	handle_absolute_path_error(const char *cmd)
+{
+	struct stat	st;
+
+	if (access(cmd, F_OK) != 0)
+		print_command_error(cmd, ": No such file or directory\n", 127);
+	else
 	{
-		perror("fork failed");
-		set_exit_status(1);
-		return ;
+		if (stat(cmd, &st) == 0 && S_ISDIR(st.st_mode))
+			print_command_error(cmd, ": Is a directory\n", 126);
+		else
+			print_command_error(cmd, ": Permission denied\n", 126);
 	}
-	if (pid == 0)
-	{
-		runcmd(cmd, env_copy);
-		clean_exit(get_exit_status());
-	}
-	waitpid(pid, &status, 0);
-	handle_child_status(status);
+}
+
+void	run_list_cmd(struct s_cmd *cmd)
+{
+	(void)cmd;
 }
