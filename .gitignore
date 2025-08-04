@@ -15,6 +15,18 @@ inc/libft/libft.a
 
 # Valgrind output files
 valgrind_*.txt
+valgrind_*.log
+
+# Test output files
+out.txt
+test_*.txt
+test[0-9]*
+output.txt
+outfiles/
+*.txt
+
+# Compiled executable
+minishell
 
 # Test files
 test_*
