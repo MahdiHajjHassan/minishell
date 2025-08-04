@@ -416,6 +416,9 @@ int				validate_filename_token(int filename_tok, struct s_cmd **ret,
 					t_process_args_params params);
 int				check_quoted_status(char **q, char **eq);
 int				create_redirection_cmd(t_redir_cmd_params params);
+int				setup_redirection_cmd_params(t_redir_cmd_params *cmd_params,
+					t_redir_file_params params, char *file_or_delimiter,
+					int was_quoted);
 int				process_redirection_file(t_redir_file_params params);
 
 /* Parses helper10 functions */
@@ -533,7 +536,8 @@ int				get_redir_token(char **input_ptr, char *input_end, char **q,
 					char **eq);
 void			remove_redir_quotes(char **q, char **eq);
 char			*process_filename(char *q, char *eq, char **env_copy);
-char			*process_heredoc_delimiter(char *q, char *eq, char **env_copy, int is_quoted);
+char			*process_heredoc_delimiter(char *q, char *eq,
+					char **env_copy, int is_quoted);
 struct s_cmd	*apply_input_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*apply_output_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*apply_append_redir(struct s_cmd *cmd, char *file);
@@ -570,6 +574,13 @@ void			heredoc_sigint_handler(int signo);
 char			*read_line_without_history(void);
 char			*append_line_to_content(char *content, char *line);
 int				check_delimiter_match(char *line, char *stripped_delimiter);
+char			*read_heredoc_line(void);
+int				handle_read_error(ssize_t bytes_read, int i);
+int				read_character(int *c);
+char			*process_line_buffer(char *buffer, int i);
+int				initialize_heredoc_content(char **stripped_delimiter,
+					char **content, char *delimiter);
+void			cleanup_heredoc_content(char *stripped_delimiter);
 char			*read_heredoc_content(char *delimiter, char **env_copy,
 					int is_quoted);
 char			*append_line_to_content(char *content, char *line);
