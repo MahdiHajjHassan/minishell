@@ -75,8 +75,16 @@ int	process_redirection_file(t_redir_file_params params)
 	t_redir_cmd_params	cmd_params;
 
 	was_quoted = check_quoted_status(params.q, params.eq);
-	file_or_delimiter = process_filename(*params.q, *params.eq,
-			params.env_copy);
+	if (params.tok == 'H')
+	{
+		file_or_delimiter = process_heredoc_delimiter(*params.q, *params.eq,
+				params.env_copy, was_quoted);
+	}
+	else
+	{
+		file_or_delimiter = process_filename(*params.q, *params.eq,
+				params.env_copy);
+	}
 	if (!file_or_delimiter)
 	{
 		free_cmd(*params.ret);

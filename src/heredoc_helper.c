@@ -18,7 +18,7 @@ void	setup_heredoc_signals(void)
 
 	sa_int.sa_handler = heredoc_sigint_handler;
 	sigemptyset(&sa_int.sa_mask);
-	sa_int.sa_flags = SA_RESTART;
+	sa_int.sa_flags = 0;
 	sigaction(SIGINT, &sa_int, NULL);
 }
 
@@ -26,7 +26,7 @@ void	heredoc_sigint_handler(int signo)
 {
 	(void)signo;
 	write(STDERR_FILENO, "\n", 1);
-	clean_exit(130);
+	set_exit_status(130);
 }
 
 char	*read_line_without_history(void)
@@ -35,17 +35,26 @@ char	*read_line_without_history(void)
 	char	*line;
 	int		i;
 	int		c;
+	ssize_t	bytes_read;
 
 	i = 0;
 	while (i < 4095)
 	{
-		c = getchar();
-		if (c == EOF)
+		bytes_read = read(STDIN_FILENO, &c, 1);
+		if (bytes_read == 0)
 		{
 			if (i == 0)
-				return (NULL);
+				return ((char *)-1);
 			break ;
 		}
+		if (bytes_read == -1)
+		{
+			if (errno == EINTR)
+				return ((char *)-2);
+			return ((char *)-1);
+		}
+		if (get_exit_status() == 130)
+			return ((char *)-2);
 		if (c == '\n')
 			break ;
 		buffer[i++] = (char)c;

@@ -56,10 +56,14 @@ static char	*process_heredoc_loop(char *content, char *stripped_delimiter,
 	{
 		write(STDOUT_FILENO, "> ", 2);
 		line = read_line_without_history();
-		if (! line)
+		if (line == (char *)-1)
 		{
 			print_heredoc_eof_warning(stripped_delimiter);
 			break ;
+		}
+		if (line == (char *)-2)
+		{
+			return (NULL);
 		}
 		if (check_delimiter_match(line, stripped_delimiter))
 		{

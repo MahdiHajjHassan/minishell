@@ -533,6 +533,7 @@ int				get_redir_token(char **input_ptr, char *input_end, char **q,
 					char **eq);
 void			remove_redir_quotes(char **q, char **eq);
 char			*process_filename(char *q, char *eq, char **env_copy);
+char			*process_heredoc_delimiter(char *q, char *eq, char **env_copy, int is_quoted);
 struct s_cmd	*apply_input_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*apply_output_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*apply_append_redir(struct s_cmd *cmd, char *file);

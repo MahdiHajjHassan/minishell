@@ -62,6 +62,36 @@ char	*process_filename(char *q, char *eq, char **env_copy)
 	return (expanded);
 }
 
+char	*process_heredoc_delimiter(char *q, char *eq, char **env_copy, int is_quoted)
+{
+	size_t	len;
+	char	*processed;
+	char	*expanded;
+	char	*collapsed;
+
+	len = eq - q;
+	processed = process_escaped(q, len);
+	if (!processed)
+		return (handle_processing_error(NULL));
+	collapsed = collapse_consecutive_quotes(processed);
+	free(processed);
+	if (!collapsed)
+		return (handle_processing_error(NULL));
+	if (is_quoted)
+	{
+		char	*result;
+
+		result = ft_strdup(collapsed);
+		free(collapsed);
+		return (result);
+	}
+	expanded = expand_variables(collapsed, ft_strlen(collapsed), env_copy);
+	free(collapsed);
+	if (!expanded)
+		return (handle_processing_error(NULL));
+	return (expanded);
+}
+
 struct s_cmd	*handle_redir_token(struct s_cmd *cmd, int tok, char *file)
 {
 	if (tok == '<')
