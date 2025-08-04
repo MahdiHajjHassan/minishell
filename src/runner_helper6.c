@@ -46,46 +46,10 @@ void	handle_exit_status(int status)
 
 static void	handle_command_error(const char *cmd)
 {
-	// Check if it's an absolute or relative path
 	if (cmd[0] == '/' || cmd[0] == '.')
-	{
-		// Check if file exists
-		if (access(cmd, F_OK) != 0)
-		{
-			ft_putstr_fd("minishell: ", STDERR_FILENO);
-			ft_putstr_fd((char *)cmd, STDERR_FILENO);
-			ft_putstr_fd(": No such file or directory\n", STDERR_FILENO);
-			set_exit_status(127);
-		}
-		else
-		{
-			// Check if it's a directory
-			struct stat st;
-			if (stat(cmd, &st) == 0 && S_ISDIR(st.st_mode))
-			{
-				ft_putstr_fd("minishell: ", STDERR_FILENO);
-				ft_putstr_fd((char *)cmd, STDERR_FILENO);
-				ft_putstr_fd(": Is a directory\n", STDERR_FILENO);
-				set_exit_status(126);
-			}
-			else
-			{
-				// File exists but not executable
-				ft_putstr_fd("minishell: ", STDERR_FILENO);
-				ft_putstr_fd((char *)cmd, STDERR_FILENO);
-				ft_putstr_fd(": Permission denied\n", STDERR_FILENO);
-				set_exit_status(126);
-			}
-		}
-	}
+		handle_absolute_path_error(cmd);
 	else
-	{
-		// Not found in PATH
-		ft_putstr_fd("minishell: ", STDERR_FILENO);
-		ft_putstr_fd((char *)cmd, STDERR_FILENO);
-		ft_putstr_fd(": command not found\n", STDERR_FILENO);
-		set_exit_status(127);
-	}
+		print_command_error(cmd, ": command not found\n", 127);
 }
 
 void	execute_external_cmd(struct s_execcmd *ex, char **env_copy)

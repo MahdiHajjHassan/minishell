@@ -23,14 +23,12 @@ static char	*collapse_consecutive_quotes(const char *input)
 	output = malloc(len + 1);
 	if (!output)
 		return (NULL);
-	
 	i = 0;
 	j = 0;
 	while (input[i])
 	{
 		if (input[i] == '"' && input[i + 1] == '"')
 		{
-			// Skip both quotes
 			i += 2;
 		}
 		else
@@ -52,27 +50,15 @@ char	*process_filename(char *q, char *eq, char **env_copy)
 	len = eq - q;
 	processed = process_escaped(q, len);
 	if (!processed)
-	{
-		print_malloc_failed();
-		return (NULL);
-	}
-	
-	// Collapse consecutive quotes
+		return (handle_processing_error(NULL));
 	collapsed = collapse_consecutive_quotes(processed);
 	free(processed);
 	if (!collapsed)
-	{
-		print_malloc_failed();
-		return (NULL);
-	}
-	
+		return (handle_processing_error(NULL));
 	expanded = expand_variables(collapsed, ft_strlen(collapsed), env_copy);
 	free(collapsed);
 	if (!expanded)
-	{
-		print_malloc_failed();
-		return (NULL);
-	}
+		return (handle_processing_error(NULL));
 	return (expanded);
 }
 

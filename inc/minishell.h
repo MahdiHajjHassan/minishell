@@ -591,6 +591,12 @@ int				builtin_cd(char **argv, char ***env_copy);
 int				builtin_pwd(char **argv);
 int				builtin_exit(char **argv);
 int				builtin_env(char **argv, char ***env_copy);
+int				process_export_arg(char *arg_copy, char **name, char **value,
+					char ***env_copy);
+int				is_valid_identifier(const char *name);
+int				process_single_export_arg(char **argv, int i, char ***env_copy);
+int				builtin_export(char **argv, char ***env_copy);
+int				builtin_unset(char **argv, char ***env_copy);
 char			*create_old_pwd_var(char *old_pwd);
 char			*create_new_pwd_var(char *new_pwd);
 int				count_env_vars_pwd(char ***env_copy);
@@ -647,6 +653,16 @@ void			print_path_too_long(const char *curr, const char *cmd);
 void			print_open_failed(const char *file, const char *error);
 void			print_dup2_failed(const char *error);
 void			print_exit_numeric_arg(const char *arg);
+char			*handle_processing_error(char *processed);
+void			print_command_error(const char *cmd, const char *error_msg,
+					int exit_code);
+void			handle_absolute_path_error(const char *cmd);
+struct s_cmd	*replace_input_redir(struct s_cmd *cmd, char *file);
+struct s_cmd	*find_innermost_cmd(struct s_cmd *cmd);
+void			update_redirection_chain(struct s_cmd *cmd,
+					struct s_cmd *innermost, struct s_cmd *new_rdir);
+struct s_cmd	*replace_output_redir(struct s_cmd *cmd, char *file);
+struct s_cmd	*replace_append_redir(struct s_cmd *cmd, char *file);
 
 /* Memory management functions */
 void			update_shlvl_value(char ***env_copy, int i, int shlvl_num);

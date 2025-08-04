@@ -69,7 +69,6 @@ int	handle_env_value_found(t_env_var_params params, char *env_value,
 int	handle_env_value_not_found(t_env_var_params params,
 		size_t var_name_len)
 {
-	// When variable is not found, just skip it (don't add anything to result)
 	(void)params;
 	(void)var_name_len;
 	return (0);

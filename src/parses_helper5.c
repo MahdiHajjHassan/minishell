@@ -20,7 +20,6 @@ void	add_argument(struct s_execcmd *cmd, char *processed, int *argc)
 		free(processed);
 		return ;
 	}
-	// Skip empty arguments (like $EMPTY that expands to empty string)
 	if (ft_strlen(processed) == 0)
 	{
 		free(processed);
