@@ -26,7 +26,10 @@ SRCS =        src/builtin.c \
        src/env_helper1_helper.c \
        src/env_helper2.c \
        src/heredoc.c \
-       src/heredoc_helper.c \
+       src/heredoc_helper1.c \
+       src/heredoc_helper1_helper.c \
+       src/heredoc_helper2.c \
+       src/heredoc_helper3.c \
        src/main.c \
        src/main_helper1.c \
        src/main_helper2.c \
@@ -52,6 +55,7 @@ SRCS =        src/builtin.c \
        src/parses_helper8.c \
        src/parses_helper9.c \
        src/parses_helper9_helper.c \
+       src/parses_helper9_helper_helper.c \
        src/runner.c \
        src/runner_helper1.c \
        src/runner_helper10.c \

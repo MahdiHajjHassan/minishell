@@ -62,12 +62,14 @@ char	*process_filename(char *q, char *eq, char **env_copy)
 	return (expanded);
 }
 
-char	*process_heredoc_delimiter(char *q, char *eq, char **env_copy, int is_quoted)
+char	*process_heredoc_delimiter(char *q, char *eq,
+	char **env_copy, int is_quoted)
 {
 	size_t	len;
 	char	*processed;
 	char	*expanded;
 	char	*collapsed;
+	char	*result;
 
 	len = eq - q;
 	processed = process_escaped(q, len);
@@ -79,8 +81,6 @@ char	*process_heredoc_delimiter(char *q, char *eq, char **env_copy, int is_quote
 		return (handle_processing_error(NULL));
 	if (is_quoted)
 	{
-		char	*result;
-
 		result = ft_strdup(collapsed);
 		free(collapsed);
 		return (result);

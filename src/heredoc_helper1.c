@@ -29,38 +29,47 @@ void	heredoc_sigint_handler(int signo)
 	set_exit_status(130);
 }
 
+static int	process_character_loop(char *buffer, int *i)
+{
+	int		c;
+	int		result;
+
+	while (*i < 4095)
+	{
+		result = read_character(&c);
+		if (result != 1)
+		{
+			result = handle_read_error(result, *i);
+			if (result == -1)
+				return (-1);
+			if (result == -2)
+				return (-2);
+			if (result == 1)
+				return (1);
+		}
+		if (get_exit_status() == 130)
+			return (-2);
+		if (c == '\n')
+			return (1);
+		buffer[(*i)++] = (char)c;
+	}
+	return (0);
+}
+
 char	*read_line_without_history(void)
 {
 	char	buffer[4096];
 	char	*line;
 	int		i;
-	int		c;
-	ssize_t	bytes_read;
+	int		result;
 
 	i = 0;
-	while (i < 4095)
-	{
-		bytes_read = read(STDIN_FILENO, &c, 1);
-		if (bytes_read == 0)
-		{
-			if (i == 0)
-				return ((char *)-1);
-			break ;
-		}
-		if (bytes_read == -1)
-		{
-			if (errno == EINTR)
-				return ((char *)-2);
-			return ((char *)-1);
-		}
-		if (get_exit_status() == 130)
-			return ((char *)-2);
-		if (c == '\n')
-			break ;
-		buffer[i++] = (char)c;
-	}
-	buffer[i] = '\0';
-	line = ft_strdup(buffer);
+	result = process_character_loop(buffer, &i);
+	if (result == -1)
+		return ((char *)-1);
+	if (result == -2)
+		return ((char *)-2);
+	line = process_line_buffer(buffer, i);
 	return (line);
 }
 
@@ -80,13 +89,4 @@ char	*append_line_to_content(char *content, char *line)
 	new_content[content_len + line_len] = '\n';
 	new_content[content_len + line_len + 1] = '\0';
 	return (new_content);
-}
-
-int	check_delimiter_match(char *line, char *stripped_delimiter)
-{
-	size_t	delimiter_len;
-
-	delimiter_len = ft_strlen(stripped_delimiter);
-	return (ft_strlen(line) == delimiter_len
-		&& ft_strncmp(line, stripped_delimiter, delimiter_len) == 0);
 }

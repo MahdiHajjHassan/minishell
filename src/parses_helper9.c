@@ -68,13 +68,11 @@ int	create_redirection_cmd(t_redir_cmd_params params)
 	return (0);
 }
 
-int	process_redirection_file(t_redir_file_params params)
+static char	*process_file_or_delimiter(t_redir_file_params params,
+	int was_quoted)
 {
-	char				*file_or_delimiter;
-	int					was_quoted;
-	t_redir_cmd_params	cmd_params;
+	char	*file_or_delimiter;
 
-	was_quoted = check_quoted_status(params.q, params.eq);
 	if (params.tok == 'H')
 	{
 		file_or_delimiter = process_heredoc_delimiter(*params.q, *params.eq,
@@ -85,16 +83,24 @@ int	process_redirection_file(t_redir_file_params params)
 		file_or_delimiter = process_filename(*params.q, *params.eq,
 				params.env_copy);
 	}
+	return (file_or_delimiter);
+}
+
+int	process_redirection_file(t_redir_file_params params)
+{
+	char				*file_or_delimiter;
+	int					was_quoted;
+	t_redir_cmd_params	cmd_params;
+
+	was_quoted = check_quoted_status(params.q, params.eq);
+	file_or_delimiter = process_file_or_delimiter(params, was_quoted);
 	if (!file_or_delimiter)
 	{
 		free_cmd(*params.ret);
 		return (1);
 	}
-	cmd_params.ret = params.ret;
-	cmd_params.file_or_delimiter = file_or_delimiter;
-	cmd_params.env_copy = params.env_copy;
-	cmd_params.tok = params.tok;
-	cmd_params.was_quoted = was_quoted;
+	setup_redirection_cmd_params(&cmd_params, params,
+		file_or_delimiter, was_quoted);
 	create_redirection_cmd(cmd_params);
 	return (0);
 }

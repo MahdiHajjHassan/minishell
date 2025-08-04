@@ -46,30 +46,38 @@ static char	*handle_heredoc_line(char *content, char *line, char **env_copy,
 	return (new_content);
 }
 
+static int	handle_heredoc_line_read(char *line, char *stripped_delimiter)
+{
+	if (line == (char *)-1)
+	{
+		print_heredoc_eof_warning(stripped_delimiter);
+		return (1);
+	}
+	if (line == (char *)-2)
+		return (2);
+	if (check_delimiter_match(line, stripped_delimiter))
+	{
+		free(line);
+		return (1);
+	}
+	return (0);
+}
+
 static char	*process_heredoc_loop(char *content, char *stripped_delimiter,
 		char **env_copy, int is_quoted)
 {
 	char	*line;
 	char	*new_content;
+	int		result;
 
 	while (1)
 	{
-		write(STDOUT_FILENO, "> ", 2);
-		line = read_line_without_history();
-		if (line == (char *)-1)
-		{
-			print_heredoc_eof_warning(stripped_delimiter);
+		line = read_heredoc_line();
+		result = handle_heredoc_line_read(line, stripped_delimiter);
+		if (result == 1)
 			break ;
-		}
-		if (line == (char *)-2)
-		{
+		if (result == 2)
 			return (NULL);
-		}
-		if (check_delimiter_match(line, stripped_delimiter))
-		{
-			free(line);
-			break ;
-		}
 		new_content = handle_heredoc_line(content, line, env_copy, is_quoted);
 		if (! new_content)
 			return (NULL);
@@ -83,13 +91,8 @@ char	*read_heredoc_content(char *delimiter, char **env_copy, int is_quoted)
 	char	*stripped_delimiter;
 	char	*content;
 
-	stripped_delimiter = ft_strdup(delimiter);
-	content = ft_strdup("");
-	if (! content)
-	{
-		free(stripped_delimiter);
+	if (! initialize_heredoc_content(&stripped_delimiter, &content, delimiter))
 		return (NULL);
-	}
 	setup_heredoc_signals();
 	content = process_heredoc_loop(content,
 			stripped_delimiter, env_copy, is_quoted);
@@ -98,7 +101,6 @@ char	*read_heredoc_content(char *delimiter, char **env_copy, int is_quoted)
 		free(stripped_delimiter);
 		return (NULL);
 	}
-	init_signals();
-	free(stripped_delimiter);
+	cleanup_heredoc_content(stripped_delimiter);
 	return (content);
 }
