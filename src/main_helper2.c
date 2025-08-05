@@ -16,9 +16,7 @@ int	handle_tokenize(char *line, struct s_cmd **cmd, char **env_copy)
 {
 	*cmd = tokenize(line, env_copy);
 	if (! *cmd)
-	{
 		return (1);
-	}
 	return (0);
 }
 

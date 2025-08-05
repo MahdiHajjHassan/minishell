@@ -26,16 +26,16 @@ static int	process_command_line(char *line, struct s_cmd **cmd,
 	return (0);
 }
 
-static int	process_single_command(char *line, char **environ_copy)
+static int	process_single_command(char *line, char ***environ_copy)
 {
 	struct s_cmd	*cmd;
 	int				result;
 
-	result = process_command_line(line, &cmd, &environ_copy);
+	result = process_command_line(line, &cmd, environ_copy);
 	if (result == 2)
 	{
-		if (environ_copy)
-			free_environ_copy(environ_copy);
+		if (*environ_copy)
+			free_environ_copy(*environ_copy);
 		clean_exit(get_exit_status());
 	}
 	else if (result == 1)
@@ -45,7 +45,7 @@ static int	process_single_command(char *line, char **environ_copy)
 	return (0);
 }
 
-static int	main_loop(char **environ_copy)
+static int	main_loop(char ***environ_copy)
 {
 	char	*line;
 
@@ -54,8 +54,8 @@ static int	main_loop(char **environ_copy)
 		init_signals();
 		if (handle_line_input(&line))
 		{
-			if (environ_copy)
-				free_environ_copy(environ_copy);
+			if (*environ_copy)
+				free_environ_copy(*environ_copy);
 			clean_exit(get_exit_status());
 		}
 		if (! line || ft_strlen(line) == 0 || is_only_whitespace(line))
@@ -79,7 +79,7 @@ int	main(int argc, char **argv, char **envp)
 		return (1);
 	setup_signals_interactive();
 	rl_catch_signals = 0;
-	main_loop(environ_copy);
+	main_loop(&environ_copy);
 	if (environ_copy)
 		free_environ_copy(environ_copy);
 	clean_exit(0);
