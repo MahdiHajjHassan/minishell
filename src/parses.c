@@ -12,6 +12,16 @@
 
 #include "minishell.h"
 
+static int	is_empty_command(struct s_cmd *cmd)
+{
+	struct s_execcmd	*ecmd;
+
+	if (cmd->type != EXEC)
+		return (0);
+	ecmd = (struct s_execcmd *)cmd;
+	return (!ecmd->av[0] || ft_strlen(ecmd->av[0]) == 0);
+}
+
 struct s_cmd	*parse_pipe(char **input_ptr, char *input_end, char **env_copy)
 {
 	struct s_cmd	*cmd;
@@ -27,6 +37,13 @@ struct s_cmd	*parse_pipe(char **input_ptr, char *input_end, char **env_copy)
 		if (! right)
 		{
 			free_cmd(cmd);
+			return (NULL);
+		}
+		if (is_empty_command(cmd) || is_empty_command(right))
+		{
+			print_syntax_error();
+			free_cmd(cmd);
+			free_cmd(right);
 			return (NULL);
 		}
 		cmd = pipecmd(cmd, right);

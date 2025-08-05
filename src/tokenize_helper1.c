@@ -61,6 +61,8 @@ char	*handle_default_token(char *s, char *input_end, char *input_ptr,
 		else if (quote && *s == quote)
 		{
 			quote = 0;
+			s++;
+			break ;
 		}
 		s++;
 	}
