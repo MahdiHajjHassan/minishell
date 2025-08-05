@@ -61,7 +61,16 @@ void	copy_existing_env_vars(char ***env_copy, char **new_environ,
 	i = 0;
 	while (i < count)
 	{
-		new_environ[i] = (*env_copy)[i];
+		new_environ[i] = ft_strdup((*env_copy)[i]);
+		if (! new_environ[i])
+		{
+			while (i > 0)
+			{
+				i--;
+				free(new_environ[i]);
+			}
+			return ;
+		}
 		i++;
 	}
 }
@@ -70,8 +79,16 @@ void	finalize_new_environ(char **new_environ, int count,
 	char *new_var,
 		char ***env_copy)
 {
+	int	i;
+
 	new_environ[count] = new_var;
 	new_environ[count + 1] = NULL;
+	i = 0;
+	while ((*env_copy)[i])
+	{
+		free((*env_copy)[i]);
+		i++;
+	}
 	free(*env_copy);
 	*env_copy = new_environ;
 }

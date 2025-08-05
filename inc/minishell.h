@@ -715,6 +715,8 @@ void			setup_pipe_right(int *p, struct s_pipecmd *pipecmd,
 					char **env_copy);
 char			*find_command(const char *cmd, char **env_copy);
 void			execute_external_cmd(struct s_execcmd *ex, char **env_copy);
+void			execute_command_process(struct s_execcmd *ex, char **env_copy);
+void			handle_command_error(const char *cmd);
 void			handle_child_process(char *cmd_path, char **av,
 					char **env_copy);
 void			handle_parent_process(pid_t pid, char *cmd_path, int *status);

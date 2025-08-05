@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   memory_management.c                                :+:      :+:    :+:   */
+/*   runner_helper6_helper.c                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,47 +12,37 @@
 
 #include "minishell.h"
 
-char	**copy_environ(char **envp)
+static void	handle_fork_error(char *cmd_path)
 {
-	char	**new_environ;
-	int		count;
-
-	if (! envp)
-		return (NULL);
-	count = count_envp_vars(envp);
-	new_environ = malloc((count + 1) * sizeof(char *));
-	if (! new_environ)
-		return (NULL);
-	if (! copy_env_vars(envp, new_environ))
-	{
-		free(new_environ);
-		return (NULL);
-	}
-	increment_shlvl(&new_environ);
-	return (new_environ);
+	perror("fork failed");
+	free(cmd_path);
+	set_exit_status(1);
 }
 
-void	free_environ_copy(char **environ_copy)
+void	execute_command_process(struct s_execcmd *ex, char **env_copy)
 {
-	int	i;
+	char	*cmd_path;
+	pid_t	pid;
+	int		status;
 
-	if (! environ_copy)
+	cmd_path = find_command(ex->av[0], env_copy);
+	if (! cmd_path)
+	{
+		handle_command_error(ex->av[0]);
 		return ;
-	i = 0;
-	while (environ_copy[i])
-	{
-		if (environ_copy[i])
-		{
-			free(environ_copy[i]);
-			environ_copy[i] = NULL;
-		}
-		i++;
 	}
-	free(environ_copy);
-}
-
-void	clean_exit(int status)
-{
-	rl_clear_history();
-	exit(status);
+	pid = fork();
+	if (pid < 0)
+	{
+		handle_fork_error(cmd_path);
+		return ;
+	}
+	if (pid == 0)
+	{
+		handle_child_process(cmd_path, ex->av, env_copy);
+		return ;
+	}
+	else
+		handle_parent_process(pid, cmd_path, &status);
+	handle_exit_status(status);
 }
