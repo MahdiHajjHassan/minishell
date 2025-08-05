@@ -75,6 +75,8 @@ void	execute_external_cmd(struct s_execcmd *ex, char **env_copy)
 	if (pid == 0)
 		handle_child_process(cmd_path, ex->av, env_copy);
 	else
+	{
 		handle_parent_process(pid, cmd_path, &status);
-	handle_exit_status(status);
+		handle_exit_status(status);
+	}
 }
