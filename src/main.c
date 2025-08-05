@@ -15,12 +15,15 @@
 static int	process_command_line(char *line, struct s_cmd **cmd,
 		char ***environ_copy)
 {
+	int	result;
+
 	if (handle_tokenize(line, cmd, *environ_copy))
 		return (1);
 	if (*cmd)
 	{
-		if (process_builtin_command(*cmd, line, environ_copy))
-			return (1);
+		result = process_builtin_command(*cmd, line, environ_copy);
+		if (result)
+			return (result);
 		execute_external_command(*cmd, *environ_copy);
 	}
 	return (0);

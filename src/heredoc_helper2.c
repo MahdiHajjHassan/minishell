@@ -25,7 +25,7 @@ char	*read_heredoc_line(void)
 {
 	char	*line;
 
-	write(STDOUT_FILENO, "> ", 2);
+	write(STDOUT_FILENO, "", 0);
 	line = read_line_without_history();
 	return (line);
 }
