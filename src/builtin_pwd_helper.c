@@ -48,7 +48,6 @@ void	update_pwd_variables(char *old_pwd, char *new_pwd, char ***env_copy)
 		return ;
 	copy_and_update_env_vars(env_copy, new_environ, old_pwd_var, new_pwd_var);
 	finalize_new_environ_pwd(new_environ, count, old_pwd_var, new_pwd_var);
-	free(*env_copy);
 	*env_copy = new_environ;
 }
 

@@ -38,16 +38,52 @@ void	update_shlvl_value(char ***env_copy, int i, int shlvl_num)
 	}
 }
 
+void	create_new_shlvl_helper(char **new_environ, int count, char *new_shlvl)
+{
+	new_environ[count] = malloc(ft_strlen("SHLVL=") + ft_strlen(new_shlvl) + 1);
+	if (new_environ[count])
+	{
+		ft_strcpy(new_environ[count], "SHLVL=");
+		ft_strlcat(new_environ[count], new_shlvl, ft_strlen("SHLVL=")
+			+ ft_strlen(new_shlvl) + 1);
+	}
+	new_environ[count + 1] = NULL;
+}
+
+void	copy_env_array(char **new_environ, char **env_copy, int count)
+{
+	int	i;
+
+	i = 0;
+	while (i < count)
+	{
+		new_environ[i] = env_copy[i];
+		i++;
+	}
+}
+
 void	create_new_shlvl(char ***env_copy)
 {
 	char	*new_shlvl;
+	char	**new_environ;
+	int		count;
 
 	new_shlvl = ft_itoa(1);
-	if (new_shlvl)
+	if (! new_shlvl)
+		return ;
+	count = 0;
+	while ((*env_copy)[count])
+		count++;
+	new_environ = malloc((count + 2) * sizeof(char *));
+	if (! new_environ)
 	{
-		ft_setenv("SHLVL", new_shlvl, 1, env_copy);
 		free(new_shlvl);
+		return ;
 	}
+	copy_env_array(new_environ, *env_copy, count);
+	create_new_shlvl_helper(new_environ, count, new_shlvl);
+	free(new_shlvl);
+	*env_copy = new_environ;
 }
 
 void	increment_shlvl(char ***env_copy)

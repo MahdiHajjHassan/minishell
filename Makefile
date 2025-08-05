@@ -65,6 +65,7 @@ SRCS =        src/builtin.c \
        src/runner_helper4.c \
        src/runner_helper5.c \
        src/runner_helper6.c \
+       src/runner_helper6_helper.c \
        src/runner_helper7.c \
        src/runner_helper8.c \
        src/runner_helper9.c \

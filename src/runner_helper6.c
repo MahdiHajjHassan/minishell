@@ -44,7 +44,7 @@ void	handle_exit_status(int status)
 		set_exit_status(1);
 }
 
-static void	handle_command_error(const char *cmd)
+void	handle_command_error(const char *cmd)
 {
 	if (cmd[0] == '/' || cmd[0] == '.')
 		handle_absolute_path_error(cmd);
@@ -54,30 +54,5 @@ static void	handle_command_error(const char *cmd)
 
 void	execute_external_cmd(struct s_execcmd *ex, char **env_copy)
 {
-	char	*cmd_path;
-	pid_t	pid;
-	int		status;
-
-	cmd_path = find_command(ex->av[0], env_copy);
-	if (! cmd_path)
-	{
-		handle_command_error(ex->av[0]);
-		return ;
-	}
-	pid = fork();
-	if (pid < 0)
-	{
-		perror("fork failed");
-		free(cmd_path);
-		set_exit_status(1);
-		return ;
-	}
-	if (pid == 0)
-	{
-		handle_child_process(cmd_path, ex->av, env_copy);
-		return ;
-	}
-	else
-		handle_parent_process(pid, cmd_path, &status);
-	handle_exit_status(status);
+	execute_command_process(ex, env_copy);
 }
