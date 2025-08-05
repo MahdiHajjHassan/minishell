@@ -78,12 +78,10 @@ void	copy_and_update_env_vars(char ***env_copy, char **new_environ,
 	{
 		if (ft_strncmp((*env_copy)[i], "OLDPWD=", 7) == 0)
 		{
-			free((*env_copy)[i]);
 			new_environ[i] = old_pwd_var;
 		}
 		else if (ft_strncmp((*env_copy)[i], "PWD=", 4) == 0)
 		{
-			free((*env_copy)[i]);
 			new_environ[i] = new_pwd_var;
 		}
 		else
