@@ -39,13 +39,18 @@ static int	handle_argument_token(t_arg_process_params arg_params)
 	t_consecutive_quotes_params	quote_params;
 
 	consecutive_quotes = count_consecutive_quotes(arg_params.q, arg_params.eq);
+	// First check: simple quoted string (starts and ends with same quote)
 	if ((**arg_params.q == '"' && *(*arg_params.eq - 1) == '"')
 		|| (**arg_params.q == '\'' && *(*arg_params.eq - 1) == '\''))
 	{
-		return (process_single_argument(arg_params));
+		// Only use simple processing if there's exactly one quote pair
+		// and no other content
+		if (consecutive_quotes == 1)
+			return (process_single_argument(arg_params));
 	}
-	if (consecutive_quotes > 1 && (**arg_params.q == '"'
-			||**arg_params.q == '\''))
+	// For any token with quotes (including mixed quoted/unquoted),
+	// use the concatenation logic
+	if (consecutive_quotes >= 1)
 	{
 		quote_params.ret = arg_params.ret;
 		quote_params.params = arg_params.params;
@@ -56,6 +61,7 @@ static int	handle_argument_token(t_arg_process_params arg_params)
 	}
 	else
 	{
+		// No quotes at all - simple unquoted string
 		return (process_single_argument(arg_params));
 	}
 }
