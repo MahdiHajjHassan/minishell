@@ -48,6 +48,8 @@ int	handle_builtin_cmd(struct s_cmd *cmd, char *line, char ***env_copy)
 			if (ecmd->av[0] && !ft_strcmp(ecmd->av[0], "exit"))
 			{
 				set_exit_status(status);
+				if (status == 1)
+					return (1);
 				return (2);
 			}
 			set_exit_status(status);
