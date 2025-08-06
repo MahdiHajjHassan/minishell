@@ -12,44 +12,40 @@
 
 #include "minishell.h"
 
-static int	is_empty_command(struct s_cmd *cmd)
+static struct s_cmd	*handle_pipe_recursion(char **input_ptr, char *input_end,
+	char **env_copy, struct s_cmd *cmd)
 {
-	struct s_execcmd	*ecmd;
+	struct s_cmd	*right;
 
-	if (cmd->type != EXEC)
-		return (0);
-	ecmd = (struct s_execcmd *)cmd;
-	return (!ecmd->av[0] || ft_strlen(ecmd->av[0]) == 0);
+	gettoken(input_ptr, input_end, NULL, NULL);
+	right = parse_pipe(input_ptr, input_end, env_copy);
+	if (!right)
+	{
+		free_cmd(cmd);
+		return (NULL);
+	}
+	if (is_empty_command(cmd) || is_empty_command(right))
+	{
+		print_syntax_error();
+		free_cmd(cmd);
+		free_cmd(right);
+		return (NULL);
+	}
+	cmd = pipecmd(cmd, right);
+	if (!cmd)
+		return (NULL);
+	return (cmd);
 }
 
 struct s_cmd	*parse_pipe(char **input_ptr, char *input_end, char **env_copy)
 {
 	struct s_cmd	*cmd;
-	struct s_cmd	*right;
 
 	cmd = parseexec(input_ptr, input_end, env_copy);
-	if (! cmd)
+	if (!cmd)
 		return (NULL);
 	if (peek(input_ptr, input_end, "|"))
-	{
-		gettoken(input_ptr, input_end, NULL, NULL);
-		right = parse_pipe(input_ptr, input_end, env_copy);
-		if (! right)
-		{
-			free_cmd(cmd);
-			return (NULL);
-		}
-		if (is_empty_command(cmd) || is_empty_command(right))
-		{
-			print_syntax_error();
-			free_cmd(cmd);
-			free_cmd(right);
-			return (NULL);
-		}
-		cmd = pipecmd(cmd, right);
-		if (! cmd)
-			return (NULL);
-	}
+		return (handle_pipe_recursion(input_ptr, input_end, env_copy, cmd));
 	return (cmd);
 }
 

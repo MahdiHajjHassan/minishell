@@ -12,13 +12,6 @@
 
 #include "minishell.h"
 
-int	is_escaped(const char *s, const char *start)
-{
-	(void)s;
-	(void)start;
-	return (0);
-}
-
 char	*skip_whitespace(char *s, char *input_end, char *space)
 {
 	while (s < input_end && ft_strchr(space, *s))
@@ -42,16 +35,14 @@ int	handle_special_chars(char **s_ptr, char *input_ptr)
 	return ('a');
 }
 
-char	*handle_default_token(char *s, char *input_end, char *input_ptr,
-		t_token_params params)
+static char	*process_token_loop(char *s, char *input_end, t_token_params params)
 {
 	char	quote;
 
-	(void)input_ptr;
 	quote = 0;
 	while (s < input_end)
 	{
-		if (! quote)
+		if (!quote)
 		{
 			if (ft_strchr(params.symbols, *s) || ft_strchr(params.space, *s))
 				break ;
@@ -67,10 +58,15 @@ char	*handle_default_token(char *s, char *input_end, char *input_ptr,
 		s++;
 	}
 	if (quote)
-	{
 		return (NULL);
-	}
 	return (s);
+}
+
+char	*handle_default_token(char *s, char *input_end, char *input_ptr,
+		t_token_params params)
+{
+	(void)input_ptr;
+	return (process_token_loop(s, input_end, params));
 }
 
 int	handle_token_cases(char **s_ptr, char *input_ptr,
