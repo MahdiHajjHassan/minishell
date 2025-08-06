@@ -525,8 +525,21 @@ struct s_cmd	*parse_block(char **input_ptr, char *input_end,
 					char **env_copy);
 struct s_cmd	*parse_line(char **input_ptr, char *input_end,
 					char **env_copy);
+struct s_cmd	*parse_pipe(char **input_ptr, char *input_end, char **env_copy);
 
 /* Parser helper functions */
+int				is_empty_command(struct s_cmd *cmd);
+int				handle_redirection_token_type(t_token_type_params token_params);
+int				is_escaped(const char *s, const char *start);
+int				should_concatenate_next_token(t_arg_process_params arg_params);
+int				process_next_token_for_concatenation(
+					t_arg_process_params arg_params,
+					char **result, char **next_q, char **next_eq);
+char			*process_single_argument_internal(
+					t_arg_process_params arg_params);
+int				concatenate_adjacent_tokens(t_arg_process_params arg_params);
+int				handle_quoted_argument_token(t_arg_process_params arg_params);
+int				handle_unquoted_argument_token(t_arg_process_params arg_params);
 char			*init_output_buffer(size_t len);
 char			get_escape_char(char c);
 void			handle_escape_sequence(const char *input, size_t *i,
