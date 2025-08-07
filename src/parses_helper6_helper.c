@@ -78,7 +78,7 @@ static int	check_for_variables(char *processed)
 	while (processed[i])
 	{
 		if (processed[i] == '$' && processed[i + 1]
-			&& (isalnum(processed[i + 1]) || processed[i + 1] == '_'
+			&& (ft_isalnum(processed[i + 1]) || processed[i + 1] == '_'
 				|| processed[i + 1] == '?'))
 		{
 			return (1);

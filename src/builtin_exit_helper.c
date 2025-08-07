@@ -43,7 +43,7 @@ int	check_too_many_args(char **argv)
 
 int	process_exit_arg(char **argv)
 {
-	long	value;
+	int	value;
 
 	if (! argv[1])
 		return (0);
@@ -51,8 +51,8 @@ int	process_exit_arg(char **argv)
 		return (2);
 	if (check_too_many_args(argv))
 		return (1);
-	value = atol(argv[1]);
-	return ((int)(value & 0xFF));
+	value = ft_atoi(argv[1]);
+	return (value & 0xFF);
 }
 
 int	builtin_exit(char **argv)
