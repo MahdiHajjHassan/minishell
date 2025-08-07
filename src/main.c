@@ -42,7 +42,11 @@ static int	process_single_command(char *line, char ***environ_copy)
 		clean_exit(get_exit_status());
 	}
 	else if (result == 1)
+	{
+		if (cmd)
+			free_cmd(cmd);
 		return (1);
+	}
 	else if (line)
 		free(line);
 	return (0);

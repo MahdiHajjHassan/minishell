@@ -55,9 +55,15 @@ int	process_builtin_command(struct s_cmd *cmd, char *line,
 	int	result;
 
 	result = handle_builtin_cmd(cmd, line, environ_copy);
-	if (result)
+	if (result == 2)
 	{
 		free_cmd(cmd);
+		if (line)
+			free(line);
+		return (result);
+	}
+	else if (result == 1)
+	{
 		if (line)
 			free(line);
 		return (result);

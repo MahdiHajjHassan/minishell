@@ -48,11 +48,11 @@ int	remove_var_from_env(char ***env_copy, int var_index)
 	int		total_vars;
 
 	total_vars = count_total_vars(env_copy);
-	free((*env_copy)[var_index]);
 	new_environ = malloc((total_vars) * sizeof(char *));
 	if (! new_environ)
 		return (-1);
 	copy_vars_except_index(env_copy, new_environ, var_index);
+	free((*env_copy)[var_index]);
 	free(*env_copy);
 	*env_copy = new_environ;
 	return (0);

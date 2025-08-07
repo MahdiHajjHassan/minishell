@@ -52,6 +52,7 @@ struct s_cmd	*parse_pipe(char **input_ptr, char *input_end, char **env_copy)
 struct s_cmd	*parse_line(char **input_ptr, char *input_end, char **env_copy)
 {
 	struct s_cmd	*cmd;
+	struct s_cmd	*next_cmd;
 
 	cmd = parse_pipe(input_ptr, input_end, env_copy);
 	if (! cmd)
@@ -64,7 +65,14 @@ struct s_cmd	*parse_line(char **input_ptr, char *input_end, char **env_copy)
 			return (NULL);
 		if (! peek(input_ptr, input_end, "\0"))
 		{
-			return (parse_line(input_ptr, input_end, env_copy));
+			next_cmd = parse_line(input_ptr, input_end, env_copy);
+			if (!next_cmd)
+			{
+				free_cmd(cmd);
+				return (NULL);
+			}
+			free_cmd(cmd);
+			return (next_cmd);
 		}
 	}
 	return (cmd);
