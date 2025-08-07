@@ -48,16 +48,33 @@ int	peek(char **input_ptr, char *input_end, char *toks)
 	return (*s && ft_strchr(toks, *s));
 }
 
-struct s_cmd	*tokenize(const char *line, char **env_copy)
+static int	has_parentheses(const char *line)
 {
-	char			*input;
+	char	quote;
+
+	quote = 0;
+	while (*line)
+	{
+		if (!quote)
+		{
+			if (*line == '"' || *line == '\'')
+				quote = *line;
+			else if (*line == '(' || *line == ')')
+				return (1);
+		}
+		else if (quote && *line == quote)
+			quote = 0;
+		line++;
+	}
+	return (0);
+}
+
+static struct s_cmd	*tokenize_internal(char *input, char **env_copy)
+{
 	char			*input_ptr;
 	char			*input_end;
 	struct s_cmd	*cmd;
 
-	input = ft_strdup(line);
-	if (! input)
-		return (NULL);
 	input_ptr = input;
 	input_end = input + ft_strlen(input);
 	cmd = parse_line(&input_ptr, input_end, env_copy);
@@ -71,4 +88,19 @@ struct s_cmd	*tokenize(const char *line, char **env_copy)
 	}
 	free(input);
 	return (cmd);
+}
+
+struct s_cmd	*tokenize(const char *line, char **env_copy)
+{
+	char	*input;
+
+	if (has_parentheses(line))
+	{
+		print_syntax_error();
+		return (NULL);
+	}
+	input = ft_strdup(line);
+	if (!input)
+		return (NULL);
+	return (tokenize_internal(input, env_copy));
 }

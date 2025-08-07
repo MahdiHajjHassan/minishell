@@ -308,7 +308,7 @@ struct s_cmd	*nulterm(struct s_cmd *cmd);
 char			*find_command(const char *cmd, char **env_copy);
 
 /* Main helper functions */
-void			init_signals(void);
+
 int				handle_line_input(char **line);
 int				handle_tokenize(char *line, struct s_cmd **cmd,
 					char **env_copy);

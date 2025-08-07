@@ -108,8 +108,8 @@ struct s_cmd	*parseexec(char **input_ptr, char *input_end, char **env_copy)
 	int					argc;
 
 	argc = 0;
-	if (peek(input_ptr, input_end, "("))
-		return (parse_block(input_ptr, input_end, env_copy));
+	if (peek(input_ptr, input_end, "(") || peek(input_ptr, input_end, ")"))
+		return (NULL);
 	ret = init_exec_cmd();
 	if (! ret)
 		return (NULL);
