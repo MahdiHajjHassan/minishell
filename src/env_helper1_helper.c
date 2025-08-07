@@ -63,7 +63,7 @@ char	*resize_for_char(char *result, size_t *alloc_size, size_t j)
 int	is_variable_char(const char *str, size_t i, size_t len)
 {
 	if (str[i] == '$' && i + 1 < len
-		&& (isalnum(str[i + 1]) || str[i + 1] == '_' || str[i + 1] == '?'))
+		&& (ft_isalnum(str[i + 1]) || str[i + 1] == '_' || str[i + 1] == '?'))
 		return (1);
 	return (0);
 }

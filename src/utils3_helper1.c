@@ -70,6 +70,6 @@ int	ft_fprintf_stderr(const char *format, ...)
 	else if (ft_strcmp(format, "minishell: exit: too many arguments\n") == 0)
 		print_exit_too_many_args();
 	else
-		printf("%s", format);
+		ft_putstr_fd((char *)format, STDERR_FILENO);
 	return (0);
 }

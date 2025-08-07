@@ -21,7 +21,6 @@ int	handle_eof(char *buf, size_t len)
 		free(buf);
 		clean_exit(0);
 	}
-	clearerr(stdin);
 	return (1);
 }
 
