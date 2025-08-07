@@ -25,10 +25,6 @@ int	handle_eof(char *buf, size_t len)
 	return (1);
 }
 
-void	init_signals(void)
-{
-}
-
 int	handle_line_input(char **line)
 {
 	*line = readline("minishell$ ");

@@ -27,6 +27,5 @@ int	initialize_heredoc_content(char **stripped_delimiter,
 
 void	cleanup_heredoc_content(char *stripped_delimiter)
 {
-	init_signals();
 	free(stripped_delimiter);
 }

@@ -58,7 +58,6 @@ static int	main_loop(char ***environ_copy)
 
 	while (1)
 	{
-		init_signals();
 		if (handle_line_input(&line))
 		{
 			if (*environ_copy)
