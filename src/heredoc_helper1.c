@@ -34,6 +34,7 @@ static int	process_character_loop(char *buffer, int *i)
 	int		c;
 	int		result;
 
+	c = 0;
 	while (*i < 4095)
 	{
 		result = read_character(&c);

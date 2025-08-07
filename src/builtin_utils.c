@@ -86,7 +86,7 @@ void	copy_and_update_env_vars(char ***env_copy, char **new_environ,
 		}
 		else
 		{
-			new_environ[i] = (*env_copy)[i];
+			new_environ[i] = ft_strdup((*env_copy)[i]);
 		}
 		i++;
 	}
