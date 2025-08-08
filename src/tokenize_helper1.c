@@ -38,8 +38,10 @@ int	handle_special_chars(char **s_ptr, char *input_ptr)
 static char	*process_token_loop(char *s, char *input_end, t_token_params params)
 {
 	char	quote;
+	char	*start_pos;
 
 	quote = 0;
+	start_pos = s;
 	while (s < input_end)
 	{
 		if (!quote)
@@ -59,6 +61,19 @@ static char	*process_token_loop(char *s, char *input_end, t_token_params params)
 	}
 	if (quote)
 		return (NULL);
+	// Check for malformed input: if we have unquoted characters after a quoted segment
+	if (s < input_end && start_pos < s)
+	{
+		char *check_pos = s;
+		while (check_pos < input_end && (*check_pos == ' ' || *check_pos == '\t'))
+			check_pos++;
+		if (check_pos < input_end && *check_pos != '"' && *check_pos != '\''
+			&& !ft_strchr(params.symbols, *check_pos))
+		{
+			// Malformed input - return NULL to indicate error
+			return (NULL);
+		}
+	}
 	return (s);
 }
 

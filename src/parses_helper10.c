@@ -68,15 +68,27 @@ int	process_consecutive_quotes(t_consecutive_quotes_params params)
 {
 	char	*concatenated;
 
-	concatenated = concatenate_quoted_strings(params.params.input_ptr,
-			params.params.input_end, params.env_copy);
-	if (!concatenated)
+	// Validate that this is actually valid consecutive quotes
+	// Check if the input starts and ends with matching quotes
+	if ((**params.q == '"' && *(*params.eq - 1) == '"')
+		|| (**params.q == '\'' && *(*params.eq - 1) == '\''))
 	{
+		concatenated = concatenate_quoted_strings(params.params.input_ptr,
+				params.params.input_end, params.env_copy);
+		if (!concatenated)
+		{
+			free_cmd(*params.ret);
+			return (1);
+		}
+		add_argument(params.params.cmd, concatenated, params.params.argc);
+		*params.q = *params.params.input_ptr;
+		*params.eq = *params.params.input_ptr;
+		return (0);
+	}
+	else
+	{
+		// Malformed input - treat as unquoted
 		free_cmd(*params.ret);
 		return (1);
 	}
-	add_argument(params.params.cmd, concatenated, params.params.argc);
-	*params.q = *params.params.input_ptr;
-	*params.eq = *params.params.input_ptr;
-	return (0);
 }
