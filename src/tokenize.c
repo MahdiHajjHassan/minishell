@@ -45,7 +45,10 @@ int	peek(char **input_ptr, char *input_end, char *toks)
 	s = *input_ptr;
 	while (s < input_end && ft_strchr(space, *s))
 		s++;
-	return (*s && ft_strchr(toks, *s));
+	// If we're at or past the end, only report true if caller is peeking for '\0'
+	if (s >= input_end)
+		return (ft_strchr(toks, '\0') != NULL);
+	return (ft_strchr(toks, *s) != NULL);
 }
 
 static int	has_parentheses(const char *line)
