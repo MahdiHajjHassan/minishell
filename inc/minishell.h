@@ -98,6 +98,16 @@ typedef struct s_env_var_params
 	char		**env_copy;
 }	t_env_var_params;
 
+/* Structure to hold quote processing parameters */
+typedef struct s_quote_params
+{
+	char	*processed;
+	size_t	len;
+	char	*result;
+	size_t	*i;
+	size_t	*j;
+}	t_quote_params;
+
 /* Structure to hold pipe command execution parameters */
 typedef struct s_pipe_cmd_params
 {
@@ -367,7 +377,7 @@ int				handle_regular_char(t_regular_char_params params);
 int				is_variable_char(const char *str, size_t i, size_t len);
 int				process_character(t_process_char_params params);
 
-/* Parses helper2 functions */
+/* Parses helper functions */
 char			get_escape_char(char c);
 void			handle_escape_char_sequence(const char *input, size_t *i,
 					char *output, size_t *j);
@@ -400,6 +410,16 @@ int				remove_exec_quotes(char **q, char **eq);
 char			*process_argument(char *q, char *eq);
 char			*process_argument_with_expansion(char *q, char *eq,
 					char **env_copy, int quote_type);
+char			*process_quoted_string(char *q, size_t len, int quote_type);
+int				check_for_variables(char *processed);
+char			*expand_if_needed(char *processed, char **env_copy);
+char			*remove_embedded_quotes(char *processed, size_t len);
+char			*initialize_quote_result(char *processed, size_t len);
+char			*filter_quotes_from_string(char *processed, size_t len);
+int				has_dollar_quote_pattern(char *processed, size_t len);
+void			process_dollar_quote_content(t_quote_params *params);
+void			process_quote_loop(t_quote_params *params);
+char			*process_dollar_quote_patterns(char *processed, size_t len);
 
 /* Parses helper7 functions */
 char			*handle_quoted_string(char **current_pos, char *input_end,
