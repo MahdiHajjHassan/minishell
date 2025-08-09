@@ -64,16 +64,18 @@ char	*process_quoted_segment(char *current_pos, char *input_end,
 	char	*temp;
 	int		quote_type;
 
+	if (current_pos >= input_end)
+	{
+		free(result);
+		return (NULL);
+	}
 	quote_type = *current_pos;
 	q = current_pos + 1;
 	eq = q;
 	while (eq < input_end && *eq != quote_type)
 		eq++;
 	if (eq >= input_end)
-	{
-		free(result);
-		return (NULL);
-	}
+		eq = input_end;
 	temp = process_argument_with_expansion(q, eq, env_copy, quote_type);
 	if (! temp)
 	{

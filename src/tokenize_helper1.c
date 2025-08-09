@@ -35,58 +35,18 @@ int	handle_special_chars(char **s_ptr, char *input_ptr)
 	return ('a');
 }
 
-static char	*process_token_loop(char *s, char *input_end, t_token_params params)
+char	*handle_quote_logic(char *s, char *quote_ptr)
 {
-	char	quote;
-
-	quote = 0;
-	while (s < input_end)
+	if (!*quote_ptr)
 	{
-		if (!quote)
-		{
-			if (ft_strchr(params.symbols, *s) || ft_strchr(params.space, *s))
-				break ;
-			if (*s == '"' || *s == '\'')
-				quote = *s;
-		}
-		else if (quote && *s == quote)
-		{
-			quote = 0;
-			s++;
-			break ;
-		}
+		if (*s == '"' || *s == '\'')
+			*quote_ptr = *s;
+	}
+	else if (*quote_ptr && *s == *quote_ptr)
+	{
+		*quote_ptr = 0;
 		s++;
+		return (s);
 	}
-	if (quote)
-		return (NULL);
-	return (s);
-}
-
-char	*handle_default_token(char *s, char *input_end, char *input_ptr,
-		t_token_params params)
-{
-	(void)input_ptr;
-	return (process_token_loop(s, input_end, params));
-}
-
-int	handle_token_cases(char **s_ptr, char *input_ptr,
-		char *input_end)
-{
-	int							ret;
-	t_process_default_params	params;
-	char						space[6];
-	char						symbols[8];
-
-	init_token_arrays(space, symbols);
-	ret = handle_special_chars(s_ptr, input_ptr);
-	if (ret == 'a')
-	{
-		params.s_ptr = s_ptr;
-		params.input_end = input_end;
-		params.input_ptr = input_ptr;
-		params.symbols = symbols;
-		params.space = space;
-		ret = process_default_case(s_ptr, input_end, params);
-	}
-	return (ret);
+	return (NULL);
 }

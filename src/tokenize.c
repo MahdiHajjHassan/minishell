@@ -99,8 +99,13 @@ struct s_cmd	*tokenize(const char *line, char **env_copy)
 		print_syntax_error();
 		return (NULL);
 	}
+	if (has_malformed_quotes(line))
+	{
+		print_syntax_error();
+		return (NULL);
+	}
 	input = ft_strdup(line);
-	if (!input)
+	if (! input)
 		return (NULL);
 	return (tokenize_internal(input, env_copy));
 }

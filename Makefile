@@ -48,6 +48,7 @@ SRCS =        src/builtin.c \
        src/parses_helper3.c \
        src/parses_helper4.c \
        src/parses_helper4_helper.c \
+       src/parses_helper4_helper2.c \
        src/parses_helper4_helper_helper1.c \
        src/parses_helper4_helper_helper2.c \
        src/parses_helper_helper.c \
@@ -55,6 +56,7 @@ SRCS =        src/builtin.c \
        src/parses_helper6.c \
        src/parses_helper6_helper.c \
        src/parses_helper7.c \
+       src/parses_helper7_helper.c \
        src/parses_helper8.c \
        src/parses_helper9.c \
        src/parses_helper9_helper.c \
@@ -76,6 +78,8 @@ SRCS =        src/builtin.c \
        src/tokenize_helper1.c \
        src/tokenize_helper2.c \
        src/tokenize_helper3.c \
+       src/tokenize_helper4.c \
+       src/tokenize_helper5.c \
        src/utils.c \
        src/utils_helper.c \
        src/utils1.c \

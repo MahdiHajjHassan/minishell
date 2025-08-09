@@ -332,6 +332,7 @@ int				handle_greater_than(char **s_ptr, char *input_ptr);
 int				handle_special_chars(char **s_ptr, char *input_ptr);
 char			*handle_default_token(char *s, char *input_end,
 					char *input_ptr, t_token_params params);
+char			*handle_quote_logic(char *s, char *quote_ptr);
 void			init_space_array(char *space);
 void			init_symbols_array(char *symbols);
 void			init_token_arrays(char *space, char *symbols);
@@ -401,6 +402,12 @@ char			*concatenate_quoted_strings(char **input_ptr, char *input_end,
 					char **env_copy);
 int				process_expanded_argument(t_expanded_arg_params params);
 
+/* Parses helper7 helper functions */
+char			*handle_quote_in_loop(char **current_pos, char *input_end,
+					char **env_copy, char *result);
+char			*advance_position_safely(char **current_pos, char *prev_pos,
+					char *input_end);
+
 /* Parses helper8 functions */
 int				process_exec_token(struct s_cmd *ret,
 					t_process_args_params params, char **env_copy);
@@ -428,6 +435,13 @@ void			skip_to_quote_end(char **temp_ptr, char *temp_end,
 int				count_consecutive_quotes(char **q, char **eq);
 int				process_consecutive_quotes(t_consecutive_quotes_params params);
 int				handle_token_type(t_token_type_params token_params);
+
+/* Parses helper4 helper2 functions */
+int				validate_arg_params(t_arg_process_params arg_params);
+int				handle_consecutive_quotes_case(t_arg_process_params arg_params);
+int				handle_argument_token(t_arg_process_params arg_params);
+int				handle_argument_token_type(t_token_type_params token_params);
+
 struct s_cmd	*process_arguments(struct s_cmd *ret,
 					t_process_args_params params, char **env_copy);
 struct s_cmd	*process_arguments_and_redirs(struct s_cmd *ret,
@@ -476,7 +490,23 @@ t_token_params	setup_token_params(char *s, char *input_end,
 int				process_default_case(char **s_ptr, char *input_end,
 					t_process_default_params params);
 void			setup_token_processing(char **input_ptr, char *input_end,
-					char **token_start, char **s_ptr);
+						char **token_start, char **s_ptr);
+
+/* Tokenize helper4 functions */
+int				check_unclosed_quotes(const char *line);
+const char		*check_double_quote_pattern(const char *line);
+const char		*check_single_quote_pattern(const char *line);
+int				check_quote_patterns(const char *line);
+int				has_malformed_quotes(const char *line);
+
+/* Tokenize helper5 functions */
+int				should_break_on_char(char c, t_token_params params, int quote);
+char			*process_token_loop(char *s, char *input_end,
+					t_token_params params);
+char			*handle_default_token(char *s, char *input_end,
+					char *input_ptr, t_token_params params);
+int				handle_token_cases(char **s_ptr, char *input_ptr,
+					char *input_end);
 
 /* Env helper1 helper functions */
 char			*init_result_buffer(size_t len, size_t *alloc_size);
