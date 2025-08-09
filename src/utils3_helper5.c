@@ -28,7 +28,7 @@ int	add_new_var(char ***env_copy, const char *name,
 	count = allocate_new_environ(env_copy, &new_var, &new_environ);
 	if (count == -1)
 		return (-1);
-	copy_existing_env_vars(env_copy, new_environ, count);
+	copy_env_vars_for_export(env_copy, new_environ, count);
 	finalize_new_environ(new_environ, count, new_var, env_copy);
 	return (0);
 }

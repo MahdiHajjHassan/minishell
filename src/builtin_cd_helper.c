@@ -34,7 +34,7 @@ int	handle_cd_no_args(char *old_pwd, char ***env_copy)
 	return (0);
 }
 
-int	handle_cd_with_args(char **argv, char *old_pwd)
+int	handle_cd_with_args(char **argv, char *old_pwd, char ***env_copy)
 {
 	if (argv[2])
 	{
@@ -42,12 +42,9 @@ int	handle_cd_with_args(char **argv, char *old_pwd)
 		free(old_pwd);
 		return (1);
 	}
-	if (cd_to_path(argv[1]) != 0)
-	{
-		free(old_pwd);
-		return (1);
-	}
-	return (0);
+	if (ft_strcmp(argv[1], "-") == 0)
+		return (handle_cd_dash(old_pwd, env_copy));
+	return (handle_cd_regular_path(argv, old_pwd));
 }
 
 int	update_pwd_and_cleanup(char *old_pwd, char ***env_copy)
@@ -80,7 +77,7 @@ int	builtin_cd(char **argv, char ***env_copy)
 	}
 	else
 	{
-		if (handle_cd_with_args(argv, old_pwd))
+		if (handle_cd_with_args(argv, old_pwd, env_copy))
 			return (1);
 	}
 	return (update_pwd_and_cleanup(old_pwd, env_copy));

@@ -85,14 +85,27 @@ int	builtin_pwd(char **argv)
 void	finalize_new_environ_pwd(char **new_environ, int count,
 		char *old_pwd_var, char *new_pwd_var)
 {
-	if (count == 0)
+	int		i;
+	int		oldpwd_found;
+	int		pwd_found;
+
+	(void)old_pwd_var;
+	(void)new_pwd_var;
+	oldpwd_found = 0;
+	pwd_found = 0;
+	i = 0;
+	while (i < count)
 	{
-		new_environ[0] = old_pwd_var;
-		new_environ[1] = new_pwd_var;
-		new_environ[2] = NULL;
+		if (new_environ[i] == old_pwd_var)
+			oldpwd_found = 1;
+		if (new_environ[i] == new_pwd_var)
+			pwd_found = 1;
+		i++;
 	}
-	else
-	{
-		new_environ[count] = NULL;
-	}
+	i = count;
+	if (!oldpwd_found)
+		i++;
+	if (!pwd_found)
+		i++;
+	new_environ[i] = NULL;
 }

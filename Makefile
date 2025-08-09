@@ -11,6 +11,7 @@ OBJ_DIR = obj
 SRCS =        src/builtin.c \
        src/builtin_helper.c \
        src/builtin_cd_helper.c \
+       src/builtin_cd_helper2.c \
        src/builtin_cd_utils.c \
        src/builtin_echo_helper.c \
        src/builtin_exit_helper.c \
@@ -19,6 +20,7 @@ SRCS =        src/builtin.c \
        src/builtin_helper2.c \
        src/builtin_pwd_helper.c \
        src/builtin_utils.c \
+       src/builtin_utils_helper.c \
        src/constructs.c \
        src/constructs_helper.c \
        src/env.c \

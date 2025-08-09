@@ -49,6 +49,15 @@ typedef struct s_redir_params
 	int	fd;
 }	t_redir_params;
 
+typedef struct s_env_update_params
+{
+	char	***env_copy;
+	char	**new_environ;
+	char	*old_pwd_var;
+	char	*new_pwd_var;
+	int		*flags;
+}	t_env_update_params;
+
 /* Structure to hold process arguments parameters */
 typedef struct s_process_args_params
 {
@@ -490,7 +499,7 @@ t_token_params	setup_token_params(char *s, char *input_end,
 int				process_default_case(char **s_ptr, char *input_end,
 					t_process_default_params params);
 void			setup_token_processing(char **input_ptr, char *input_end,
-						char **token_start, char **s_ptr);
+					char **token_start, char **s_ptr);
 
 /* Tokenize helper4 functions */
 int				check_unclosed_quotes(const char *line);
@@ -661,6 +670,11 @@ void			copy_and_update_env_vars(char ***env_copy, char **new_environ,
 void			finalize_new_environ_pwd(char **new_environ, int count,
 					char *old_pwd_var, char *new_pwd_var);
 
+/* Builtin utils helper functions */
+void			copy_existing_env_vars(t_env_update_params params);
+void			add_missing_env_vars(char **new_environ, char *old_pwd_var,
+					char *new_pwd_var, int *flags);
+
 /* Runner helper functions */
 char			*check_absolute_path(const char *cmd);
 size_t			get_path_segment_len(char *curr, char **next);
@@ -790,7 +804,7 @@ int				update_existing_var(char ***env_copy, int i, const char *name,
 int				count_env_vars(char ***env_copy);
 int				allocate_new_environ(char ***env_copy, char **new_var,
 					char ***new_environ);
-void			copy_existing_env_vars(char ***env_copy, char **new_environ,
+void			copy_env_vars_for_export(char ***env_copy, char **new_environ,
 					int count);
 void			finalize_new_environ(char **new_environ, int count,
 					char *new_var, char ***env_copy);
@@ -807,8 +821,15 @@ int				process_n_flags(char **argv, int *i);
 void			print_arguments(char **argv, int start_index);
 char			*get_current_directory(void);
 int				handle_cd_no_args(char *old_pwd, char ***env_copy);
-int				handle_cd_with_args(char **argv, char *old_pwd);
+int				handle_cd_with_args(char **argv, char *old_pwd,
+					char ***env_copy);
 int				update_pwd_and_cleanup(char *old_pwd, char ***env_copy);
+
+/* Builtin cd helper2 functions */
+char			*find_oldpwd_value(char ***env_copy);
+int				handle_cd_dash(char *old_pwd, char ***env_copy);
+int				handle_cd_regular_path(char **argv, char *old_pwd);
+
 int				validate_numeric_arg(char *arg);
 int				check_too_many_args(char **argv);
 

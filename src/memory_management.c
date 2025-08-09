@@ -12,14 +12,28 @@
 
 #include "minishell.h"
 
-char	**copy_environ(char **envp)
+static char	**create_default_environ(void)
 {
 	char	**new_environ;
-	int		count;
 
-	if (! envp)
+	new_environ = malloc(2 * sizeof(char *));
+	if (! new_environ)
 		return (NULL);
-	count = count_envp_vars(envp);
+	new_environ[0] = malloc(ft_strlen("SHLVL=1") + 1);
+	if (! new_environ[0])
+	{
+		free(new_environ);
+		return (NULL);
+	}
+	ft_strcpy(new_environ[0], "SHLVL=1");
+	new_environ[1] = NULL;
+	return (new_environ);
+}
+
+static char	**create_environ_copy(char **envp, int count)
+{
+	char	**new_environ;
+
 	new_environ = malloc((count + 1) * sizeof(char *));
 	if (! new_environ)
 		return (NULL);
@@ -28,6 +42,20 @@ char	**copy_environ(char **envp)
 		free(new_environ);
 		return (NULL);
 	}
+	return (new_environ);
+}
+
+char	**copy_environ(char **envp)
+{
+	char	**new_environ;
+	int		count;
+
+	if (! envp)
+		return (create_default_environ());
+	count = count_envp_vars(envp);
+	new_environ = create_environ_copy(envp, count);
+	if (! new_environ)
+		return (NULL);
 	increment_shlvl(&new_environ);
 	return (new_environ);
 }

@@ -71,23 +71,16 @@ char	*create_new_pwd_var(char *new_pwd)
 void	copy_and_update_env_vars(char ***env_copy, char **new_environ,
 		char *old_pwd_var, char *new_pwd_var)
 {
-	int		i;
+	int					flags[2];
+	t_env_update_params	params;
 
-	i = 0;
-	while ((*env_copy)[i])
-	{
-		if (ft_strncmp((*env_copy)[i], "OLDPWD=", 7) == 0)
-		{
-			new_environ[i] = old_pwd_var;
-		}
-		else if (ft_strncmp((*env_copy)[i], "PWD=", 4) == 0)
-		{
-			new_environ[i] = new_pwd_var;
-		}
-		else
-		{
-			new_environ[i] = ft_strdup((*env_copy)[i]);
-		}
-		i++;
-	}
+	flags[0] = 0;
+	flags[1] = 0;
+	params.env_copy = env_copy;
+	params.new_environ = new_environ;
+	params.old_pwd_var = old_pwd_var;
+	params.new_pwd_var = new_pwd_var;
+	params.flags = flags;
+	copy_existing_env_vars(params);
+	add_missing_env_vars(new_environ, old_pwd_var, new_pwd_var, flags);
 }

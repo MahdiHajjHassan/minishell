@@ -53,7 +53,7 @@ int	allocate_new_environ(char ***env_copy, char **new_var,
 	return (count);
 }
 
-void	copy_existing_env_vars(char ***env_copy, char **new_environ,
+void	copy_env_vars_for_export(char ***env_copy, char **new_environ,
 		int count)
 {
 	int	i;
@@ -69,6 +69,7 @@ void	copy_existing_env_vars(char ***env_copy, char **new_environ,
 				i--;
 				free(new_environ[i]);
 			}
+			free(new_environ);
 			return ;
 		}
 		i++;
