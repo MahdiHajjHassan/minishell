@@ -35,6 +35,8 @@ void	execute_cmd(struct s_cmd *cmd, char **env_copy)
 	if (pid == 0)
 	{
 		runcmd(cmd, env_copy);
+		free_cmd(cmd);
+		free_environ_copy(env_copy);
 		clean_exit(get_exit_status());
 	}
 	waitpid(pid, &status, 0);
