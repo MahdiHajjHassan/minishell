@@ -21,12 +21,12 @@ void	copy_existing_env_vars(t_env_update_params params)
 	{
 		if (ft_strncmp((*params.env_copy)[i], "OLDPWD=", 7) == 0)
 		{
-			params.new_environ[i] = params.old_pwd_var;
+			params.new_environ[i] = ft_strdup(params.old_pwd_var);
 			params.flags[0] = 1;
 		}
 		else if (ft_strncmp((*params.env_copy)[i], "PWD=", 4) == 0)
 		{
-			params.new_environ[i] = params.new_pwd_var;
+			params.new_environ[i] = ft_strdup(params.new_pwd_var);
 			params.flags[1] = 1;
 		}
 		else
@@ -49,12 +49,12 @@ void	add_missing_env_vars(t_env_update_params params)
 	i = count;
 	if (!params.flags[0])
 	{
-		params.new_environ[i] = params.old_pwd_var;
+		params.new_environ[i] = ft_strdup(params.old_pwd_var);
 		i++;
 	}
 	if (!params.flags[1])
 	{
-		params.new_environ[i] = params.new_pwd_var;
+		params.new_environ[i] = ft_strdup(params.new_pwd_var);
 		i++;
 	}
 	params.new_environ[i] = NULL;

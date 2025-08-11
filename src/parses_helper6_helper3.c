@@ -19,7 +19,8 @@ char	*initialize_quote_result(char *processed, size_t len)
 	result = malloc(len + 1);
 	if (!result)
 	{
-		free(processed);
+		if (processed)
+			free(processed);
 		print_malloc_failed();
 		return (NULL);
 	}

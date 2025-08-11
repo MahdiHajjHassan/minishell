@@ -50,6 +50,8 @@ void	update_pwd_variables(char *old_pwd, char *new_pwd, char ***env_copy)
 	finalize_new_environ_pwd(new_environ, count, old_pwd_var, new_pwd_var);
 	free_environ_copy(*env_copy);
 	*env_copy = new_environ;
+	free(old_pwd_var);
+	free(new_pwd_var);
 }
 
 int	builtin_env(char **argv, char ***env_copy)
