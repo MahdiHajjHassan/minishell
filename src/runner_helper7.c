@@ -43,6 +43,7 @@ int	create_first_child(int *p, struct s_pipecmd *pipecmd,
 		dup2(p[1], STDOUT_FILENO);
 		close(p[1]);
 		runcmd(pipecmd->left, env_copy);
+		free_cmd(pipecmd->left);
 		exit(get_exit_status());
 	}
 	return (pid1);
@@ -71,6 +72,7 @@ int	create_second_child(int *p, struct s_pipecmd *pipecmd,
 		dup2(p[0], STDIN_FILENO);
 		close(p[0]);
 		runcmd(pipecmd->right, env_copy);
+		free_cmd(pipecmd->right);
 		exit(get_exit_status());
 	}
 	return (pid2);

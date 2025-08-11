@@ -12,46 +12,6 @@
 
 #include "minishell.h"
 
-static int	process_command_line(char *line, struct s_cmd **cmd,
-		char ***environ_copy)
-{
-	int	result;
-
-	if (handle_tokenize(line, cmd, *environ_copy))
-		return (1);
-	if (*cmd)
-	{
-		result = process_builtin_command(*cmd, line, environ_copy);
-		if (result)
-			return (result);
-		execute_external_command(*cmd, *environ_copy);
-	}
-	return (0);
-}
-
-static int	process_single_command(char *line, char ***environ_copy)
-{
-	struct s_cmd	*cmd;
-	int				result;
-
-	result = process_command_line(line, &cmd, environ_copy);
-	if (result == 2)
-	{
-		if (*environ_copy)
-			free_environ_copy(*environ_copy);
-		clean_exit(get_exit_status());
-	}
-	else if (result == 1)
-	{
-		if (cmd)
-			free_cmd(cmd);
-		return (1);
-	}
-	else if (line)
-		free(line);
-	return (0);
-}
-
 static int	main_loop(char ***environ_copy)
 {
 	char	*line;

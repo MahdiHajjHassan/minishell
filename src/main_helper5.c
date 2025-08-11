@@ -57,7 +57,6 @@ int	process_builtin_command(struct s_cmd *cmd, char *line,
 	result = handle_builtin_cmd(cmd, line, environ_copy);
 	if (result == 2)
 	{
-		free_cmd(cmd);
 		if (line)
 			free(line);
 		return (result);
@@ -76,5 +75,4 @@ void	execute_external_command(struct s_cmd *cmd, char **environ_copy)
 	setup_signals_noninteractive();
 	execute_cmd(cmd, environ_copy);
 	setup_signals_interactive();
-	free_cmd(cmd);
 }

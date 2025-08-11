@@ -47,11 +47,18 @@ char	*create_old_pwd_var(char *old_pwd)
 char	**allocate_new_environ_pwd(char ***env_copy, int count)
 {
 	char	**new_environ;
+	int		k;
 
 	(void)env_copy;
 	new_environ = malloc((count + 3) * sizeof(char *));
 	if (! new_environ)
 		return (NULL);
+	k = 0;
+	while (k < count + 3)
+	{
+		new_environ[k] = NULL;
+		k++;
+	}
 	return (new_environ);
 }
 
@@ -82,5 +89,5 @@ void	copy_and_update_env_vars(char ***env_copy, char **new_environ,
 	params.new_pwd_var = new_pwd_var;
 	params.flags = flags;
 	copy_existing_env_vars(params);
-	add_missing_env_vars(new_environ, old_pwd_var, new_pwd_var, flags);
+	add_missing_env_vars(params);
 }

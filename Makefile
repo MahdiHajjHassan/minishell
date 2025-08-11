@@ -38,6 +38,7 @@ SRCS =        src/builtin.c \
        src/main_helper3.c \
        src/main_helper4.c \
        src/main_helper5.c \
+       src/main_helper6.c \
        src/memory_management.c \
        src/memory_management_helper.c \
        src/memory_management_helper2.c \

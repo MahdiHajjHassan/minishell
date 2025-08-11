@@ -692,8 +692,7 @@ void			finalize_new_environ_pwd(char **new_environ, int count,
 
 /* Builtin utils helper functions */
 void			copy_existing_env_vars(t_env_update_params params);
-void			add_missing_env_vars(char **new_environ, char *old_pwd_var,
-					char *new_pwd_var, int *flags);
+void			add_missing_env_vars(t_env_update_params params);
 
 /* Runner helper functions */
 char			*check_absolute_path(const char *cmd);
@@ -852,5 +851,13 @@ int				handle_cd_regular_path(char **argv, char *old_pwd);
 
 int				validate_numeric_arg(char *arg);
 int				check_too_many_args(char **argv);
+
+/* main_helper6.c functions */
+int				process_command_line(char *line, struct s_cmd **cmd,
+					char ***environ_copy);
+void			cleanup_and_exit(struct s_cmd *cmd, char ***environ_copy);
+int				cleanup_and_return(struct s_cmd *cmd);
+void			cleanup_and_free_line(struct s_cmd *cmd, char *line);
+int				process_single_command(char *line, char ***environ_copy);
 
 #endif

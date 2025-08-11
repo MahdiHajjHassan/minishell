@@ -35,26 +35,27 @@ void	copy_existing_env_vars(t_env_update_params params)
 		}
 		i++;
 	}
+	params.new_environ[i] = NULL;
 }
 
-void	add_missing_env_vars(char **new_environ, char *old_pwd_var,
-		char *new_pwd_var, int *flags)
+void	add_missing_env_vars(t_env_update_params params)
 {
 	int	i;
 	int	count;
 
 	count = 0;
-	while (new_environ[count])
+	while ((*params.env_copy)[count])
 		count++;
 	i = count;
-	if (!flags[0])
+	if (!params.flags[0])
 	{
-		new_environ[i] = old_pwd_var;
+		params.new_environ[i] = params.old_pwd_var;
 		i++;
 	}
-	if (!flags[1])
+	if (!params.flags[1])
 	{
-		new_environ[i] = new_pwd_var;
+		params.new_environ[i] = params.new_pwd_var;
 		i++;
 	}
+	params.new_environ[i] = NULL;
 }
