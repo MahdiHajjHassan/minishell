@@ -37,8 +37,8 @@ int	open_redir_file_regular(struct s_redircmd *rdir)
 	}
 	return (0);
 }
-
 /* List command functions removed - semicolon not supported in this minishell */
+
 void	handle_list_builtin(struct s_execcmd *ex)
 {
 	(void)ex;
