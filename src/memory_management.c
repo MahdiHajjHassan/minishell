@@ -81,6 +81,8 @@ void	free_environ_copy(char **environ_copy)
 
 void	clean_exit(int status)
 {
+	rl_free_line_state();
+	clear_history();
 	rl_clear_history();
 	exit(status);
 }
