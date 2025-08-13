@@ -47,6 +47,7 @@ void	reset_signals(void)
 	sa.sa_flags = 0;
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGQUIT, &sa, NULL);
+	sigaction(SIGTSTP, &sa, NULL);
 }
 
 void	handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd,

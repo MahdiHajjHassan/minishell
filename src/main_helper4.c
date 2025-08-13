@@ -42,6 +42,7 @@ void	setup_signals_interactive(void)
 {
 	struct sigaction	sa_int;
 	struct sigaction	sa_quit;
+	struct sigaction	sa_tstp;
 
 	sa_int.sa_handler = sigint_handler_interactive;
 	sigemptyset(&sa_int.sa_mask);
@@ -51,4 +52,8 @@ void	setup_signals_interactive(void)
 	sigemptyset(&sa_quit.sa_mask);
 	sa_quit.sa_flags = SA_RESTART;
 	sigaction(SIGQUIT, &sa_quit, NULL);
+	sa_tstp.sa_handler = SIG_IGN;
+	sigemptyset(&sa_tstp.sa_mask);
+	sa_tstp.sa_flags = SA_RESTART;
+	sigaction(SIGTSTP, &sa_tstp, NULL);
 }
