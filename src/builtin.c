@@ -21,7 +21,7 @@ int	handle_builtin(char **argv, char ***env_copy)
 	if (! ft_strcmp(argv[0], "cd"))
 		return (builtin_cd(argv, env_copy));
 	if (! ft_strcmp(argv[0], "pwd"))
-		return (builtin_pwd(argv));
+		return (builtin_pwd(argv, env_copy));
 	if (! ft_strcmp(argv[0], "export"))
 		return (builtin_export(argv, env_copy));
 	if (! ft_strcmp(argv[0], "unset"))

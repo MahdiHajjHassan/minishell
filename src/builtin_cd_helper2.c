@@ -54,10 +54,10 @@ int	handle_cd_dash(char *old_pwd, char ***env_copy)
 
 int	handle_cd_regular_path(char **argv, char *old_pwd)
 {
-	if (cd_to_path(argv[1]) != 0)
-	{
-		free(old_pwd);
-		return (1);
-	}
-	return (0);
+    if (cd_to_path(argv[1]) != 0)
+    {
+        free(old_pwd);
+        return (1);
+    }
+    return (0);
 }

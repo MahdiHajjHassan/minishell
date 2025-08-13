@@ -41,11 +41,7 @@ const char	*check_double_quote_pattern(const char *line)
 	while (*line && *line != '"')
 		line++;
 	if (*line == '"')
-	{
 		line++;
-		if (*line == '\'')
-			return (NULL);
-	}
 	return (line);
 }
 
@@ -55,11 +51,7 @@ const char	*check_single_quote_pattern(const char *line)
 	while (*line && *line != '\'')
 		line++;
 	if (*line == '\'')
-	{
 		line++;
-		if (*line == '"')
-			return (NULL);
-	}
 	return (line);
 }
 
@@ -68,17 +60,9 @@ int	check_quote_patterns(const char *line)
 	while (*line)
 	{
 		if (*line == '"')
-		{
 			line = check_double_quote_pattern(line);
-			if (!line)
-				return (1);
-		}
 		else if (*line == '\'')
-		{
 			line = check_single_quote_pattern(line);
-			if (!line)
-				return (1);
-		}
 		else
 			line++;
 	}

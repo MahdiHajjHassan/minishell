@@ -37,9 +37,7 @@ void	handle_escape_sequence(const char *input,
 	}
 	else
 	{
-		output[*j] = '\\';
-		(*j)++;
-		output[*j] = input[*i + 1];
+		output[*j] = get_escape_char(input[*i + 1]);
 		*i += 2;
 	}
 }

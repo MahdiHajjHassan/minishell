@@ -25,10 +25,8 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 # include <limits.h>
-# include <fcntl.h>
 # include <sys/stat.h>
 # include <sys/types.h>
-# include <sys/wait.h>
 
 # define EXEC	1
 # define REDIR	2
@@ -669,7 +667,8 @@ int				builtin_echo(char **argv);
 
 int				builtin_cd(char **argv, char ***env_copy);
 
-int				builtin_pwd(char **argv);
+int				builtin_pwd(char **argv, char ***env_copy);
+char			*compute_logical_pwd(const char *old_pwd, const char *path);
 
 int				builtin_exit(char **argv);
 
@@ -778,12 +777,14 @@ void			print_command_error(const char *cmd, const char *error_msg,
 
 void			handle_absolute_path_error(const char *cmd);
 struct s_cmd	*replace_input_redir(struct s_cmd *cmd, char *file);
-struct s_cmd	*find_innermost_cmd(struct s_cmd *cmd);
-
-void			update_redirection_chain(struct s_cmd *cmd,
-					struct s_cmd *innermost, struct s_cmd *new_rdir);
 struct s_cmd	*replace_output_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*replace_append_redir(struct s_cmd *cmd, char *file);
+struct s_cmd	*find_innermost_cmd_for_fd(struct s_cmd *cmd, int fd);
+void		update_redirection_chain_for_fd(struct s_cmd *cmd, struct s_cmd *innermost,
+		struct s_cmd *new_rdir, int fd);
+struct s_cmd	*find_innermost_cmd(struct s_cmd *cmd);
+void		update_redirection_chain(struct s_cmd *cmd, struct s_cmd *innermost,
+		struct s_cmd *new_rdir);
 
 void			update_shlvl_value(char ***env_copy, int i, int shlvl_num);
 
@@ -918,7 +919,7 @@ int				handle_cd_no_args(char *old_pwd, char ***env_copy);
 int				handle_cd_with_args(char **argv, char *old_pwd,
 					char ***env_copy);
 
-int				update_pwd_and_cleanup(char *old_pwd, char ***env_copy);
+int				update_pwd_and_cleanup(char *old_pwd, char ***env_copy, const char *arg_for_pwd);
 char			*find_oldpwd_value(char ***env_copy);
 
 int				handle_cd_dash(char *old_pwd, char ***env_copy);

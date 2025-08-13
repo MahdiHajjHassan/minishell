@@ -34,13 +34,19 @@ int	is_builtin(char *cmd)
 char	*create_old_pwd_var(char *old_pwd)
 {
 	char	*old_pwd_var;
+	size_t	old_pwd_len;
 
-	old_pwd_var = malloc(ft_strlen("OLDPWD") + ft_strlen(old_pwd) + 2);
+	if (!old_pwd)
+		old_pwd_len = 0;
+	else
+		old_pwd_len = ft_strlen(old_pwd);
+	old_pwd_var = malloc(ft_strlen("OLDPWD") + old_pwd_len + 2);
 	if (! old_pwd_var)
 		return (NULL);
 	ft_strcpy(old_pwd_var, "OLDPWD=");
-	ft_strlcat(old_pwd_var, old_pwd,
-		ft_strlen("OLDPWD") + ft_strlen(old_pwd) + 2);
+	if (old_pwd && old_pwd_len > 0)
+		ft_strlcat(old_pwd_var, old_pwd,
+			ft_strlen("OLDPWD") + old_pwd_len + 2);
 	return (old_pwd_var);
 }
 
@@ -65,13 +71,19 @@ char	**allocate_new_environ_pwd(char ***env_copy, int count)
 char	*create_new_pwd_var(char *new_pwd)
 {
 	char	*new_pwd_var;
+	size_t	new_pwd_len;
 
-	new_pwd_var = malloc(ft_strlen("PWD") + ft_strlen(new_pwd) + 2);
+	if (!new_pwd)
+		new_pwd_len = 0;
+	else
+		new_pwd_len = ft_strlen(new_pwd);
+	new_pwd_var = malloc(ft_strlen("PWD") + new_pwd_len + 2);
 	if (! new_pwd_var)
 		return (NULL);
 	ft_strcpy(new_pwd_var, "PWD=");
-	ft_strlcat(new_pwd_var, new_pwd,
-		ft_strlen("PWD") + ft_strlen(new_pwd) + 2);
+	if (new_pwd && new_pwd_len > 0)
+		ft_strlcat(new_pwd_var, new_pwd,
+			ft_strlen("PWD") + new_pwd_len + 2);
 	return (new_pwd_var);
 }
 

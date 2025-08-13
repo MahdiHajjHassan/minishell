@@ -26,25 +26,30 @@ char	*process_token_loop(char *s, char *input_end, t_token_params params)
 {
 	char	quote;
 	char	*start_pos;
-	char	*result;
+    char	*result;
 
 	quote = 0;
 	start_pos = s;
-	while (s < input_end)
-	{
-		if (should_break_on_char(*s, params, quote))
-			break ;
-		result = handle_quote_logic(s, &quote);
-		if (result)
-			return (result);
-		s++;
-		if (s - start_pos > 10000)
-		{
-			if (quote)
-				return (NULL);
-			break ;
-		}
-	}
+    while (s < input_end)
+    {
+        if (should_break_on_char(*s, params, quote))
+            break ;
+        if (!quote && (*s == '"' || *s == '\''))
+        {
+            if (s != start_pos)
+                break ;
+        }
+        result = handle_quote_logic(s, &quote);
+        if (result)
+            return (result);
+        s++;
+        if (s - start_pos > 10000)
+        {
+            if (quote)
+                return (NULL);
+            break ;
+        }
+    }
 	if (quote)
 		return (NULL);
 	return (s);

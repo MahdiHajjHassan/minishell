@@ -29,25 +29,76 @@ static char	*handle_single_quotes(char *q, size_t len)
 {
 	char	*processed;
 
-	processed = malloc(len + 1);
+    processed = malloc(len + 1);
 	if (! processed)
 	{
 		print_malloc_failed();
 		return (NULL);
 	}
-	ft_memcpy(processed, q, len);
-	processed[len] = '\0';
+    ft_memcpy(processed, q, len);
+    processed[len] = '\0';
 	return (processed);
+}
+
+static char	*process_unquoted_escapes(const char *input, size_t len)
+{
+	char	*output;
+	size_t	i;
+	size_t	j;
+
+	output = malloc(len + 1);
+	if (!output)
+		return (NULL);
+	i = 0;
+	j = 0;
+	while (i < len)
+	{
+		if (input[i] == '\\' && i + 1 < len)
+		{
+			if (input[i + 1] == '\\')
+			{
+				output[j] = '\\';
+				i += 2;
+			}
+			else if (input[i + 1] == '"' || input[i + 1] == '\'')
+			{
+				output[j] = input[i + 1];
+				i += 2;
+			}
+			else
+			{
+				output[j] = input[i + 1];
+				i += 2;
+			}
+		}
+		else
+		{
+			output[j] = input[i];
+			i++;
+		}
+		j++;
+	}
+	output[j] = '\0';
+	return (output);
 }
 
 char	*process_quoted_string(char *q, size_t len, int quote_type)
 {
 	char	*processed;
 
-	if (quote_type == '"')
-		processed = handle_double_quotes(q, len);
-	else
-		processed = handle_single_quotes(q, len);
+    if (quote_type == '"')
+        processed = handle_double_quotes(q, len);
+    else if (quote_type == '\'')
+        processed = handle_single_quotes(q, len);
+    else
+    {
+        processed = process_unquoted_escapes(q, len);
+        if (! processed)
+        {
+            print_malloc_failed();
+            return (NULL);
+        }
+    }
 	if (! processed)
 		return (NULL);
 	if (quote_type == 0)

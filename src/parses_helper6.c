@@ -32,7 +32,7 @@ int	remove_exec_quotes(char **q, char **eq)
 	int	quote_type;
 
 	quote_type = 0;
-	if (**q == '"' && *(*eq - 1) == '"')
+    if (**q == '"' && *(*eq - 1) == '"')
 	{
 		(*q)++;
 		(*eq)--;

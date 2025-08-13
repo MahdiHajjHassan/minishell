@@ -56,32 +56,61 @@ void	update_pwd_variables(char *old_pwd, char *new_pwd, char ***env_copy)
 
 int	builtin_env(char **argv, char ***env_copy)
 {
-	int			i;
+	struct s_execcmd	ex;
+	int				j;
 
-	(void)argv;
-	i = 0;
-	while ((*env_copy)[i])
+	if (argv[1])
 	{
-		ft_putstr_fd((*env_copy)[i], STDOUT_FILENO);
+		ft_bzero(&ex, sizeof(ex));
+		ex.type = EXEC;
+		j = 0;
+		while (argv[1 + j] && j < MAXARGS - 1)
+		{
+			ex.av[j] = argv[1 + j];
+			j++;
+		}
+		ex.av[j] = NULL;
+		if (is_builtin(ex.av[0]))
+			handle_exec_builtin(&ex, (struct s_cmd *)&ex, env_copy);
+		else
+			execute_external_cmd(&ex, *env_copy);
+		return (get_exit_status());
+	}
+	j = 0;
+	while ((*env_copy)[j])
+	{
+		ft_putstr_fd((*env_copy)[j], STDOUT_FILENO);
 		ft_putstr_fd("\n", STDOUT_FILENO);
-		i++;
+		j++;
 	}
 	return (0);
 }
 
-int	builtin_pwd(char **argv)
+int	builtin_pwd(char **argv, char ***env_copy)
 {
 	char	cwd[1024];
 
-	(void)argv;
-	if (! getcwd(cwd, sizeof(cwd)))
-	{
-		perror("pwd");
-		return (1);
-	}
-	ft_putstr_fd(cwd, STDOUT_FILENO);
-	ft_putstr_fd("\n", STDOUT_FILENO);
-	return (0);
+    (void)argv;
+    if (getcwd(cwd, sizeof(cwd)))
+    {
+        ft_putstr_fd(cwd, STDOUT_FILENO);
+        ft_putstr_fd("\n", STDOUT_FILENO);
+        return (0);
+    }
+    if (env_copy && *env_copy)
+    {
+        char *pwd_value = get_env_value("PWD", 3, *env_copy);
+        if (pwd_value && *pwd_value)
+        {
+            ft_putstr_fd(pwd_value, STDOUT_FILENO);
+            ft_putstr_fd("\n", STDOUT_FILENO);
+            free(pwd_value);
+            return (0);
+        }
+        free(pwd_value);
+    }
+    perror("pwd");
+    return (1);
 }
 
 void	finalize_new_environ_pwd(char **new_environ, int count,

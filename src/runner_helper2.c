@@ -44,7 +44,7 @@ void	reset_signals(void)
 
 	sa.sa_handler = SIG_DFL;
 	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_RESTART;
+	sa.sa_flags = 0;
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGQUIT, &sa, NULL);
 }

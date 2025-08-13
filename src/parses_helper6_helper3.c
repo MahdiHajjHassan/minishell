@@ -38,9 +38,9 @@ char	*filter_quotes_from_string(char *processed, size_t len)
 		return (NULL);
 	i = 0;
 	j = 0;
-	while (i < len)
+    while (i < len)
 	{
-		if (processed[i] != '"' && processed[i] != '\'')
+        if (processed[i] != '"' && processed[i] != '\'')
 		{
 			result[j] = processed[i];
 			j++;

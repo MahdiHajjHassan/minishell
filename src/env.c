@@ -28,12 +28,13 @@ static char	*finalize_result(char *result, size_t j)
 {
 	char	*final;
 
-	result[j] = '\0';
-	final = ft_realloc(result, j + 1);
-	if (final)
-		return (final);
-	else
-		return (result);
+    result[j] = '\0';
+    final = malloc(j + 1);
+    if (!final)
+        return (result);
+    ft_memcpy(final, result, j + 1);
+    free(result);
+    return (final);
 }
 
 char	*expand_variables(const char *str, size_t len, char **env_copy)

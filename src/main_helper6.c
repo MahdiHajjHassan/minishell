@@ -61,11 +61,14 @@ int	process_single_command(char *line, char ***environ_copy)
 	result = process_command_line(line, &cmd, environ_copy);
 	if (result == 2)
 	{
+		if (line)
+			free(line);
 		cleanup_and_exit(cmd, environ_copy);
 	}
 	else if (result == 1)
 	{
-		return (cleanup_and_return(cmd));
+		cleanup_and_free_line(cmd, line);
+		return (1);
 	}
 	else
 	{

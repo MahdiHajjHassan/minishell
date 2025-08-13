@@ -20,11 +20,11 @@ int	should_concatenate_next_token(t_arg_process_params arg_params)
 	while (next_pos < arg_params.params.input_end
 		&& (*next_pos == ' ' || *next_pos == '\t'))
 		next_pos++;
-	if (next_pos != *arg_params.eq
-		|| next_pos >= arg_params.params.input_end
-		|| *next_pos == '"' || *next_pos == '\'' || *next_pos == '|'
-		|| *next_pos == '&' || *next_pos == ';' || *next_pos == '<'
-		|| *next_pos == '>')
+    if (next_pos != *arg_params.eq
+        || next_pos >= arg_params.params.input_end
+        || *next_pos == '|'
+        || *next_pos == '&' || *next_pos == ';' || *next_pos == '<'
+        || *next_pos == '>')
 		return (0);
 	return (1);
 }

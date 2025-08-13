@@ -14,17 +14,13 @@
 
 void	setup_signals_noninteractive(void)
 {
-	struct sigaction	sa_int;
-	struct sigaction	sa_quit;
+	struct sigaction	sa;
 
-	sa_int.sa_handler = sigint_handler_noninteractive;
-	sigemptyset(&sa_int.sa_mask);
-	sa_int.sa_flags = SA_RESTART;
-	sigaction(SIGINT, &sa_int, NULL);
-	sa_quit.sa_handler = sigquit_handler_noninteractive;
-	sigemptyset(&sa_quit.sa_mask);
-	sa_quit.sa_flags = SA_RESTART;
-	sigaction(SIGQUIT, &sa_quit, NULL);
+	sa.sa_handler = SIG_IGN;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGQUIT, &sa, NULL);
 }
 
 int	validate_arguments(int argc, char **argv)
@@ -55,19 +51,11 @@ int	process_builtin_command(struct s_cmd *cmd, char *line,
 	int	result;
 
 	result = handle_builtin_cmd(cmd, line, environ_copy);
-	if (result == 2)
-	{
-		if (line)
-			free(line);
-		return (result);
-	}
-	else if (result == 1)
-	{
-		if (line)
-			free(line);
-		return (result);
-	}
-	return (0);
+    if (result == 2)
+        return (2);
+    else if (result == 1)
+        return (1);
+    return (0);
 }
 
 void	execute_external_command(struct s_cmd *cmd, char **environ_copy)
