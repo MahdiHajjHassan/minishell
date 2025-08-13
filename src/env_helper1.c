@@ -19,6 +19,8 @@ size_t	get_var_name_len(const char *str)
 	len = 0;
 	if (*str == '?')
 		return (1);
+	if (ft_isdigit(*str))
+		return (1);
 	while (str[len] && (ft_isalnum(str[len]) || str[len] == '_'))
 		len++;
 	return (len);
