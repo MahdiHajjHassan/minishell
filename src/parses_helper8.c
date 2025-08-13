@@ -15,9 +15,9 @@
 int	process_exec_token(struct s_cmd *ret, t_process_args_params params,
 		char **env_copy)
 {
-	char						*q;
-	char						*eq;
-	int														tok;
+	char					*q;
+	char					*eq;
+	int						tok;
 	t_expanded_arg_params	expanded_params;
 
 	tok = get_exec_token(params.input_ptr, params.input_end, &q, &eq);

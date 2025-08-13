@@ -40,6 +40,8 @@ int	builtin_cd(char **argv, char ***env_copy)
 
 	old_pwd = setup_old_pwd(env_copy);
 	if (!old_pwd)
+		old_pwd = ft_strdup("");
+	if (!old_pwd)
 		return (1);
 	if (!argv[1])
 	{

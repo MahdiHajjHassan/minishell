@@ -85,3 +85,30 @@ int	set_environment_var(char *name, char *value, char ***env_copy)
 	}
 	return (0);
 }
+
+int	handle_export_no_equals(char *arg_copy, char ***env_copy)
+{
+	if (!is_valid_identifier(arg_copy))
+	{
+		print_export_invalid_identifier(arg_copy);
+		free(arg_copy);
+		return (1);
+	}
+	if (set_environment_var(arg_copy, "", env_copy))
+	{
+		free(arg_copy);
+		return (1);
+	}
+	free(arg_copy);
+	return (0);
+}
+
+int	handle_export_with_equals(char *arg_copy, char ***env_copy)
+{
+	char	*name;
+	char	*value;
+
+	if (process_export_arg(arg_copy, &name, &value, env_copy))
+		return (1);
+	return (0);
+}

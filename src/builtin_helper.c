@@ -56,32 +56,14 @@ int	process_single_export_arg(char **argv, int i, char ***env_copy)
 {
 	char	*arg_copy;
 	char	*equals;
-	char	*name;
-	char	*value;
 
 	arg_copy = ft_strdup(argv[i]);
 	if (! arg_copy)
 		return (1);
 	equals = ft_strchr(arg_copy, '=');
 	if (! equals)
-	{
-		if (!is_valid_identifier(arg_copy))
-		{
-			print_export_invalid_identifier(arg_copy);
-			free(arg_copy);
-			return (1);
-		}
-		if (set_environment_var(arg_copy, "", env_copy))
-		{
-			free(arg_copy);
-			return (1);
-		}
-		free(arg_copy);
-		return (0);
-	}
-	if (process_export_arg(arg_copy, &name, &value, env_copy))
-		return (1);
-	return (0);
+		return (handle_export_no_equals(arg_copy, env_copy));
+	return (handle_export_with_equals(arg_copy, env_copy));
 }
 
 int	builtin_export(char **argv, char ***env_copy)

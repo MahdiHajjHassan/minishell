@@ -713,6 +713,10 @@ void			format_export_output(char *env_var);
 int				set_environment_var(char *name, char *value, char ***env_copy);
 void			print_sorted_env_vars(char **env_copy);
 int				is_valid_identifier(const char *name);
+int				process_export_arg(char *arg_copy, char **name, char **value,
+					char ***env_copy);
+int				handle_export_no_equals(char *arg_copy, char ***env_copy);
+int				handle_export_with_equals(char *arg_copy, char ***env_copy);
 
 char			*create_old_pwd_var(char *old_pwd);
 char			*create_new_pwd_var(char *new_pwd);
