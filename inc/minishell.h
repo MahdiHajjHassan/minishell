@@ -362,6 +362,9 @@ char			*process_argument_with_expansion(char *q, char *eq,
 char			*process_quoted_string(char *q, size_t len, int quote_type);
 
 int				check_for_variables(char *processed);
+char			*handle_double_quotes(char *q, size_t len);
+char			*handle_single_quotes(char *q, size_t len);
+char			*process_unquoted_escapes(const char *input, size_t len);
 char			*expand_if_needed(char *processed, char **env_copy);
 char			*remove_embedded_quotes(char *processed, size_t len);
 char			*initialize_quote_result(char *processed, size_t len);
@@ -467,257 +470,6 @@ int				open_redir_file_create(struct s_redircmd *rdir);
 
 int				open_redir_file_regular(struct s_redircmd *rdir);
 
-int				handle_basic_symbols(char **s_ptr, char *input_ptr);
-
-int				handle_greater_than(char **s_ptr, char *input_ptr);
-
-int				handle_less_than(char **s_ptr, char *input_ptr);
-
-void			init_space_array(char *space);
-
-void			init_symbols_array(char *symbols);
-
-void			init_token_arrays(char *space, char *symbols);
-
-t_token_params	setup_token_params(char *s, char *input_end,
-					t_token_params params);
-
-int				process_default_case(char **s_ptr, char *input_end,
-					t_process_default_params params);
-
-void			setup_token_processing(char **input_ptr, char *input_end,
-					char **token_start, char **s_ptr);
-
-int				check_unclosed_quotes(const char *line);
-const char		*check_double_quote_pattern(const char *line);
-const char		*check_single_quote_pattern(const char *line);
-
-int				check_quote_patterns(const char *line);
-
-int				has_malformed_quotes(const char *line);
-
-int				should_break_on_char(char c, t_token_params params, int quote);
-char			*process_token_loop(char *s, char *input_end,
-					t_token_params params);
-char			*handle_default_token(char *s, char *input_end,
-					char *input_ptr, t_token_params params);
-
-int				handle_token_cases(char **s_ptr, char *input_ptr,
-					char *input_end);
-char			*init_result_buffer(size_t len, size_t *alloc_size);
-char			*resize_for_env_value(char *result, size_t *alloc_size,
-					size_t j, size_t value_len);
-char			*resize_for_char(char *result, size_t *alloc_size, size_t j);
-
-int				is_variable_char(const char *str, size_t i, size_t len);
-char			*handle_exit_status_var(void);
-char			*search_env_variable(const char *name, size_t name_len,
-					char **env_copy, char *temp);
-
-int				handle_env_value_found(t_env_var_params params,
-					char *env_value, size_t var_name_len, char **env_copy);
-
-int				handle_env_value_not_found(t_env_var_params params,
-					size_t var_name_len);
-
-void			sigint_handler_interactive(int signo);
-
-void			sigquit_handler_interactive(int signo);
-
-void			sigint_handler_noninteractive(int signo);
-
-void			sigquit_handler_noninteractive(int signo);
-
-void			setup_signals_interactive(void);
-
-void			setup_signals_noninteractive(void);
-
-int				validate_arguments(int argc, char **argv);
-
-int				initialize_environment(char **envp, char ***environ_copy);
-
-int				process_builtin_command(struct s_cmd *cmd, char *line,
-					char ***environ_copy);
-
-void			execute_external_command(struct s_cmd *cmd,
-					char **environ_copy);
-struct s_cmd	*pipecmd(struct s_cmd *left, struct s_cmd *right);
-struct s_cmd	*backcmd(struct s_cmd *subcmd);
-struct s_cmd	*redircmd(struct s_cmd *subcmd, char *file, char *efile,
-					t_redir_params params);
-struct s_cmd	*heredoccmd(struct s_cmd *subcmd, char *delimiter,
-					char *content);
-struct s_cmd	*execcmd(void);
-struct s_cmd	*parse_block(char **input_ptr, char *input_end,
-					char **env_copy);
-struct s_cmd	*parse_line(char **input_ptr, char *input_end,
-					char **env_copy);
-struct s_cmd	*parse_pipe(char **input_ptr, char *input_end, char **env_copy);
-
-int				is_empty_command(struct s_cmd *cmd);
-
-int				handle_redirection_token_type(t_token_type_params token_params);
-
-int				is_escaped(const char *s, const char *start);
-
-int				should_concatenate_next_token(t_arg_process_params arg_params);
-
-int				process_next_token_for_concatenation(
-					t_arg_process_params arg_params,
-					char **result, char **next_q, char **next_eq);
-char			*process_single_argument_internal(
-					t_arg_process_params arg_params);
-
-int				concatenate_adjacent_tokens(t_arg_process_params arg_params);
-
-int				handle_quoted_argument_token(t_arg_process_params arg_params);
-
-int				handle_unquoted_argument_token(t_arg_process_params arg_params);
-
-char			get_escape_char(char c);
-
-void			handle_escape_sequence(const char *input, size_t *i,
-					char *output, size_t *j);
-char			*process_escaped(const char *input, size_t len);
-
-int				get_redir_token(char **input_ptr, char *input_end, char **q,
-					char **eq);
-
-void			remove_redir_quotes(char **q, char **eq);
-char			*process_filename(char *q, char *eq, char **env_copy);
-char			*process_heredoc_delimiter(char *q, char *eq,
-					char **env_copy, int is_quoted);
-struct s_cmd	*apply_input_redir(struct s_cmd *cmd, char *file);
-struct s_cmd	*apply_output_redir(struct s_cmd *cmd, char *file);
-struct s_cmd	*apply_append_redir(struct s_cmd *cmd, char *file);
-struct s_cmd	*handle_redir_token(struct s_cmd *cmd, int tok, char *file);
-struct s_cmd	*handle_heredoc_token(struct s_cmd *cmd, char *delimiter,
-					char **env_copy, int is_quoted);
-struct s_cmd	*init_exec_cmd(void);
-
-int				get_exec_token(char **input_ptr, char *input_end, char **q,
-					char **eq);
-
-int				remove_exec_quotes(char **q, char **eq);
-char			*process_argument(char *q, char *eq);
-char			*process_argument_with_expansion(char *q, char *eq,
-					char **env_copy, int quote_type);
-char			*concatenate_quoted_strings(char **input_ptr, char *input_end,
-					char **env_copy);
-
-void			add_argument(struct s_execcmd *cmd, char *processed, int *argc);
-
-void			finalize_exec_cmd(struct s_execcmd *cmd, int argc);
-struct s_cmd	*process_arguments(struct s_cmd *ret,
-					t_process_args_params params, char **env_copy);
-struct s_cmd	*process_arguments_and_redirs(struct s_cmd *ret,
-					t_process_args_params params, char **env_copy);
-
-int				is_builtin(char *cmd);
-
-int				handle_builtin(char **argv, char ***env_copy);
-char			*expand_variables(const char *str, size_t len,
-					char **env_copy);
-
-void			set_exit_status(int status);
-
-int				get_exit_status(void);
-
-void			setup_heredoc_signals(void);
-
-void			heredoc_sigint_handler(int signo);
-char			*read_line_without_history(void);
-char			*append_line_to_content(char *content, char *line);
-
-int				check_delimiter_match(char *line, char *stripped_delimiter);
-char			*read_heredoc_line(void);
-
-int				handle_read_error(ssize_t bytes_read, int i);
-
-int				read_character(int *c);
-char			*process_line_buffer(char *buffer, int i);
-
-int				initialize_heredoc_content(char **stripped_delimiter,
-					char **content, char *delimiter);
-
-void			cleanup_heredoc_content(char *stripped_delimiter);
-char			*read_heredoc_content(char *delimiter, char **env_copy,
-					int is_quoted);
-char			*append_line_to_content(char *content, char *line);
-
-int				cd_to_home(char **env_copy);
-
-int				cd_to_path(char *path);
-
-int				parse_export_arg(char *arg, char **name, char **value);
-
-void			remove_quotes(char **value);
-
-void			format_export_output(char *env_var);
-
-int				set_environment_var(char *name, char *value,
-					char ***env_copy);
-
-void			print_sorted_env_vars(char **env_copy);
-
-void			update_pwd_variables(char *old_pwd, char *new_pwd,
-					char ***env_copy);
-
-int				builtin_echo(char **argv);
-
-int				builtin_cd(char **argv, char ***env_copy);
-
-int				builtin_pwd(char **argv, char ***env_copy);
-char			*compute_logical_pwd(const char *old_pwd, const char *path);
-
-int				builtin_exit(char **argv);
-
-int				builtin_env(char **argv, char ***env_copy);
-
-int				process_export_arg(char *arg_copy, char **name, char **value,
-					char ***env_copy);
-
-int				is_valid_identifier(const char *name);
-
-int				process_single_export_arg(char **argv, int i, char ***env_copy);
-
-int				builtin_export(char **argv, char ***env_copy);
-
-int				builtin_unset(char **argv, char ***env_copy);
-char			*create_old_pwd_var(char *old_pwd);
-char			*create_new_pwd_var(char *new_pwd);
-
-int				count_env_vars_pwd(char ***env_copy);
-char			**allocate_new_environ_pwd(char ***env_copy, int count);
-
-void			copy_and_update_env_vars(char ***env_copy, char **new_environ,
-					char *old_pwd_var, char *new_pwd_var);
-
-void			finalize_new_environ_pwd(char **new_environ, int count,
-					char *old_pwd_var, char *new_pwd_var);
-
-void			copy_existing_env_vars(t_env_update_params params);
-
-void			add_missing_env_vars(t_env_update_params params);
-char			*check_absolute_path(const char *cmd);
-
-size_t			get_path_segment_len(char *curr, char **next);
-
-int				build_full_path(char *full_path, char *curr, size_t len,
-					const char *cmd);
-char			*search_in_paths(char *path, const char *cmd);
-
-void			reset_signals(void);
-
-void			handle_exec_builtin(struct s_execcmd *ex, struct s_cmd *cmd,
-					char ***env_copy);
-
-void			execute_external_cmd(struct s_execcmd *ex, char **env_copy);
-
-int				open_redir_file_create(struct s_redircmd *rdir);
-
-int				open_redir_file_regular(struct s_redircmd *rdir);
-
 int				ft_strcmp(const char *s1, const char *s2);
 
 int				ft_vsnprintf(char *str, size_t size, const char *format,
@@ -780,11 +532,11 @@ struct s_cmd	*replace_input_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*replace_output_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*replace_append_redir(struct s_cmd *cmd, char *file);
 struct s_cmd	*find_innermost_cmd_for_fd(struct s_cmd *cmd, int fd);
-void		update_redirection_chain_for_fd(struct s_cmd *cmd, struct s_cmd *innermost,
-		struct s_cmd *new_rdir, int fd);
+void			update_redirection_chain_for_fd(struct s_cmd *cmd,
+					struct s_cmd *innermost, struct s_cmd *new_rdir, int fd);
 struct s_cmd	*find_innermost_cmd(struct s_cmd *cmd);
-void		update_redirection_chain(struct s_cmd *cmd, struct s_cmd *innermost,
-		struct s_cmd *new_rdir);
+void			update_redirection_chain(struct s_cmd *cmd,
+					struct s_cmd *innermost, struct s_cmd *new_rdir);
 
 void			update_shlvl_value(char ***env_copy, int i, int shlvl_num);
 
@@ -798,12 +550,11 @@ void			cleanup_on_failure(char **new_environ, int i);
 
 int				copy_env_vars(char **envp, char **new_environ);
 char			**copy_environ(char **envp);
+char			**create_default_environ(void);
 
 void			free_environ_copy(char **environ_copy);
 
 void			clean_exit(int status);
-# ifdef DEBUG
-# endif
 
 void			runcmd(struct s_cmd *cmd, char **env_copy);
 
@@ -919,12 +670,18 @@ int				handle_cd_no_args(char *old_pwd, char ***env_copy);
 int				handle_cd_with_args(char **argv, char *old_pwd,
 					char ***env_copy);
 
-int				update_pwd_and_cleanup(char *old_pwd, char ***env_copy, const char *arg_for_pwd);
+int				update_pwd_and_cleanup(char *old_pwd, char ***env_copy,
+					const char *arg_for_pwd);
 char			*find_oldpwd_value(char ***env_copy);
 
 int				handle_cd_dash(char *old_pwd, char ***env_copy);
 
 int				handle_cd_regular_path(char **argv, char *old_pwd);
+
+char			*getcwd_dup_quiet(void);
+char			*get_env_value_simple(const char *name, char **env_copy);
+char			*get_fallback_pwd(char ***env_copy, const char *arg_for_pwd);
+char			*setup_old_pwd(char ***env_copy);
 
 int				validate_numeric_arg(char *arg);
 
@@ -940,4 +697,123 @@ int				cleanup_and_return(struct s_cmd *cmd);
 void			cleanup_and_free_line(struct s_cmd *cmd, char *line);
 
 int				process_single_command(char *line, char ***environ_copy);
+
+int				builtin_echo(char **argv);
+int				builtin_cd(char **argv, char ***env_copy);
+int				builtin_pwd(char **argv, char ***env_copy);
+int				builtin_export(char **argv, char ***env_copy);
+int				builtin_unset(char **argv, char ***env_copy);
+int				builtin_env(char **argv, char ***env_copy);
+int				builtin_exit(char **argv);
+int				parse_exit_ll(const char *arg, long long *out);
+
+int				parse_export_arg(char *arg, char **name, char **value);
+void			remove_quotes(char **value);
+void			format_export_output(char *env_var);
+int				set_environment_var(char *name, char *value, char ***env_copy);
+void			print_sorted_env_vars(char **env_copy);
+int				is_valid_identifier(const char *name);
+
+char			*create_old_pwd_var(char *old_pwd);
+char			*create_new_pwd_var(char *new_pwd);
+int				count_env_vars_pwd(char ***env_copy);
+char			**allocate_new_environ_pwd(char ***env_copy, int count);
+void			copy_existing_env_vars(t_env_update_params params);
+void			add_missing_env_vars(t_env_update_params params);
+void			copy_and_update_env_vars(char ***env_copy,
+					char **new_environ, char *old_pwd_var, char *new_pwd_var);
+void			finalize_new_environ_pwd(char **new_environ, int count,
+					char *old_pwd_var, char *new_pwd_var);
+int				prepare_pwd_variables(t_pwd_prep_params params);
+
+int				is_builtin(char *cmd);
+int				get_exit_status(void);
+
+void			update_pwd_variables(char *old_pwd, char *new_pwd,
+					char ***env_copy);
+
+char			*handle_exit_status_var(void);
+char			*search_env_variable(const char *name, size_t name_len,
+					char **env_copy, char *temp);
+int				handle_env_value_found(t_env_var_params params,
+					char *env_value, size_t var_name_len, char **env_copy);
+int				handle_env_value_not_found(t_env_var_params params,
+					size_t var_name_len);
+
+char			*expand_variables(const char *str, size_t len, char **env_copy);
+char			*append_line_to_content(char *content, char *line);
+int				check_delimiter_match(char *line, char *stripped_delimiter);
+char			*read_heredoc_line(void);
+int				initialize_heredoc_content(char **stripped_delimiter,
+					char **content, char *delimiter);
+void			setup_heredoc_signals(void);
+void			heredoc_sigint_handler(int signo);
+void			cleanup_heredoc_content(char *stripped_delimiter);
+void			set_exit_status(int status);
+int				read_character(int *c);
+int				handle_read_error(ssize_t bytes_read, int i);
+char			*read_line_without_history(void);
+char			*process_line_buffer(char *buffer, int i);
+
+int				validate_arguments(int argc, char **argv);
+int				initialize_environment(char **envp, char ***environ_copy);
+void			setup_signals_interactive(void);
+int				handle_builtin(char **argv, char ***env_copy);
+
+int				process_builtin_command(struct s_cmd *cmd, char *line,
+					char ***environ_copy);
+void			execute_external_command(struct s_cmd *cmd,
+					char **environ_copy);
+
+char			*process_escaped(const char *input, size_t len);
+struct s_cmd	*parse_pipe(char **input_ptr, char *input_end, char **env_copy);
+int				is_empty_command(struct s_cmd *cmd);
+struct s_cmd	*pipecmd(struct s_cmd *left, struct s_cmd *right);
+struct s_cmd	*backcmd(struct s_cmd *subcmd);
+
+struct s_cmd	*redircmd(struct s_cmd *subcmd, char *file, char *efile,
+					t_redir_params params);
+struct s_cmd	*execcmd(void);
+int				should_concatenate_next_token(t_arg_process_params arg_params);
+int				process_next_token_for_concatenation(
+					t_arg_process_params arg_params,
+					char **result, char **next_q, char **next_eq);
+
+int				handle_unquoted_argument_token(t_arg_process_params arg_params);
+int				handle_quoted_argument_token(t_arg_process_params arg_params);
+int				is_assignment_word_local(const char *s);
+int				process_argument_logic(char *processed, int quote_type,
+					t_arg_process_params arg_params);
+int				split_and_add_arguments(char *processed,
+					t_arg_process_params arg_params);
+int				is_assignment_word(const char *s);
+void			add_split_arguments(struct s_execcmd *cmd,
+					int *argc, char *processed);
+int				handle_redirection_token_type(t_token_type_params token_params);
+char			*process_single_argument_internal(
+					t_arg_process_params arg_params);
+
+int				concatenate_adjacent_tokens(t_arg_process_params arg_params);
+
+void			handle_escape_sequence(const char *input, size_t *i,
+					char *output, size_t *j);
+char			*read_heredoc_content(char *delimiter, char **env_copy,
+					int is_quoted);
+struct s_cmd	*heredoccmd(struct s_cmd *subcmd, char *delimiter,
+					char *content);
+
+char			*process_heredoc_delimiter(char *q, char *eq,
+					char **env_copy, int is_quoted);
+char			*process_filename(char *q, char *eq, char **env_copy);
+char			*check_absolute_path(const char *cmd);
+char			*search_in_paths(char *path, const char *cmd);
+
+struct s_cmd	*parse_line(char **input_ptr, char *input_end,
+					char **env_copy);
+int				has_malformed_quotes(const char *line);
+int				handle_less_than(char **s_ptr, char *input_ptr);
+
+int				cd_to_home(char **env_copy);
+int				cd_to_path(char *path);
+char			*compute_logical_pwd(const char *old_pwd, const char *path);
 #endif

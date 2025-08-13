@@ -32,7 +32,7 @@ int	remove_exec_quotes(char **q, char **eq)
 	int	quote_type;
 
 	quote_type = 0;
-    if (**q == '"' && *(*eq - 1) == '"')
+	if (**q == '"' && *(*eq - 1) == '"')
 	{
 		(*q)++;
 		(*eq)--;
@@ -54,7 +54,7 @@ char	*process_argument(char *q, char *eq)
 
 	len = eq - q;
 	processed = process_escaped(q, len);
-	if (! processed)
+	if (!processed)
 	{
 		print_malloc_failed();
 		return (NULL);

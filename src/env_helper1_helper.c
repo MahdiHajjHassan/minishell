@@ -26,48 +26,53 @@ char	*init_result_buffer(size_t len, size_t *alloc_size)
 char	*resize_for_env_value(char *result, size_t *alloc_size,
 	size_t j, size_t value_len)
 {
-    char	*new_result;
+	char		*new_result;
+	size_t		new_capacity;
 
-    if (j + value_len >= *alloc_size)
-    {
-        size_t new_capacity = (j + value_len) * 2;
-        new_result = malloc(new_capacity);
-        if (!new_result)
-        {
-            free(result);
-            return (NULL);
-        }
-        if (j > 0)
-            ft_memcpy(new_result, result, j);
-        free(result);
-        result = new_result;
-        *alloc_size = new_capacity;
-    }
-    return (result);
+	if (j + value_len >= *alloc_size)
+	{
+		new_capacity = (j + value_len) * 2;
+		new_result = malloc(new_capacity);
+		if (!new_result)
+		{
+			free(result);
+			return (NULL);
+		}
+		if (j > 0)
+			ft_memcpy(new_result, result, j);
+		free(result);
+		result = new_result;
+		*alloc_size = new_capacity;
+	}
+	return (result);
 }
 
 char	*resize_for_char(char *result, size_t *alloc_size, size_t j)
 {
-    char	*new_result;
+	char		*new_result;
+	size_t		new_capacity;
 
-    if (j + 1 >= *alloc_size)
-    {
-        size_t new_capacity = (*alloc_size == 0 ? 2 : (*alloc_size * 2));
-        if (new_capacity < j + 1)
-            new_capacity = j + 1;
-        new_result = malloc(new_capacity);
-        if (!new_result)
-        {
-            free(result);
-            return (NULL);
-        }
-        if (j > 0)
-            ft_memcpy(new_result, result, j);
-        free(result);
-        result = new_result;
-        *alloc_size = new_capacity;
-    }
-    return (result);
+	if (j + 1 >= *alloc_size)
+	{
+		if (*alloc_size == 0)
+			new_capacity = 2;
+		else
+			new_capacity = (*alloc_size * 2);
+		if (new_capacity < j + 1)
+			new_capacity = j + 1;
+		new_result = malloc(new_capacity);
+		if (!new_result)
+		{
+			free(result);
+			return (NULL);
+		}
+		if (j > 0)
+			ft_memcpy(new_result, result, j);
+		free(result);
+		result = new_result;
+		*alloc_size = new_capacity;
+	}
+	return (result);
 }
 
 int	is_variable_char(const char *str, size_t i, size_t len)

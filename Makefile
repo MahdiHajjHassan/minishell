@@ -12,13 +12,17 @@ SRCS =        src/builtin.c \
        src/builtin_helper.c \
        src/builtin_cd_helper.c \
        src/builtin_cd_helper2.c \
+       src/builtin_cd_helper3.c \
+       src/builtin_cd_helper4.c \
        src/builtin_cd_utils.c \
        src/builtin_echo_helper.c \
        src/builtin_exit_helper.c \
+       src/builtin_exit_helper2.c \
        src/builtin_export_helper.c \
        src/builtin_helper1.c \
        src/builtin_helper2.c \
        src/builtin_pwd_helper.c \
+       src/builtin_pwd_helper2.c \
        src/builtin_utils.c \
        src/builtin_utils_helper.c \
        src/constructs.c \
@@ -42,6 +46,7 @@ SRCS =        src/builtin.c \
        src/memory_management.c \
        src/memory_management_helper.c \
        src/memory_management_helper2.c \
+       src/memory_management_helper3.c \
        src/parses.c \
        src/parses_helper1.c \
        src/parses_helper1_helper.c \
@@ -54,6 +59,8 @@ SRCS =        src/builtin.c \
        src/parses_helper4_helper2.c \
        src/parses_helper4_helper_helper1.c \
        src/parses_helper4_helper_helper2.c \
+       src/parses_helper4_helper_helper3.c \
+       src/parses_helper4_helper_helper4.c \
        src/parses_helper_helper.c \
        src/parses_helper5.c \
        src/parses_helper6.c \
@@ -61,11 +68,14 @@ SRCS =        src/builtin.c \
        src/parses_helper6_helper2.c \
        src/parses_helper6_helper3.c \
        src/parses_helper6_helper4.c \
+       src/parses_helper6_helper5.c \
        src/parses_helper7.c \
        src/parses_helper7_helper.c \
+       src/parses_helper7_helper2.c \
        src/parses_helper8.c \
        src/parses_helper9.c \
        src/parses_helper9_helper.c \
+       src/parses_helper9_helper2.c \
        src/parses_helper9_helper_helper.c \
        src/runner.c \
        src/runner_helper1.c \

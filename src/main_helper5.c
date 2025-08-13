@@ -37,7 +37,7 @@ int	validate_arguments(int argc, char **argv)
 int	initialize_environment(char **envp, char ***environ_copy)
 {
 	*environ_copy = copy_environ(envp);
-	if (! *environ_copy)
+	if (!*environ_copy)
 	{
 		ft_putstr_fd("Failed to copy environment\n", STDERR_FILENO);
 		return (1);
@@ -51,11 +51,11 @@ int	process_builtin_command(struct s_cmd *cmd, char *line,
 	int	result;
 
 	result = handle_builtin_cmd(cmd, line, environ_copy);
-    if (result == 2)
-        return (2);
-    else if (result == 1)
-        return (1);
-    return (0);
+	if (result == 2)
+		return (2);
+	else if (result == 1)
+		return (1);
+	return (0);
 }
 
 void	execute_external_command(struct s_cmd *cmd, char **environ_copy)

@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parses_helper6_helper2.c                          :+:      :+:    :+:   */
+/*   parses_helper4_helper_helper3.c                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mahajj-h <mahajj-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,40 +12,23 @@
 
 #include "minishell.h"
 
-char	*process_quoted_string(char *q, size_t len, int quote_type)
+int	process_argument_logic(char *processed, int quote_type,
+	t_arg_process_params arg_params)
 {
-	char	*processed;
+	int	should_split;
 
-	if (quote_type == '"')
-		processed = handle_double_quotes(q, len);
-	else if (quote_type == '\'')
-		processed = handle_single_quotes(q, len);
+	should_split = (quote_type == 0
+			&& !is_assignment_word_local(processed)
+			&& (ft_strchr(processed, ' ') || ft_strchr(processed, '\t')));
+	if (should_split)
+	{
+		if (split_and_add_arguments(processed, arg_params))
+			return (1);
+		free(processed);
+	}
 	else
 	{
-		processed = process_unquoted_escapes(q, len);
-		if (!processed)
-		{
-			print_malloc_failed();
-			return (NULL);
-		}
+		add_argument(arg_params.params.cmd, processed, arg_params.params.argc);
 	}
-	if (!processed)
-		return (NULL);
-	if (quote_type == 0)
-		return (remove_embedded_quotes(processed, len));
-	return (processed);
-}
-
-char	*expand_if_needed(char *processed, char **env_copy)
-{
-	char	*expanded;
-
-	expanded = expand_variables(processed, ft_strlen(processed), env_copy);
-	free(processed);
-	if (! expanded)
-	{
-		print_malloc_failed();
-		return (NULL);
-	}
-	return (expanded);
+	return (0);
 }
