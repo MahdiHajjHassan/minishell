@@ -15,9 +15,9 @@
 int	process_exec_token(struct s_cmd *ret, t_process_args_params params,
 		char **env_copy)
 {
-	char					*q;
-	char					*eq;
-	int						tok;
+	char						*q;
+	char						*eq;
+	int														tok;
 	t_expanded_arg_params	expanded_params;
 
 	tok = get_exec_token(params.input_ptr, params.input_end, &q, &eq);
@@ -69,6 +69,20 @@ struct s_cmd	*process_arguments(struct s_cmd *ret,
 	return (ret);
 }
 
+static struct s_cmd	*insert_heredoc_innermost(struct s_cmd *cmd,
+		char *delimiter, char *content)
+{
+	struct s_heredoccmd	*hcmd;
+
+	if (!cmd || cmd->type != HEREDOC)
+		return (heredoccmd(cmd, delimiter, content));
+	hcmd = (struct s_heredoccmd *)cmd;
+	hcmd->cmd = insert_heredoc_innermost(hcmd->cmd, delimiter, content);
+	if (!hcmd->cmd)
+		return (NULL);
+	return ((struct s_cmd *)hcmd);
+}
+
 struct s_cmd	*handle_heredoc_token(struct s_cmd *cmd, char *delimiter,
 		char **env_copy, int is_quoted)
 {
@@ -77,5 +91,5 @@ struct s_cmd	*handle_heredoc_token(struct s_cmd *cmd, char *delimiter,
 	content = read_heredoc_content(delimiter, env_copy, is_quoted);
 	if (! content)
 		return (NULL);
-	return (heredoccmd(cmd, delimiter, content));
+	return (insert_heredoc_innermost(cmd, delimiter, content));
 }
