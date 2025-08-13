@@ -71,6 +71,11 @@ int	process_single_export_arg(char **argv, int i, char ***env_copy)
 			free(arg_copy);
 			return (1);
 		}
+		if (set_environment_var(arg_copy, "", env_copy))
+		{
+			free(arg_copy);
+			return (1);
+		}
 		free(arg_copy);
 		return (0);
 	}
